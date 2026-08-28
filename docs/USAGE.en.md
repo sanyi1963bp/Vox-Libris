@@ -263,10 +263,61 @@ can query it on a PC with any tool (e.g. Python's `sqlite3`).
 
 - **Catalogue database** — current path and state, and a picker to change it.
 - **Books root folder** — where the browser opens on start.
+- **Build catalogue from books** — see [10/a](#10a-building-a-catalogue-from-your-books).
 - **Caches** — how many files you have scanned and how much extracted text is
   stored; both can be cleared. (Clearing does **not** touch your positions.)
 - **Text-to-speech** — a shortcut to the system TTS settings, where you can
   change engine and voice.
+
+## 10/a. Building a catalogue from your books
+
+With no prepared catalogue, the app **can build one itself** — from the
+metadata stored inside the book files, with no internet.
+
+**How:** Settings → *"Katalógus építése a könyvekből"* (build catalogue from
+books) → **Build**. It walks the current root folder recursively and writes
+the result to `Download/KonyvtarTTS/sajat_katalogus.db`. When it finishes, one
+button puts it straight into use.
+
+**Re-running after adding books:** the button then reads *"Frissítés az új
+könyvekkel"* (update with new books). **Existing entries are left alone** — it
+recognises by file path what is already in there and only processes new files.
+So the second run is much faster, and anything you fixed by hand or on the PC
+survives.
+
+### What it finds per format
+
+| Format | Extracted |
+|---|---|
+| **EPUB** | title, author, publisher, year, ISBN, language, **synopsis**, series + index, tags |
+| **FB2** | author, title, **annotation**, genre, series, publisher, year, ISBN |
+| **MOBI/AZW3** | title, author, publisher, **description**, ISBN, subjects, date |
+| **DOCX** | title, author, description, keywords |
+| **RTF** | title, author, subject, comment (when filled in) |
+| **PDF** | title, author, keywords — **toggleable**, because it is slower |
+| **TXT and the rest** | title and author guessed from the file name |
+
+The **PDF toggle** exists because reading PDF metadata requires walking the
+file structure, which is slow for large files. On top of that, PDF "titles"
+are often junk (the scanner software's name, a file name, "Microsoft Word -
+something.doc"), so the app filters obviously useless values out and falls
+back to the file name.
+
+### Worth knowing
+
+- **It cannot invent a synopsis.** Where the file carries no description
+  (typically scanned PDFs and TXT files), the synopsis stays empty.
+- **Duplicates are merged:** if the same book exists as both epub and mobi,
+  one catalogue entry is created with two files, based on an
+  accent-insensitive comparison of title and author.
+- **The schema is identical** to the PC-built catalogue (`konyvek` +
+  `fizikai_fajlok`), so the file opens in any SQLite tool on your computer
+  and the app treats it the same way.
+- **Bad metadata inside a file:** some books have title and author swapped,
+  or fields missing. The app writes whatever the file says — fix it in the
+  source file with Calibre and rebuild.
+- **Old entries persist.** To remove things, delete the whole
+  `sajat_katalogus.db` and build again.
 
 ## 11. Troubleshooting
 

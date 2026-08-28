@@ -253,10 +253,61 @@ PC-n bármilyen eszközzel (pl. Python `sqlite3`) lekérdezhető.
 
 - **Katalógus-adatbázis** — az aktuális fájl útvonala és állapota, csere.
 - **Könyvek gyökérmappája** — hol nyíljon a böngésző induláskor.
+- **Katalógus építése a könyvekből** — lásd a [10/a](#10a-katalógus-építése-a-könyvekből) pontot.
 - **Gyorsítótárak** — hány fájlt szkenneltél, mennyi kinyert szöveg van
   tárolva, és mindkettő törölhető. (A törlés a **pozícióidat nem** bántja.)
 - **Szövegfelolvasó** — közvetlen ugrás a rendszer TTS-beállításaihoz, ahol
   motort és hangot válthatsz.
+
+## 10/a. Katalógus építése a könyvekből
+
+Ha nincs kész katalógusod, az app **maga készít egyet** — a könyvfájlok
+belsejében tárolt metaadatokból, internet nélkül.
+
+**Használat:** Beállítások → *Katalógus építése a könyvekből* → **Építés**.
+Forrásként az aktuális gyökérmappát járja végig (rekurzívan), az eredmény
+pedig ide kerül: `Download/KonyvtarTTS/sajat_katalogus.db`. Az építés végén
+egy gombbal azonnal használatba is veheted.
+
+**Újrafuttatás új könyvek után:** a gomb ilyenkor már *Frissítés az új
+könyvekkel* feliratú. **A meglévő bejegyzéseket nem bántja** — útvonal
+szerint felismeri, mi van már benne, és csak az újakat dolgozza fel. Így a
+második futás sokkal gyorsabb, és amit esetleg kézzel vagy a PC-n javítottál
+az adatbázisban, az megmarad.
+
+### Mit talál meg formátumonként
+
+| Formátum | Mit nyer ki |
+|---|---|
+| **EPUB** | cím, szerző, kiadó, év, ISBN, nyelv, **fülszöveg**, sorozat + kötetszám, címkék |
+| **FB2** | szerző, cím, **annotáció**, műfaj, sorozat, kiadó, év, ISBN |
+| **MOBI/AZW3** | cím, szerző, kiadó, **leírás**, ISBN, tárgyszavak, dátum |
+| **DOCX** | cím, szerző, leírás, kulcsszavak |
+| **RTF** | cím, szerző, tárgy, megjegyzés (ha ki van töltve) |
+| **PDF** | cím, szerző, kulcsszavak — **kapcsolható**, mert lassabb |
+| **TXT és a többi** | a fájlnévből kitalált cím és szerző |
+
+A **PDF-kapcsoló** azért van külön, mert a PDF-eknél a metaadat beolvasásához
+végig kell nézni a fájl szerkezetét, ami nagy fájloknál lassú. Ráadásul a
+PDF-ek „címe" gyakran szemét (a szkennelő program neve, fájlnév, „Microsoft
+Word - valami.doc"), ezért az app kiszűri az ilyen nyilvánvalóan használhatatlan
+értékeket, és inkább a fájlnévre támaszkodik.
+
+### Amit tudni érdemes
+
+- **Fülszöveget nem tud varázsolni.** Ahol a fájl nem tartalmaz leírást
+  (tipikusan szkennelt PDF, TXT), ott a szinopszis üres marad.
+- **Duplikátumok összevonása:** ha ugyanaz a könyv megvan epubban és mobiban
+  is, egyetlen katalógusbejegyzés jön létre, két fájllal — a cím és a szerző
+  ékezet-független összevetése alapján.
+- **A séma azonos** a PC-n készült katalóguséval (`konyvek` +
+  `fizikai_fajlok`), ezért a fájl a gépeden bármilyen SQLite-eszközzel
+  megnyitható, és az app is ugyanúgy kezeli.
+- **Rossz metaadat a fájlban:** előfordul, hogy egy könyvben fel van cserélve
+  a cím és a szerző, vagy hiányos. Ilyenkor az app azt írja be, ami a fájlban
+  van — ezt Calibre-vel tudod javítani a forrásfájlban, majd újraépíteni.
+- **A régi bejegyzések megmaradnak.** Ha törölni akarsz belőle, töröld az
+  egész `sajat_katalogus.db`-t, és építsd újra.
 
 ## 11. Hibaelhárítás
 

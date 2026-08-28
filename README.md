@@ -34,6 +34,11 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
   leírás, kiadó, címkék…), és a `fizikai_fajlok` táblában a PC-n már
   elvégzett fájl↔könyv párosítás újrafelhasználása — így a telefonnak alig
   kell dolgoznia.
+- **Katalógus építése a semmiből.** Ha nincs kész adatbázisod, az app maga
+  készít egyet **a könyvfájlok saját metaadataiból** (EPUB/FB2/MOBI/DOCX
+  fejlécekből: cím, szerző, fülszöveg, kiadó, sorozat, ISBN, címkék) —
+  internet nélkül. Újrafuttatva **inkrementális**: a meglévő bejegyzéseket
+  érintetlenül hagyja, csak az újonnan bemásolt könyveket veszi fel.
 - **Total Commander-stílusú böngésző.** Sűrű, ikonmentes lista (név, méret,
   dátum, párosított szerző/cím), mappánkénti navigáció, rekurzív szkennelés,
   oszlopfejlécre koppintva rendezés, gyorsgörgető sáv, tárolóváltó

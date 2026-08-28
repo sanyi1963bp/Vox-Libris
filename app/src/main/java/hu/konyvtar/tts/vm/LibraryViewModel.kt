@@ -7,6 +7,7 @@ import android.os.storage.StorageManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import hu.konyvtar.tts.data.AppDb
+import hu.konyvtar.tts.data.CatalogBuilder
 import hu.konyvtar.tts.data.CatalogHolder
 import hu.konyvtar.tts.data.FileScanner
 import hu.konyvtar.tts.data.Prefs
@@ -45,6 +46,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         val sortKey: SortKey = SortKey.NAME,
         val sortAsc: Boolean = true,
         val scan: FileScanner.ScanProgress = FileScanner.ScanProgress(),
+        val build: CatalogBuilder.Progress = CatalogBuilder.Progress(),
         val db: DbStatus = DbStatus(),
         val volumes: List<StorageVol> = emptyList(),
         val cachedTotal: Int = 0,
@@ -316,5 +318,32 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
 
     fun cancelScan() {
         FileScanner.cancelFlag.set(true)
+    }
+
+    // ---------------------------------------------------------------- katalógus építése
+
+    /**
+     * Katalógus építése/frissítése a könyvfájlok saját metaadataiból.
+     * A már bejegyzett fájlokat érintetlenül hagyja.
+     */
+    fun buildCatalog(includePdf: Boolean) {
+        if (_ui.value.build.running) return
+        val ctx = getApplication<Application>()
+        val root = File(_ui.value.currentDir)
+        val target = CatalogBuilder.defaultDbFile()
+        _ui.value = _ui.value.copy(build = CatalogBuilder.Progress(running = true))
+        viewModelScope.launch(Dispatchers.IO) {
+            CatalogBuilder.build(ctx, root, target, includePdf) { p ->
+                _ui.value = _ui.value.copy(build = p)
+            }
+        }
+    }
+
+    fun cancelBuild() {
+        CatalogBuilder.cancelFlag.set(true)
+    }
+
+    fun clearBuildResult() {
+        _ui.value = _ui.value.copy(build = CatalogBuilder.Progress())
     }
 }

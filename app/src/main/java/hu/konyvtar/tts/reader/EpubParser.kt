@@ -44,7 +44,8 @@ object EpubParser {
         }
     }
 
-    private fun findOpfPath(zip: ZipFile): String? {
+    /** A csomagoló OPF fájl útvonala a zipen belül (a metaadat-kinyerő is használja). */
+    internal fun findOpfPath(zip: ZipFile): String? {
         val container = zip.getEntry("META-INF/container.xml") ?: return null
         return try {
             zip.getInputStream(container).use { input ->

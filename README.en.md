@@ -38,6 +38,11 @@ The app appears on the phone as **Könyvtár TTS** ("Library TTS").
   title, author, synopsis, publisher, tags — plus reuse of the file↔book
   matching already done on the PC and stored in `fizikai_fajlok`
   (physical files), so the phone barely has to work.
+- **Build a catalogue from scratch.** With no prepared database, the app can
+  create one **from the books' own embedded metadata** (EPUB/FB2/MOBI/DOCX
+  headers: title, author, synopsis, publisher, series, ISBN, tags) — with no
+  internet. Re-running it is **incremental**: existing entries are left
+  untouched, only newly copied books are added.
 - **Total Commander style browser.** Dense, icon-free rows (name, size, date,
   matched author/title), folder navigation, recursive scanning, sort by
   tapping a column header, fast-scroll bar, storage switcher

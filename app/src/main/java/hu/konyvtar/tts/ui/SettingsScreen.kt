@@ -13,27 +13,34 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import hu.konyvtar.tts.data.CatalogBuilder
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.vm.LibraryViewModel
 import kotlinx.coroutines.Dispatchers
@@ -52,9 +59,18 @@ fun SettingsScreen(
     val ui by vm.ui.collectAsState()
     var cacheSize by remember { mutableLongStateOf(0L) }
     var cacheReload by remember { mutableLongStateOf(0L) }
+    var includePdf by remember { mutableStateOf(true) }
+    var builtStats by remember { mutableStateOf<Triple<Int, Int, Int>?>(null) }
 
     LaunchedEffect(cacheReload) {
         cacheSize = withContext(Dispatchers.IO) { TextExtractor.cachedSizeBytes(context) }
+    }
+
+    // Az épített katalógus állapotának frissítése (induláskor és építés után)
+    LaunchedEffect(ui.build.done, ui.build.running) {
+        builtStats = withContext(Dispatchers.IO) {
+            CatalogBuilder.stats(CatalogBuilder.defaultDbFile())
+        }
     }
 
     Scaffold(
@@ -119,6 +135,80 @@ fun SettingsScreen(
                     )
                     Spacer(Modifier.height(6.dp))
                     Button(onClick = onPickRoot) { Text("Gyökérmappa kiválasztása…") }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            // Katalógus építése a könyvek saját metaadataiból
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "Katalógus építése a könyvekből",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Ha nincs kész katalógusod, az app a könyvfájlok saját " +
+                            "metaadataiból (cím, szerző, fülszöveg) készít egyet — internet nélkül. " +
+                            "Újrafuttatva a meglévő bejegyzéseket békén hagyja, csak az új " +
+                            "könyveket veszi fel.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "Forrás: ${ui.currentDir}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = "Cél: ${CatalogBuilder.defaultDbFile().absolutePath}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2
+                    )
+                    builtStats?.let { (books, files, rich) ->
+                        Text(
+                            text = "Jelenleg: $books könyv, $files fájl (ebből $rich valódi metaadattal)",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Switch(
+                            checked = includePdf,
+                            onCheckedChange = { includePdf = it },
+                            enabled = !ui.build.running
+                        )
+                        Text(
+                            text = "  PDF-ek metaadata is (lassabb)",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    if (ui.build.running) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "${ui.build.scanned} fájl • ${ui.build.added} új bejegyzés • " +
+                                "${ui.build.skipped} kihagyva",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Text(
+                            text = ui.build.currentFile,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        OutlinedButton(onClick = { vm.cancelBuild() }) { Text("Megszakítás") }
+                    } else {
+                        Button(onClick = { vm.buildCatalog(includePdf) }) {
+                            Text(if (builtStats == null) "Katalógus építése" else "Frissítés az új könyvekkel")
+                        }
+                    }
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -193,5 +283,61 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    // ---------------------------------------------------------------- építés eredménye
+    val build = ui.build
+    if (!build.running && (build.done || build.cancelled || build.error != null)) {
+        AlertDialog(
+            onDismissRequest = { vm.clearBuildResult() },
+            title = {
+                Text(
+                    when {
+                        build.error != null -> "Hiba"
+                        build.cancelled -> "Megszakítva"
+                        else -> "Katalógus kész"
+                    },
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+            text = {
+                Column {
+                    if (build.error != null) {
+                        Text(build.error!!, style = MaterialTheme.typography.bodyMedium)
+                    } else {
+                        Text(
+                            text = "${build.scanned} fájl átnézve\n" +
+                                "${build.added} új fájl bejegyezve\n" +
+                                "${build.newBooks} új könyv a katalógusban\n" +
+                                "${build.skipped} korábbi bejegyzés érintetlenül hagyva",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        build.dbPath?.let {
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                if (build.error == null && build.dbPath != null) {
+                    TextButton(onClick = {
+                        vm.openDb(build.dbPath!!)
+                        vm.clearBuildResult()
+                    }) { Text("Használatba veszem") }
+                } else {
+                    TextButton(onClick = { vm.clearBuildResult() }) { Text("Rendben") }
+                }
+            },
+            dismissButton = {
+                if (build.error == null && build.dbPath != null) {
+                    TextButton(onClick = { vm.clearBuildResult() }) { Text("Bezárás") }
+                }
+            }
+        )
     }
 }

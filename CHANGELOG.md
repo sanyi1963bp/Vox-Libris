@@ -9,6 +9,25 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [1.1.0] — 2026-08-28
+
+**Hozzáadva — katalógusépítés a könyvfájlokból**
+
+- Az app immár **saját katalógust tud készíteni** a telefonon lévő könyvek
+  beágyazott metaadataiból, internet nélkül: EPUB (OPF), FB2 (`title-info`),
+  MOBI/AZW3 (EXTH fejléc), DOCX (`core.xml`), RTF (`\info`), PDF
+  (dokumentum-információ). Cím, szerző, fülszöveg, kiadó, év, ISBN, sorozat,
+  címkék és nyelv.
+- **Inkrementális frissítés:** újrafuttatáskor a már bejegyzett fájlokat
+  (útvonal szerint) érintetlenül hagyja, csak az újakat dolgozza fel.
+- **Duplikátumok összevonása** normalizált cím + szerző alapján: ugyanaz a
+  könyv több formátumban egyetlen bejegyzést kap, több fájllal.
+- Az eredmény sémája **azonos** a PC-n készült katalóguséval, helye
+  `Download/KonyvtarTTS/sajat_katalogus.db`.
+- A PDF metaadat-olvasás **kapcsolható** (lassabb), és az app kiszűri a
+  tipikus PDF-szemetet („Microsoft Word - …", fájlnevek, szkennerprogramok).
+- Ahol nincs beágyazott metaadat, a cím és a szerző a **fájlnévből** áll elő.
+
 ### [1.0.0] — 2026-08-28
 
 Első nyilvános kiadás.
@@ -82,6 +101,26 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [1.1.0] — 2026-08-28
+
+**Added — building a catalogue from the book files**
+
+- The app can now **build its own catalogue** from metadata embedded in the
+  books on the phone, with no internet: EPUB (OPF), FB2 (`title-info`),
+  MOBI/AZW3 (EXTH header), DOCX (`core.xml`), RTF (`\info`), PDF (document
+  information). Title, author, synopsis, publisher, year, ISBN, series, tags
+  and language.
+- **Incremental updates:** on re-run, files already recorded (by path) are
+  left untouched and only new ones are processed.
+- **Duplicate merging** by normalised title + author: the same book in
+  several formats gets a single entry with multiple files.
+- The result uses the **same schema** as the PC-built catalogue, stored at
+  `Download/KonyvtarTTS/sajat_katalogus.db`.
+- PDF metadata reading is **toggleable** (it is slower), and the app filters
+  out the usual PDF junk ("Microsoft Word - …", file names, scanner software).
+- Where no embedded metadata exists, title and author are derived from the
+  **file name**.
 
 ### [1.0.0] — 2026-08-28
 
