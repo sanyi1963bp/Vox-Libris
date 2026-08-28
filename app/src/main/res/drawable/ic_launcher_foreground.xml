@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Nyitott könyv -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,34 C48,29 39,27 30,27 L28,27 C26.9,27 26,27.9 26,29 L26,71 C26,72.1 26.9,73 28,73 L30,73 C39,73 48,75 54,80 C60,75 69,73 78,73 L80,73 C81.1,73 82,72.1 82,71 L82,29 C82,27.9 81.1,27 80,27 L78,27 C69,27 60,29 54,34 Z M51,73.5 C46,70.5 39,69 32,69 L32,33 C39,33 46,34.5 51,37.5 Z M76,69 C69,69 62,70.5 57,73.5 L57,37.5 C62,34.5 69,33 76,33 Z" />
+    <!-- Hanghullám -->
+    <path
+        android:fillColor="#A5D6A7"
+        android:pathData="M60,44 L64,44 L64,58 L60,58 Z M66,40 L70,40 L70,62 L66,62 Z M72,46 L76,46 L76,56 L72,56 Z"
+        android:fillAlpha="0" />
+</vector>

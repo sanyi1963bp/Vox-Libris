@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <cache-path name="text" path="text/" />
+    <cache-path name="share" path="share/" />
+    <external-path name="exports" path="Download/KonyvtarTTS/" />
+</paths>
