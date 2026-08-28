@@ -3,7 +3,8 @@
 **Local e-book library browser and text-to-speech reader for Android — built for very large libraries.**
 
 🇬🇧 English (this page) · 🇭🇺 [Magyar](README.md)
-📖 Detailed guide: [docs/USAGE.en.md](docs/USAGE.en.md) · 📝 [Changelog](CHANGELOG.md)
+
+🔧 [Setup & dependencies](docs/SETUP.en.md) · 📖 [User guide](docs/USAGE.en.md) · 📝 [Changelog](CHANGELOG.md)
 
 ---
 
@@ -145,6 +146,11 @@ AGP 8.11.1 · Kotlin 2.2.0 · Gradle 8.13 · Compose BOM 2025.01.00
    everything recursively and matches it against the catalogue. Afterwards
    the **"Katalógus"** (catalogue) tab shows every file found in one
    searchable list.
+
+**You also need a TTS engine** with a voice for your language. It is part of
+the system, not of this app — installing it, downloading voices and
+everything about Bluetooth headsets is covered here:
+**[docs/SETUP.en.md](docs/SETUP.en.md)**
 
 Full walkthrough of every screen: [docs/USAGE.en.md](docs/USAGE.en.md)
 

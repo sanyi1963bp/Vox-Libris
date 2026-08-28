@@ -3,7 +3,8 @@
 **Helyi e-könyvtár böngésző és felolvasó (TTS) Androidra — nagyon nagy könyvtárakhoz.**
 
 🇭🇺 Magyar (ez a lap) · 🇬🇧 [English](README.en.md)
-📖 Részletes használati útmutató: [docs/HASZNALAT.md](docs/HASZNALAT.md) · 📝 [Változásnapló](CHANGELOG.md)
+
+🔧 [Telepítés és függőségek](docs/TELEPITES.md) · 📖 [Használati útmutató](docs/HASZNALAT.md) · 📝 [Változásnapló](CHANGELOG.md)
 
 ---
 
@@ -141,6 +142,11 @@ AGP 8.11.1 · Kotlin 2.2.0 · Gradle 8.13 · Compose BOM 2025.01.00
 5. Navigálj a könyves mappádba, és nyomd meg a **radar ikont** — ez rekurzívan
    végigszkennel mindent és párosít. Utána a **„Katalógus”** nézetben az
    összes talált fájl egyben, kereshetően látszik.
+
+**Kell egy szövegfelolvasó motor is** (magyar hanggal), ez nem az app része,
+hanem a rendszeré — a telepítése, a hangok letöltése és a Bluetooth-os
+fülhallgatók tudnivalói itt vannak leírva:
+**[docs/TELEPITES.md](docs/TELEPITES.md)**
 
 Részletes leírás minden képernyőről: [docs/HASZNALAT.md](docs/HASZNALAT.md)
 

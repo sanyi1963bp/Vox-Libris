@@ -2,6 +2,10 @@
 
 🇭🇺 Magyar (ez a lap) · 🇬🇧 [English](USAGE.en.md) · ⬅ [Vissza a főoldalra](../README.md)
 
+> A **telepítés**, a szövegfelolvasó motor és a magyar hang beállítása, a
+> Bluetooth-tudnivalók és a fordításhoz szükséges függőségek külön lapon
+> vannak: **[Telepítés és függőségek](TELEPITES.md)**
+
 ---
 
 ## Tartalom

@@ -2,6 +2,10 @@
 
 🇬🇧 English (this page) · 🇭🇺 [Magyar](HASZNALAT.md) · ⬅ [Back to the main page](../README.en.md)
 
+> **Installation**, setting up the TTS engine and voices, Bluetooth details
+> and build dependencies live on a separate page:
+> **[Setup & dependencies](SETUP.en.md)**
+
 > **Note:** the app's user interface is in Hungarian. Where a button or label
 > matters, this guide gives the Hungarian text in quotes with the translation
 > next to it.
