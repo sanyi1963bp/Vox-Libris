@@ -50,6 +50,7 @@ import hu.konyvtar.tts.ui.ReaderScreen
 import hu.konyvtar.tts.ui.SettingsScreen
 import hu.konyvtar.tts.ui.StatsScreen
 import hu.konyvtar.tts.ui.theme.KonyvtarTheme
+import hu.konyvtar.tts.ui.theme.ThemeState
 import hu.konyvtar.tts.vm.LibraryViewModel
 
 class MainActivity : ComponentActivity() {
@@ -62,6 +63,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         openPlayerOnStart = intent?.getBooleanExtra("open_player", false) == true
+        ThemeState.load(this)
 
         // Értesítési engedély (Android 13+), hogy a felolvasó vezérlősáv látsszon
         if (Build.VERSION.SDK_INT >= 33 &&

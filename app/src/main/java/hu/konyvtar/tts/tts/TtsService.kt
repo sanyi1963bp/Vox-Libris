@@ -83,6 +83,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         const val ACTION_STOP = "hu.konyvtar.tts.STOP"
         const val ACTION_SET_SPEED = "hu.konyvtar.tts.SET_SPEED"
         const val ACTION_SET_PITCH = "hu.konyvtar.tts.SET_PITCH"
+        const val ACTION_SET_LANGUAGE = "hu.konyvtar.tts.SET_LANGUAGE"
         const val ACTION_SEEK = "hu.konyvtar.tts.SEEK"
 
         const val EXTRA_PATH = "path"
@@ -305,11 +306,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         if (status == TextToSpeech.SUCCESS) {
             ttsReady = true
             val engine = tts ?: return
-            val hu = Locale("hu", "HU")
-            val res = engine.setLanguage(hu)
-            if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
-                engine.language = Locale.getDefault()
-            }
+            applyLanguage(engine)
             engine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String?) {}
 
@@ -337,6 +334,24 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         }
     }
 
+    /**
+     * A felolvasás nyelve: a beállításban választott nyelv, ha van;
+     * egyébként előbb magyar, végül a rendszer nyelve.
+     */
+    private fun applyLanguage(engine: TextToSpeech) {
+        val tag = Prefs.ttsLanguage(this)
+        if (tag.isNotBlank()) {
+            val loc = Locale.forLanguageTag(tag)
+            val r = engine.setLanguage(loc)
+            if (r != TextToSpeech.LANG_MISSING_DATA && r != TextToSpeech.LANG_NOT_SUPPORTED) return
+        }
+        val hu = Locale("hu", "HU")
+        val res = engine.setLanguage(hu)
+        if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
+            engine.language = Locale.getDefault()
+        }
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_PLAY_FILE -> {
@@ -360,6 +375,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 val v = intent.getFloatExtra(EXTRA_VALUE, 1.0f).coerceIn(0.5f, 3.0f)
                 Prefs.setSpeed(this, v)
                 _state.value = _state.value.copy(speed = v)
+                if (_state.value.playing) restartCurrentUtterance()
+            }
+            ACTION_SET_LANGUAGE -> {
+                tts?.let { applyLanguage(it) }
                 if (_state.value.playing) restartCurrentUtterance()
             }
             ACTION_SET_PITCH -> {

@@ -52,6 +52,12 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
   könyv adatai és a leállítás.
 - **Hangjelzések.** Halk, rövid jelzés minden bekezdés előtt, mélyebb kettős
   hang minden fejezet előtt — külön kapcsolható, állítható hangerővel.
+  A fejezethatárokat a szövegben **vérvörös sáv** is jelzi.
+- **Megjelenés.** Világos/sötét téma vagy rendszerkövetés, **hat színséma**
+  (klasszikus zöld, tenger kék, szépia, naplemente, éjszakai, magas
+  kontraszt), és külön állítható betűméret a felülethez és a könyvhöz.
+- **Felolvasás nyelve.** A telepített TTS motor bármelyik nyelve
+  választható, és egy gombbal megnyitható a hangletöltő.
 - **Mondatszintű felolvasás.** A TTS mondatonként halad; az éppen felolvasott
   mondat kiemelve látszik; a mentett pozíció is mondatpontos, így a
   folytatás mindig ott veszi fel a fonalat, ahol abbahagytad.

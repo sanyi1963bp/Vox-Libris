@@ -100,6 +100,7 @@ import hu.konyvtar.tts.model.CatalogBook
 import hu.konyvtar.tts.reader.Sentences
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
+import hu.konyvtar.tts.ui.theme.ChapterBandColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -677,10 +678,15 @@ fun ReaderScreen(
                                     )
                             ) {
                                 if (isChapter) {
-                                    HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                    // Feltűnő, vérvörös sáv a fejezetek között
+                                    Spacer(Modifier.height(10.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(7.dp)
+                                            .background(ChapterBandColor)
                                     )
+                                    Spacer(Modifier.height(6.dp))
                                 }
                                 Text(
                                     text = paraText(

@@ -9,6 +9,31 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [1.3.0] — 2026-08-29
+
+**Megjelenés**
+
+- **Téma**: rendszer szerint / világos / sötét, kézzel választható.
+- **Hat színséma**: Klasszikus zöld, Tenger kék, Szépia (papír), Naplemente,
+  Éjszakai (kímélő, fekete háttérrel) és Magas kontraszt.
+- **A kezelőfelület betűmérete** külön állítható (80–160%), a könyv szövegének
+  mérete pedig továbbra is az olvasóban.
+- **Vérvörös sáv** jelzi a fejezethatárokat a szövegben — messziről látszik,
+  hol kezdődik új fejezet.
+
+**Felolvasás nyelve**
+
+- Új beállítás: a felolvasás nyelve a telepített TTS motor **összes elérhető
+  nyelvéből** kiválasztható (nem csak magyar). Alapértelmezés továbbra is
+  automatikus: magyar, ha van, egyébként a rendszer nyelve.
+- **Hangok letöltése** gomb: közvetlenül megnyitja a TTS motor hangletöltőjét.
+
+**Egyéb**
+
+- A szkennelés a beállításokból is indítható, haladásjelzéssel. Automatikusan
+  továbbra sem indul soha.
+- A könyv végén a felolvasás megáll és vár — nem lép tovább magától.
+
 ### [1.2.0] — 2026-08-29
 
 **Egyetlen könyv-képernyő**
@@ -135,6 +160,31 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [1.3.0] — 2026-08-29
+
+**Appearance**
+
+- **Theme**: follow system / light / dark, chosen by hand.
+- **Six colour schemes**: Classic green, Ocean blue, Sepia (paper), Sunset,
+  Night (black background, easy on the eyes) and High contrast.
+- **Interface font size** is now adjustable on its own (80–160%); the book
+  text size stays in the reader.
+- A **blood-red band** marks chapter boundaries in the text, visible at a
+  glance.
+
+**Narration language**
+
+- New setting: the narration language can be picked from **every language the
+  installed TTS engine offers**, not just Hungarian. The default stays
+  automatic: Hungarian if available, otherwise the system language.
+- **Download voices** button: opens the TTS engine's voice installer directly.
+
+**Other**
+
+- Scanning can also be started from settings, with progress. It still never
+  starts on its own.
+- At the end of a book narration stops and waits — it never moves on by itself.
 
 ### [1.2.0] — 2026-08-29
 

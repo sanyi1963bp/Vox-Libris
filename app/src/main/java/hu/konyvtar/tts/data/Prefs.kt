@@ -116,4 +116,39 @@ object Prefs {
     fun setKeepScreenOn(context: Context, value: Boolean) {
         sp(context).edit().putBoolean("keep_screen_on", value).apply()
     }
+
+    // ---------------------------------------------------------------- megjelenés
+
+    /** Téma: "system", "light" vagy "dark". */
+    fun themeMode(context: Context): String = sp(context).getString("theme_mode", "system") ?: "system"
+
+    fun setThemeMode(context: Context, value: String) {
+        sp(context).edit().putString("theme_mode", value).apply()
+    }
+
+    /** A választott színséma azonosítója. */
+    fun colorScheme(context: Context): String = sp(context).getString("color_scheme", "klasszikus") ?: "klasszikus"
+
+    fun setColorScheme(context: Context, value: String) {
+        sp(context).edit().putString("color_scheme", value).apply()
+    }
+
+    /** A kezelőfelület betűméret-szorzója (0.8–1.6). */
+    fun uiScale(context: Context): Float = sp(context).getFloat("ui_scale", 1.0f)
+
+    fun setUiScale(context: Context, value: Float) {
+        sp(context).edit().putFloat("ui_scale", value).apply()
+    }
+
+    // ---------------------------------------------------------------- felolvasás nyelve
+
+    /**
+     * A felolvasás nyelve BCP-47 címkeként (pl. "hu-HU", "tr-TR").
+     * Üres = automatikus (előbb magyar, aztán a rendszer nyelve).
+     */
+    fun ttsLanguage(context: Context): String = sp(context).getString("tts_language", "") ?: ""
+
+    fun setTtsLanguage(context: Context, value: String) {
+        sp(context).edit().putString("tts_language", value).apply()
+    }
 }

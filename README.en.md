@@ -54,7 +54,13 @@ The app appears on the phone as **Könyvtár TTS** ("Library TTS").
   along with narration) and **tuning** (speed, pitch). Top bar: search,
   settings, and a menu with bookmarks, book info and stop.
 - **Audio cues.** A soft tone before every paragraph and a deeper double tone
-  before every chapter — each toggleable, with adjustable volume.
+  before every chapter — each toggleable, with adjustable volume. Chapter
+  boundaries are also marked with a **blood-red band** in the text.
+- **Appearance.** Light/dark theme or follow-system, **six colour schemes**
+  (classic green, ocean blue, sepia, sunset, night, high contrast), and
+  separately adjustable font sizes for the interface and the book.
+- **Narration language.** Any language the installed TTS engine offers can be
+  selected, and the voice installer opens with a single button.
 - **Sentence-level narration.** TTS advances sentence by sentence, the
   current sentence is highlighted, and the saved position is
   sentence-accurate — so resuming always picks up exactly where you stopped.

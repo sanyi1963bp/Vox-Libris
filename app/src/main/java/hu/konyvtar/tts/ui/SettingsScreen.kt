@@ -1,15 +1,19 @@
 package hu.konyvtar.tts.ui
 
 import android.content.Intent
+import android.speech.tts.TextToSpeech
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,6 +22,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -30,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,7 +52,11 @@ import androidx.compose.runtime.mutableFloatStateOf
 import hu.konyvtar.tts.data.CatalogBuilder
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.reader.TextExtractor
+import hu.konyvtar.tts.tts.TtsService
+import hu.konyvtar.tts.ui.theme.APP_SCHEMES
+import hu.konyvtar.tts.ui.theme.ThemeState
 import hu.konyvtar.tts.vm.LibraryViewModel
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -70,6 +80,31 @@ fun SettingsScreen(
     var rewindSec by remember { mutableFloatStateOf(Prefs.rewindSeconds(context).toFloat()) }
     var keepScreen by remember { mutableStateOf(Prefs.keepScreenOn(context)) }
     var readerFollow by remember { mutableStateOf(Prefs.readerFollow(context)) }
+    var uiScale by remember { mutableFloatStateOf(Prefs.uiScale(context)) }
+    var ttsLangs by remember { mutableStateOf<List<Locale>>(emptyList()) }
+    var ttsLangTag by remember { mutableStateOf(Prefs.ttsLanguage(context)) }
+    var langDialogOpen by remember { mutableStateOf(false) }
+
+    // A rendszer TTS motorjatol lekerdezzuk, milyen nyelvek erhetok el
+    DisposableEffect(Unit) {
+        var engine: TextToSpeech? = null
+        engine = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                ttsLangs = try {
+                    (engine?.availableLanguages ?: emptySet())
+                        .sortedBy { it.getDisplayName(it) }
+                } catch (e: Exception) {
+                    emptyList()
+                }
+            }
+        }
+        onDispose {
+            try {
+                engine?.shutdown()
+            } catch (_: Exception) {
+            }
+        }
+    }
     var builtStats by remember { mutableStateOf<Triple<Int, Int, Int>?>(null) }
 
     LaunchedEffect(cacheReload) {
@@ -262,6 +297,162 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(8.dp))
 
+            // Megjelenes
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "Megjelenés",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text("Téma", style = MaterialTheme.typography.labelSmall)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf(
+                            "system" to "Rendszer szerint",
+                            "light" to "Világos",
+                            "dark" to "Sötét"
+                        ).forEach { pair ->
+                            FilterChip(
+                                selected = ThemeState.mode == pair.first,
+                                onClick = {
+                                    ThemeState.mode = pair.first
+                                    Prefs.setThemeMode(context, pair.first)
+                                },
+                                label = {
+                                    Text(pair.second, style = MaterialTheme.typography.labelSmall)
+                                }
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Text("Színséma", style = MaterialTheme.typography.labelSmall)
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        APP_SCHEMES.forEach { sch ->
+                            FilterChip(
+                                selected = ThemeState.schemeId == sch.id,
+                                onClick = {
+                                    ThemeState.schemeId = sch.id
+                                    Prefs.setColorScheme(context, sch.id)
+                                },
+                                label = {
+                                    Text(sch.name, style = MaterialTheme.typography.labelSmall)
+                                }
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = "A kezelőfelület betűmérete: " + (uiScale * 100).toInt() + "%",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                    Slider(
+                        value = uiScale,
+                        onValueChange = { uiScale = it },
+                        onValueChangeFinished = {
+                            Prefs.setUiScale(context, uiScale)
+                            ThemeState.uiScale = uiScale
+                        },
+                        valueRange = 0.8f..1.6f,
+                        steps = 15
+                    )
+                    Text(
+                        text = "A könyv szövegének betűmérete külön állítható az olvasóban, " +
+                            "a hangoló gomb alatti A- és A+ gombokkal.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            // Felolvasas nyelve
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "Felolvasás nyelve",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = if (ttsLangTag.isBlank()) {
+                            "Automatikus (magyar, ha elérhető)"
+                        } else {
+                            val l = Locale.forLanguageTag(ttsLangTag)
+                            l.getDisplayName(l)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = if (ttsLangs.isEmpty()) {
+                            "A telepített hangok lekérdezése…"
+                        } else {
+                            ttsLangs.size.toString() + " nyelv érhető el a telepített TTS motorral."
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = { langDialogOpen = true }) { Text("Nyelv választása…") }
+                        OutlinedButton(onClick = {
+                            try {
+                                val i = Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+                                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                context.startActivity(i)
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    context,
+                                    "A hangletöltő nem érhető el. Nyisd meg a rendszer TTS beállításait.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }) { Text("Hangok letöltése") }
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            // Szkenneles
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "Könyvtár szkennelése",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Végigjárja a gyökérmappát, és párosítja a fájlokat a " +
+                            "katalógussal. Sosem indul magától — mindig te kéred.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Eddig " + ui.cachedTotal + " fájl (" + ui.cachedMatched + " párosítva)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    if (ui.scan.running) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = ui.scan.filesFound.toString() + " fájl • " +
+                                ui.scan.matched + " párosítva",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        OutlinedButton(onClick = { vm.cancelScan() }) { Text("Megszakítás") }
+                    } else {
+                        Button(onClick = { vm.startScan() }) { Text("Szkennelés indítása") }
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
             // Hangjelzések
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
@@ -375,6 +566,51 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    // ---------------------------------------------------------------- nyelvvalaszto
+    if (langDialogOpen) {
+        AlertDialog(
+            onDismissRequest = { langDialogOpen = false },
+            title = { Text("Felolvasás nyelve", style = MaterialTheme.typography.titleMedium) },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 440.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    TextButton(onClick = {
+                        ttsLangTag = ""
+                        Prefs.setTtsLanguage(context, "")
+                        TtsService.send(context, TtsService.ACTION_SET_LANGUAGE)
+                        langDialogOpen = false
+                    }) { Text("Automatikus (magyar, ha elérhető)") }
+                    if (ttsLangs.isEmpty()) {
+                        Text(
+                            "Nem sikerült nyelveket lekérdezni. Telepíts szövegfelolvasó motort " +
+                                "(pl. Google Szövegfelolvasó), majd nyisd meg újra ezt az ablakot.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    ttsLangs.forEach { loc ->
+                        TextButton(onClick = {
+                            ttsLangTag = loc.toLanguageTag()
+                            Prefs.setTtsLanguage(context, ttsLangTag)
+                            TtsService.send(context, TtsService.ACTION_SET_LANGUAGE)
+                            langDialogOpen = false
+                        }) {
+                            Text(
+                                text = loc.getDisplayName(loc) + "  (" + loc.toLanguageTag() + ")",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { langDialogOpen = false }) { Text("Bezárás") }
+            }
+        )
     }
 
     // ---------------------------------------------------------------- építés eredménye
