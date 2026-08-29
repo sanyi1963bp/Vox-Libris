@@ -16,6 +16,7 @@ import hu.konyvtar.tts.model.SortKey
 import hu.konyvtar.tts.model.displayPercent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -27,6 +28,9 @@ import java.io.File
  * A 70 ezres nagyságrendű listát SQL-ből töltjük, a rendezés/szűrés is ott fut.
  */
 class LibraryViewModel(app: Application) : AndroidViewModel(app) {
+
+    /** Az almappás keresés legfeljebb ennyi találatot ad vissza. */
+    private val MAX_SEARCH_HITS = 3000
 
     data class DbStatus(
         val path: String? = null,
@@ -44,6 +48,10 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         val progress: Map<String, Double> = emptyMap(),
         val loading: Boolean = false,
         val flatMode: Boolean = false,
+        /** A kereső az almappákra is kiterjed-e. */
+        val recursiveSearch: Boolean = false,
+        /** Épp almappás keresés eredményét mutatjuk. */
+        val searchingDeep: Boolean = false,
         val onlyMatched: Boolean = false,
         val query: String = "",
         val sortKey: SortKey = SortKey.NAME,
@@ -78,6 +86,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             flatMode = Prefs.flatMode(ctx),
             sortKey = runCatching { SortKey.valueOf(Prefs.sortKey(ctx)) }.getOrDefault(SortKey.NAME),
             sortAsc = Prefs.sortAsc(ctx),
+            recursiveSearch = Prefs.searchRecursive(ctx),
             volumes = listVolumes()
         )
         viewModelScope.launch { openDbFromPrefsOrDetect() }
@@ -189,6 +198,12 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         refresh()
     }
 
+    fun setRecursiveSearch(v: Boolean) {
+        Prefs.setSearchRecursive(getApplication(), v)
+        _ui.value = _ui.value.copy(recursiveSearch = v)
+        refresh()
+    }
+
     fun setOnlyMatched(v: Boolean) {
         _ui.value = _ui.value.copy(onlyMatched = v)
         refresh()
@@ -209,8 +224,15 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         listJob?.cancel()
         listJob = viewModelScope.launch {
             _ui.value = _ui.value.copy(loading = true, volumes = listVolumes())
+            val deep = state.recursiveSearch && state.query.trim().length >= 2
+            _ui.value = _ui.value.copy(searchingDeep = deep)
+            if (deep) delay(350) // gépelés közben ne induljon minden betűre
             val rows = withContext(Dispatchers.IO) {
-                listDirectory(ctx, state.currentDir, state.query, state.sortKey, state.sortAsc)
+                if (deep) {
+                    searchRecursive(ctx, state.currentDir, state.query, state.sortKey, state.sortAsc)
+                } else {
+                    listDirectory(ctx, state.currentDir, state.query, state.sortKey, state.sortAsc)
+                }
             }
             val prog = withContext(Dispatchers.IO) {
                 val out = HashMap<String, Double>()
@@ -219,6 +241,76 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             }
             _ui.value = _ui.value.copy(entries = rows, progress = prog, loading = false)
         }
+    }
+
+    /**
+     * Keresés az aktuális mappában ÉS minden almappájában.
+     *
+     * Két forrást fésül össze: a fájlrendszert (fájlnév szerint, hogy a még
+     * nem szkennelt fájlok is meglegyenek) és a szkennelési gyorsítótárat
+     * (így cím és szerző szerint is talál).
+     */
+    private fun searchRecursive(
+        ctx: Application,
+        rootPath: String,
+        query: String,
+        sortKey: SortKey,
+        asc: Boolean
+    ): List<FileRow> {
+        val q = query.trim().lowercase()
+        val prefix = rootPath.replace('\\', '/').trimEnd('/') + "/"
+        val found = LinkedHashMap<String, FileRow>()
+
+        // 1) A gyorsítótárból: név, cím és szerző szerint is illeszkedhet
+        try {
+            for (r in AppDb.allScanned(query, sortKey, asc, false)) {
+                if (r.path.startsWith(prefix, ignoreCase = true)) found[r.path] = r
+                if (found.size >= MAX_SEARCH_HITS) break
+            }
+        } catch (_: Exception) {
+        }
+
+        // 2) A fájlrendszerből: fájlnév szerint, a még nem szkennelt fájlokért
+        val stack = ArrayDeque<File>()
+        stack.addLast(File(rootPath))
+        while (stack.isNotEmpty() && found.size < MAX_SEARCH_HITS) {
+            val dir = stack.removeLast()
+            val children = try {
+                dir.listFiles()
+            } catch (e: Exception) {
+                null
+            } ?: continue
+            for (f in children) {
+                if (found.size >= MAX_SEARCH_HITS) break
+                val name = f.name
+                if (name.startsWith(".")) continue
+                if (f.isDirectory) {
+                    if (dir.name == "Android" && (name == "data" || name == "obb")) continue
+                    stack.addLast(f)
+                } else {
+                    val ext = name.substringAfterLast('.', "").lowercase()
+                    if (ext !in FileScanner.EBOOK_EXTS) continue
+                    if (!name.lowercase().contains(q)) continue
+                    val path = f.absolutePath.replace('\\', '/')
+                    if (found.containsKey(path)) continue
+                    found[path] = FileRow(
+                        path = path, name = name, ext = ext, isDir = false,
+                        size = f.length(), mtime = f.lastModified()
+                    )
+                }
+            }
+        }
+
+        val list = FileScanner.quickEnrichDir(ctx, found.values.toList())
+        val cmp: Comparator<FileRow> = when (sortKey) {
+            SortKey.NAME -> compareBy { it.name.lowercase() }
+            SortKey.SIZE -> compareBy { it.size }
+            SortKey.DATE -> compareBy { it.mtime }
+            SortKey.TITLE -> compareBy(nullsLast()) { it.cim?.lowercase() }
+            SortKey.AUTHOR -> compareBy(nullsLast()) { it.szerzo?.lowercase() }
+        }
+        val sorted = list.sortedWith(cmp)
+        return if (asc) sorted else sorted.reversed()
     }
 
     private fun listDirectory(

@@ -36,6 +36,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -207,6 +208,19 @@ fun ExplorerScreen(
                                 }
                             }
                         }
+                    )
+                    FilterChip(
+                        selected = ui.recursiveSearch,
+                        onClick = { vm.setRecursiveSearch(!ui.recursiveSearch) },
+                        label = { Text("Almappák is") }
+                    )
+                }
+                if (ui.searchingDeep) {
+                    Text(
+                        text = "Keresés az almappákban is — ${ui.entries.size} találat",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 10.dp)
                     )
                 }
                 run {

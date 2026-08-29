@@ -59,6 +59,14 @@ object Prefs {
         sp(context).edit().putBoolean(KEY_SORT_ASC, value).apply()
     }
 
+    /** Keressen-e a kereső az almappákban is. */
+    fun searchRecursive(context: Context): Boolean =
+        sp(context).getBoolean("search_recursive", false)
+
+    fun setSearchRecursive(context: Context, value: Boolean) {
+        sp(context).edit().putBoolean("search_recursive", value).apply()
+    }
+
     fun flatMode(context: Context): Boolean = sp(context).getBoolean(KEY_FLAT_MODE, false)
 
     fun setFlatMode(context: Context, value: Boolean) {

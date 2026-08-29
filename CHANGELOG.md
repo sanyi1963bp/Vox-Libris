@@ -9,6 +9,13 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [1.4.1] — 2026-08-29
+
+- **"Almappák is" kapcsoló** a kereső mellett: bekapcsolva az aktuális mappa
+  teljes mappafájában keres, nem csak egy szinten. A találatokat a
+  fájlrendszerből (fájlnév szerint) és a szkennelési gyorsítótárból (cím és
+  szerző szerint is) fésüli össze.
+
 ### [1.4.0] — 2026-08-29
 
 **Egyszerűbb fájllista**
@@ -178,6 +185,13 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [1.4.1] — 2026-08-29
+
+- **"Almappák is" (include subfolders) toggle** next to the search box: when
+  on, the search covers the whole tree under the current folder instead of a
+  single level. Results merge the file system (by file name) with the scan
+  cache (which also matches title and author).
 
 ### [1.4.0] — 2026-08-29
 
