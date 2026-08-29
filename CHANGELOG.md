@@ -9,6 +9,40 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [1.2.0] — 2026-08-29
+
+**Egyetlen könyv-képernyő**
+
+- Megszűnt a külön részletező ablak: a könyvnek **egy képernyője** van, ahol a
+  szöveg és minden vezérlő együtt van. A böngészőben egy koppintás megnyitja
+  az olvasót, dupla koppintás egyből felolvasással indít.
+- A könyv adatai (metaadat + fülszöveg) az olvasó „További műveletek"
+  menüjéből, ablakban nyílnak.
+- A **beállítás gomb felülre**, minden **léptetőgomb alulra** került.
+
+**Teljes léptetősor**
+
+- Alul, egy sorban: **fejezet ◀ · bekezdés ◀ · mondat ◀ · lejátszás/szünet ·
+  mondat ▶ · bekezdés ▶ · fejezet ▶**, mindegyik felirattal.
+- A bekezdés-vissza gomb előbb az aktuális bekezdés elejére ugrik, csak utána
+  az előzőre (mint a zenelejátszókban).
+- A gombok akkor is működnek, ha még nem ez a könyv szól: ilyenkor a
+  látott helyről indítják a felolvasást.
+
+**Hangjelzések**
+
+- Halk, rövid jelzőhang minden **bekezdés** előtt.
+- Mélyebb, kettős, ereszkedő hang minden **fejezet** előtt (kb. fél másodperc).
+- Mindkettő külön kapcsolható, közös hangerő-szabályzóval.
+
+**Egyéb**
+
+- Az éppen felolvasott mondat háttere jól láthatóan kiemelve, a bekezdése
+  halványan színezve; a szöveg alapból **követi a felolvasást**.
+- Fejezetkezdet előtt elválasztó vonal, félkövér címsor.
+- Új beállítások: hangjelzések, követés, képernyő ébren tartása, a fülhallgató
+  dupla nyomására visszaugrott másodpercek (3–30).
+
 ### [1.1.0] — 2026-08-28
 
 **Hozzáadva — katalógusépítés a könyvfájlokból**
@@ -101,6 +135,42 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [1.2.0] — 2026-08-29
+
+**A single book screen**
+
+- The separate details window is gone: a book has **one screen** holding both
+  the text and every control. A single tap in the browser opens the reader; a
+  double tap starts narration right away.
+- Book metadata and synopsis now open in a dialog from the reader's overflow
+  menu.
+- The **settings button moved to the top**, every **transport button to the
+  bottom**.
+
+**Full transport row**
+
+- One row at the bottom: **chapter ◀ · paragraph ◀ · sentence ◀ · play/pause ·
+  sentence ▶ · paragraph ▶ · chapter ▶**, each with a caption.
+- Paragraph-back first jumps to the start of the current paragraph, then to
+  the previous one (as music players do).
+- The buttons work even when this book is not the one playing: they start
+  narration from the visible position.
+
+**Audio cues**
+
+- A soft, short cue before every **paragraph**.
+- A deeper, descending double tone before every **chapter** (about half a
+  second).
+- Both toggle independently, with a shared volume slider.
+
+**Other**
+
+- The sentence being read is clearly highlighted, its paragraph faintly
+  tinted; the text **follows narration** by default.
+- Chapter starts get a divider and a bold heading.
+- New settings: audio cues, follow mode, keep screen on, and the headset
+  double-press rewind length (3–30 seconds).
 
 ### [1.1.0] — 2026-08-28
 

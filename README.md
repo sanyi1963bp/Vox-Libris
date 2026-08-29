@@ -24,9 +24,9 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
 
 | Gesztus | Fájlböngészőben | Olvasó képernyőn |
 |---|---|---|
-| **Szimpla koppintás** | mappa megnyitása / könyv részletei | — |
-| **Dupla koppintás** | felolvasás az utolsó pozíciótól | felolvasás **a megérintett mondattól** |
-| **Hosszú nyomás** | olvasó megnyitása | könyvjelző a bekezdéshez |
+| **Szimpla koppintás** | mappa megnyitása / könyv megnyitása olvasásra | — |
+| **Dupla koppintás** | megnyitás **és felolvasás** az utolsó pozíciótól | felolvasás **a megérintett mondattól** |
+| **Hosszú nyomás** | könyv megnyitása | könyvjelző a bekezdéshez |
 
 ## Fő funkciók
 
@@ -43,11 +43,15 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
   dátum, párosított szerző/cím), mappánkénti navigáció, rekurzív szkennelés,
   oszlopfejlécre koppintva rendezés, gyorsgörgető sáv, tárolóváltó
   (belső tároló ⇄ SD-kártya ⇄ USB).
-- **Egyesített olvasó + lejátszó képernyő.** A szöveg és minden
-  felolvasás-vezérlő egy helyen. Alsó sáv: fejezet ⏫⏬, képernyőnyi lapozás
-  ⬆⬇, mondatléptetés ⏮⏭, Play/Pause. Mellette betűméret, pozíció-csúszka,
-  **követés** (a szöveg magától gördül a felolvasott résszel) és **hangolás**
-  (sebesség, hangmagasság). Fent: keresés, könyvjelző, könyvjelzőlista, Stop.
+- **Egyetlen könyv-képernyő.** A szöveg és minden vezérlő egy helyen —
+  nincs külön lejátszó- vagy részletező-ablak. Alul egy sorban:
+  **fejezet ◀ · bekezdés ◀ · mondat ◀ · ▶/⏸ · mondat ▶ · bekezdés ▶ ·
+  fejezet ▶**. Mellette pozíció-csúszka, betűméret, **követés** (a szöveg
+  magától gördül a felolvasott résszel) és **hangolás** (sebesség,
+  hangmagasság). Felül: keresés, beállítások, és menüben a könyvjelzők, a
+  könyv adatai és a leállítás.
+- **Hangjelzések.** Halk, rövid jelzés minden bekezdés előtt, mélyebb kettős
+  hang minden fejezet előtt — külön kapcsolható, állítható hangerővel.
 - **Mondatszintű felolvasás.** A TTS mondatonként halad; az éppen felolvasott
   mondat kiemelve látszik; a mentett pozíció is mondatpontos, így a
   folytatás mindig ott veszi fel a fonalat, ahol abbahagytad.

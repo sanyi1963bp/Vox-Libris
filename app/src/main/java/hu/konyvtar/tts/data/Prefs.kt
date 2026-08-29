@@ -77,4 +77,43 @@ object Prefs {
     fun setReaderFollow(context: Context, value: Boolean) {
         sp(context).edit().putBoolean("reader_follow", value).apply()
     }
+
+    // ---------------------------------------------------------------- hangjelzések
+
+    /** Halk jelzőhang minden bekezdés előtt. */
+    fun cueParagraph(context: Context): Boolean = sp(context).getBoolean("cue_para", true)
+
+    fun setCueParagraph(context: Context, value: Boolean) {
+        sp(context).edit().putBoolean("cue_para", value).apply()
+    }
+
+    /** Mélyebb, kettős jelzőhang minden fejezet előtt. */
+    fun cueChapter(context: Context): Boolean = sp(context).getBoolean("cue_chapter", true)
+
+    fun setCueChapter(context: Context, value: Boolean) {
+        sp(context).edit().putBoolean("cue_chapter", value).apply()
+    }
+
+    /** A jelzőhangok hangereje (0..1). */
+    fun cueVolume(context: Context): Float = sp(context).getFloat("cue_volume", 0.7f)
+
+    fun setCueVolume(context: Context, value: Float) {
+        sp(context).edit().putFloat("cue_volume", value).apply()
+    }
+
+    // ---------------------------------------------------------------- egyéb
+
+    /** A fülhallgató dupla nyomására ennyi másodpercet ugrik vissza. */
+    fun rewindSeconds(context: Context): Int = sp(context).getInt("rewind_seconds", 5)
+
+    fun setRewindSeconds(context: Context, value: Int) {
+        sp(context).edit().putInt("rewind_seconds", value).apply()
+    }
+
+    /** Maradjon-e ébren a képernyő az olvasóban. */
+    fun keepScreenOn(context: Context): Boolean = sp(context).getBoolean("keep_screen_on", false)
+
+    fun setKeepScreenOn(context: Context, value: Boolean) {
+        sp(context).edit().putBoolean("keep_screen_on", value).apply()
+    }
 }

@@ -28,9 +28,9 @@ The app appears on the phone as **Könyvtár TTS** ("Library TTS").
 
 | Gesture | In the file browser | In the reader |
 |---|---|---|
-| **Single tap** | open folder / show book details | — |
-| **Double tap** | read aloud from the last position | read aloud **from the tapped sentence** |
-| **Long press** | open the reader | add a bookmark to the paragraph |
+| **Single tap** | open folder / open the book for reading | — |
+| **Double tap** | open **and read aloud** from the last position | read aloud **from the tapped sentence** |
+| **Long press** | open the book | add a bookmark to the paragraph |
 
 ## Features
 
@@ -47,11 +47,14 @@ The app appears on the phone as **Könyvtár TTS** ("Library TTS").
   matched author/title), folder navigation, recursive scanning, sort by
   tapping a column header, fast-scroll bar, storage switcher
   (internal ⇄ SD card ⇄ USB).
-- **Unified reader + player screen.** The text and every playback control in
-  one place. Bottom bar: chapter ⏫⏬, page-by-screen ⬆⬇, sentence ⏮⏭,
-  play/pause. Next to it: font size, position slider, **follow mode** (the
-  text scrolls along with the narration) and **tuning** (speed, pitch).
-  Top bar: search, bookmark, bookmark list, stop.
+- **A single book screen.** The text and every control in one place — no
+  separate player or details window. One bottom row: **chapter ◀ ·
+  paragraph ◀ · sentence ◀ · ▶/⏸ · sentence ▶ · paragraph ▶ · chapter ▶**.
+  Next to it a position slider, font size, **follow mode** (the text scrolls
+  along with narration) and **tuning** (speed, pitch). Top bar: search,
+  settings, and a menu with bookmarks, book info and stop.
+- **Audio cues.** A soft tone before every paragraph and a deeper double tone
+  before every chapter — each toggleable, with adjustable volume.
 - **Sentence-level narration.** TTS advances sentence by sentence, the
   current sentence is highlighted, and the saved position is
   sentence-accurate — so resuming always picks up exactly where you stopped.

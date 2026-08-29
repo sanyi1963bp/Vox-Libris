@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +24,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,7 +42,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.mutableFloatStateOf
 import hu.konyvtar.tts.data.CatalogBuilder
+import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.vm.LibraryViewModel
 import kotlinx.coroutines.Dispatchers
@@ -60,6 +64,12 @@ fun SettingsScreen(
     var cacheSize by remember { mutableLongStateOf(0L) }
     var cacheReload by remember { mutableLongStateOf(0L) }
     var includePdf by remember { mutableStateOf(true) }
+    var cuePara by remember { mutableStateOf(Prefs.cueParagraph(context)) }
+    var cueChapter by remember { mutableStateOf(Prefs.cueChapter(context)) }
+    var cueVolume by remember { mutableFloatStateOf(Prefs.cueVolume(context)) }
+    var rewindSec by remember { mutableFloatStateOf(Prefs.rewindSeconds(context).toFloat()) }
+    var keepScreen by remember { mutableStateOf(Prefs.keepScreenOn(context)) }
+    var readerFollow by remember { mutableStateOf(Prefs.readerFollow(context)) }
     var builtStats by remember { mutableStateOf<Triple<Int, Int, Int>?>(null) }
 
     LaunchedEffect(cacheReload) {
@@ -248,6 +258,88 @@ fun SettingsScreen(
                             Toast.makeText(context, "Szöveg-gyorsítótár törölve.", Toast.LENGTH_SHORT).show()
                         }) { Text("Szövegek törlése") }
                     }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            // Hangjelzések
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "Hangjelzések",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Rövid jelzőhang tagolja a felolvasást, hogy hallás után is " +
+                            "követni lehessen a szöveg szerkezetét.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Switch(checked = cuePara, onCheckedChange = {
+                            cuePara = it; Prefs.setCueParagraph(context, it)
+                        })
+                        Text("  Halk jelzés minden bekezdés előtt", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Switch(checked = cueChapter, onCheckedChange = {
+                            cueChapter = it; Prefs.setCueChapter(context, it)
+                        })
+                        Text("  Mélyebb, kettős jelzés fejezet előtt", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Hangerő", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(74.dp))
+                        Slider(
+                            value = cueVolume,
+                            onValueChange = { cueVolume = it },
+                            onValueChangeFinished = { Prefs.setCueVolume(context, cueVolume) },
+                            valueRange = 0.1f..1.0f,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "${(cueVolume * 100).toInt()}%",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.width(40.dp)
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            // Olvasás és vezérlés
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "Olvasás és vezérlés",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Switch(checked = readerFollow, onCheckedChange = {
+                            readerFollow = it; Prefs.setReaderFollow(context, it)
+                        })
+                        Text("  A szöveg kövesse a felolvasást", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Switch(checked = keepScreen, onCheckedChange = {
+                            keepScreen = it; Prefs.setKeepScreenOn(context, it)
+                        })
+                        Text("  A képernyő maradjon ébren olvasás közben", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "Fülhallgató dupla nyomás: ${rewindSec.toInt()} másodperc vissza",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Slider(
+                        value = rewindSec,
+                        onValueChange = { rewindSec = it },
+                        onValueChangeFinished = { Prefs.setRewindSeconds(context, rewindSec.toInt()) },
+                        valueRange = 3f..30f,
+                        steps = 26
+                    )
                 }
             }
             Spacer(Modifier.height(8.dp))

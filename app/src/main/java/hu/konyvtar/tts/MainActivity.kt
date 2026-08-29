@@ -44,7 +44,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import hu.konyvtar.tts.model.FileRow
 import hu.konyvtar.tts.tts.TtsService
-import hu.konyvtar.tts.ui.DetailScreen
 import hu.konyvtar.tts.ui.ExplorerScreen
 import hu.konyvtar.tts.ui.FilePickerScreen
 import hu.konyvtar.tts.ui.ReaderScreen
@@ -143,24 +142,11 @@ fun AppRoot(startInPlayer: Boolean) {
         composable("explorer") {
             ExplorerScreen(
                 vm = vm,
-                onOpenDetail = { nav.navigate("detail") },
                 onOpenPlayer = { openNowPlayingReader() },
                 onOpenStats = { nav.navigate("stats") },
                 onOpenSettings = { nav.navigate("settings") },
                 onOpenReader = { row -> openReaderFor(row) }
             )
-        }
-        composable("detail") {
-            val row = vm.selectedFile
-            if (row == null) {
-                nav.popBackStack()
-            } else {
-                DetailScreen(
-                    row = row,
-                    onBack = { nav.popBackStack() },
-                    onOpenReader = { openReaderFor(row) }
-                )
-            }
         }
         composable("reader") {
             val t = vm.readerTarget
@@ -171,7 +157,8 @@ fun AppRoot(startInPlayer: Boolean) {
                     path = t.path,
                     title = t.title,
                     author = t.author,
-                    onBack = { nav.popBackStack() }
+                    onBack = { nav.popBackStack() },
+                    onOpenSettings = { nav.navigate("settings") }
                 )
             }
         }

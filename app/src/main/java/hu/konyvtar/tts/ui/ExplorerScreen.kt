@@ -69,7 +69,6 @@ import hu.konyvtar.tts.vm.LibraryViewModel
 @Composable
 fun ExplorerScreen(
     vm: LibraryViewModel,
-    onOpenDetail: () -> Unit,
     onOpenPlayer: () -> Unit,
     onOpenStats: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -353,9 +352,14 @@ fun ExplorerScreen(
                         onSingleTap = {
                             if (row.isDir) {
                                 vm.navigateTo(row.path)
+                            } else if (TextExtractor.isSupported(row.ext)) {
+                                onOpenReader(row)
                             } else {
-                                vm.selectedFile = row
-                                onOpenDetail()
+                                Toast.makeText(
+                                    context,
+                                    TextExtractor.unsupportedHint(row.ext),
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         },
                         onDoubleTap = {

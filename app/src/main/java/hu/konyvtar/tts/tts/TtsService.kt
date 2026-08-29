@@ -65,6 +65,9 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         /** Az éppen felolvasott mondat kezdete/vége a currentText-en belül. */
         val sentStart: Int = 0,
         val sentEnd: Int = 0,
+        /** Hányadik fejezetnél tartunk (0-alapú), és hány fejezet van. */
+        val chapterIndex: Int = 0,
+        val totalChapters: Int = 0,
         val error: String? = null
     )
 
@@ -73,6 +76,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         const val ACTION_TOGGLE = "hu.konyvtar.tts.TOGGLE"
         const val ACTION_NEXT = "hu.konyvtar.tts.NEXT"
         const val ACTION_PREV = "hu.konyvtar.tts.PREV"
+        const val ACTION_NEXT_PARA = "hu.konyvtar.tts.NEXT_PARA"
+        const val ACTION_PREV_PARA = "hu.konyvtar.tts.PREV_PARA"
+        const val ACTION_NEXT_CHAPTER = "hu.konyvtar.tts.NEXT_CHAPTER"
+        const val ACTION_PREV_CHAPTER = "hu.konyvtar.tts.PREV_CHAPTER"
         const val ACTION_STOP = "hu.konyvtar.tts.STOP"
         const val ACTION_SET_SPEED = "hu.konyvtar.tts.SET_SPEED"
         const val ACTION_SET_PITCH = "hu.konyvtar.tts.SET_PITCH"
@@ -143,6 +150,8 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     private data class SentenceUnit(val para: Int, val start: Int, val end: Int)
 
     private var paragraphs: List<String> = emptyList()
+    private var chapters: List<Int> = emptyList()
+    private var chapterSet: HashSet<Int> = HashSet()
     private var sentences: List<SentenceUnit> = emptyList()
     private var sentIndex = 0
     private var cumulativeChars: LongArray = LongArray(0)
@@ -203,15 +212,15 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 }
 
                 override fun onSkipToNext() {
-                    rewindSeconds(5)
+                    rewindSeconds(Prefs.rewindSeconds(this@TtsService))
                 }
 
                 override fun onSkipToPrevious() {
-                    rewindSeconds(5)
+                    rewindSeconds(Prefs.rewindSeconds(this@TtsService))
                 }
 
                 override fun onRewind() {
-                    rewindSeconds(5)
+                    rewindSeconds(Prefs.rewindSeconds(this@TtsService))
                 }
 
                 override fun onFastForward() {
@@ -342,6 +351,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             ACTION_TOGGLE -> if (_state.value.playing) pause() else resume()
             ACTION_NEXT -> skip(1)
             ACTION_PREV -> skip(-1)
+            ACTION_NEXT_PARA -> skipParagraph(1)
+            ACTION_PREV_PARA -> skipParagraph(-1)
+            ACTION_NEXT_CHAPTER -> skipChapter(1)
+            ACTION_PREV_CHAPTER -> skipChapter(-1)
             ACTION_STOP -> stopPlayback()
             ACTION_SET_SPEED -> {
                 val v = intent.getFloatExtra(EXTRA_VALUE, 1.0f).coerceIn(0.5f, 3.0f)
@@ -407,16 +420,17 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         scope.launch {
             val result = withContext(Dispatchers.IO) {
                 try {
-                    val paras = TextExtractor.paragraphs(this@TtsService, File(path))
+                    val book = TextExtractor.book(this@TtsService, File(path))
                     val saved = if (restart) null else AppDb.progressFor(path)
-                    Triple(paras, saved, null as String?)
+                    Triple(book, saved, null as String?)
                 } catch (e: ExtractException) {
-                    Triple(emptyList(), null, e.message)
+                    Triple(null, null, e.message)
                 } catch (e: Exception) {
-                    Triple(emptyList(), null, "Hiba a szöveg kinyerésekor: ${e.message ?: "ismeretlen"}")
+                    Triple(null, null, "Hiba a szöveg kinyerésekor: ${e.message ?: "ismeretlen"}")
                 }
             }
-            val (paras, saved, error) = result
+            val (book, saved, error) = result
+            val paras = book?.paragraphs ?: emptyList()
             if (error != null || paras.isEmpty()) {
                 _state.value = _state.value.copy(
                     preparing = false,
@@ -426,6 +440,8 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 return@launch
             }
             paragraphs = paras
+            chapters = book?.chapters ?: emptyList()
+            chapterSet = HashSet(chapters)
             cumulativeChars = LongArray(paras.size + 1)
             for (i in paras.indices) {
                 cumulativeChars[i + 1] = cumulativeChars[i] + paras[i].length
@@ -443,6 +459,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             _state.value = _state.value.copy(
                 preparing = false,
                 totalParas = paras.size,
+                totalChapters = chapters.size,
                 listenedMs = listenedMs,
                 error = null
             )
@@ -548,11 +565,52 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         updateNotification()
     }
 
-    private fun restartCurrentUtterance() {
-        if (_state.value.playing) speakCurrent()
+    /**
+     * Bekezdésugrás. Visszafelé: ha a bekezdés közepén állunk, előbb az
+     * elejére ugrik (mint a zenelejátszók „előző szám" gombja).
+     */
+    private fun skipParagraph(delta: Int) {
+        if (sentences.isEmpty() || paragraphs.isEmpty()) return
+        val u = sentences[sentIndex.coerceIn(0, sentences.size - 1)]
+        val target = when {
+            delta > 0 -> (u.para + 1).coerceAtMost(paragraphs.size - 1)
+            u.start > 0 -> u.para                       // vissza a bekezdés elejére
+            else -> (u.para - 1).coerceAtLeast(0)
+        }
+        sentIndex = sentenceIndexFor(target, 0)
+        afterJump()
     }
 
-    private fun speakCurrent() {
+    /** Fejezetugrás; ha nincs fejezetadat, ~5%-nyi bekezdést lép. */
+    private fun skipChapter(delta: Int) {
+        if (sentences.isEmpty() || paragraphs.isEmpty()) return
+        val cur = sentences[sentIndex.coerceIn(0, sentences.size - 1)].para
+        val target = if (chapters.size >= 2) {
+            if (delta > 0) {
+                chapters.firstOrNull { it > cur } ?: (paragraphs.size - 1)
+            } else {
+                val start = chapters.lastOrNull { it <= cur } ?: 0
+                if (cur > start) start else (chapters.lastOrNull { it < start } ?: 0)
+            }
+        } else {
+            val step = maxOf(20, paragraphs.size / 20)
+            (cur + delta * step).coerceIn(0, paragraphs.size - 1)
+        }
+        sentIndex = sentenceIndexFor(target, 0)
+        afterJump()
+    }
+
+    private fun afterJump() {
+        publishPosition()
+        if (_state.value.playing) speakCurrent() else saveProgress()
+        updateNotification()
+    }
+
+    private fun restartCurrentUtterance() {
+        if (_state.value.playing) speakCurrent(withCue = false)
+    }
+
+    private fun speakCurrent(withCue: Boolean = true) {
         val engine = tts ?: return
         if (sentIndex !in sentences.indices) {
             // A könyv vége
@@ -577,9 +635,34 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         engine.setPitch(_state.value.pitch)
         utteranceCounter++
         val id = "sent_${sentIndex}_$utteranceCounter"
+        val myCounter = utteranceCounter
         publishPosition()
-        val params = Bundle()
-        engine.speak(text, TextToSpeech.QUEUE_FLUSH, params, id)
+
+        // Bekezdés- és fejezetjelző hang a bekezdés első mondata előtt
+        var cueDelay = 0L
+        if (withCue && u.start == 0) {
+            val volume = Prefs.cueVolume(this)
+            if (u.para in chapterSet && Prefs.cueChapter(this)) {
+                ToneCue.chapter(volume)
+                cueDelay = ToneCue.CHAPTER_MS.toLong()
+            } else if (Prefs.cueParagraph(this)) {
+                ToneCue.paragraph(volume)
+                cueDelay = ToneCue.PARAGRAPH_MS.toLong()
+            }
+        }
+
+        val speakNow = {
+            if (utteranceCounter == myCounter) {
+                engine.speak(text, TextToSpeech.QUEUE_FLUSH, Bundle(), id)
+            }
+        }
+        if (cueDelay > 0) {
+            mainHandler.postDelayed({
+                if (_state.value.playing) speakNow()
+            }, cueDelay)
+        } else {
+            speakNow()
+        }
         updateNotification()
     }
 
@@ -596,9 +679,13 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     private fun publishPosition() {
         val u = sentences.getOrNull(sentIndex)
         paraIndex = u?.para ?: 0
+        val chIdx = if (chapters.isEmpty()) 0
+        else chapters.indexOfLast { it <= paraIndex }.coerceAtLeast(0)
         _state.value = _state.value.copy(
             paraIndex = paraIndex,
             totalParas = paragraphs.size,
+            chapterIndex = chIdx,
+            totalChapters = chapters.size,
             percent = percentAtSentence(sentIndex),
             listenedMs = listenedMs,
             currentText = u?.let { paragraphs[it.para] } ?: "",

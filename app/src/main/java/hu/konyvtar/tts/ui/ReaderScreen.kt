@@ -20,20 +20,27 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FirstPage
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
+import androidx.compose.material.icons.automirrored.filled.LastPage
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Stop
@@ -42,6 +49,8 @@ import androidx.compose.material.icons.filled.TextIncrease
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
@@ -69,8 +78,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
@@ -81,9 +92,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.konyvtar.tts.data.AppDb
+import hu.konyvtar.tts.data.CatalogHolder
 import hu.konyvtar.tts.data.Normalizer
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.model.Bookmark
+import hu.konyvtar.tts.model.CatalogBook
 import hu.konyvtar.tts.reader.Sentences
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
@@ -96,12 +109,15 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 /**
- * Képernyős olvasó: teljes szöveg, villámgyors lapozás (gyorsgörgető + csúszka),
- * keresés a szövegben (ékezet-független), könyvjelzők.
+ * A könyv EGYETLEN képernyője: itt látszik a szöveg, és itt van minden
+ * vezérlő is. Nincs külön lejátszó- és részletező-ablak.
  *
- * Gesztusok egy bekezdésen:
- *  - dupla koppintás: felolvasás pontosan innen
- *  - hosszú nyomás: könyvjelző erre a bekezdésre
+ * Felül: vissza, cím, keresés, beállítások, továbbiak menü.
+ * Alul: fejezet / bekezdés / mondat léptetés mindkét irányba + lejátszás.
+ *
+ * Gesztusok a szövegen:
+ *  - dupla koppintás: felolvasás pontosan a megérintett mondattól
+ *  - hosszú nyomás: könyvjelző a bekezdéshez
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,7 +125,8 @@ fun ReaderScreen(
     path: String,
     title: String,
     author: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -122,6 +139,9 @@ fun ReaderScreen(
     var error by remember(path) { mutableStateOf<String?>(null) }
 
     var fontSp by remember { mutableFloatStateOf(Prefs.readerFont(context)) }
+    var follow by remember { mutableStateOf(Prefs.readerFollow(context)) }
+    var toolsOpen by remember { mutableStateOf(false) }
+    var menuOpen by remember { mutableStateOf(false) }
 
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -132,23 +152,24 @@ fun ReaderScreen(
     var bookmarks by remember(path) { mutableStateOf<List<Bookmark>>(emptyList()) }
     var bookmarksOpen by remember { mutableStateOf(false) }
 
-    var sliderDrag by remember { mutableStateOf<Float?>(null) }
+    var infoOpen by remember { mutableStateOf(false) }
+    var bookInfo by remember(path) { mutableStateOf<CatalogBook?>(null) }
 
-    // Lejátszó-vezérlők (egyesített képernyő)
-    var tuneOpen by remember { mutableStateOf(false) }
-    var follow by remember { mutableStateOf(Prefs.readerFollow(context)) }
+    var sliderDrag by remember { mutableStateOf<Float?>(null) }
     var speed by remember { mutableFloatStateOf(Prefs.speed(context)) }
     var pitch by remember { mutableFloatStateOf(Prefs.pitch(context)) }
-    LaunchedEffect(tts.speed, tts.path) { if (tts.path != null) speed = tts.speed }
-    LaunchedEffect(tts.pitch, tts.path) { if (tts.path != null) pitch = tts.pitch }
 
-    // Követés: a nézet a felolvasott bekezdésre gördül (bekezdésváltáskor)
-    LaunchedEffect(tts.paraIndex, tts.path, follow) {
-        if (follow && tts.path == path && tts.totalParas > 0 &&
-            paragraphs != null && !listState.isScrollInProgress
-        ) {
-            listState.animateScrollToItem(tts.paraIndex.coerceAtLeast(0))
-        }
+    val sameBook = tts.path == path
+    val playingHere = sameBook && tts.playing
+
+    LaunchedEffect(tts.speed, sameBook) { if (sameBook) speed = tts.speed }
+    LaunchedEffect(tts.pitch, sameBook) { if (sameBook) pitch = tts.pitch }
+
+    // Képernyő ébren tartása, ha a beállításokban kérted
+    val view = LocalView.current
+    DisposableEffect(Unit) {
+        if (Prefs.keepScreenOn(context)) view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
     }
 
     // ---------------------------------------------------------------- betöltés
@@ -169,11 +190,21 @@ fun ReaderScreen(
         bookmarks = loaded.third
         val prog = loaded.second
         val start = when {
+            sameBook && tts.totalParas > 0 -> tts.paraIndex
             prog == null -> 0
             prog.readPara > 0 -> prog.readPara
             else -> prog.paraIndex
         }
         listState.scrollToItem(start.coerceIn(0, loaded.first.paragraphs.size - 1))
+    }
+
+    // ---------------------------------------------------------------- követés
+    LaunchedEffect(tts.paraIndex, sameBook, follow) {
+        if (follow && sameBook && tts.totalParas > 0 && paragraphs != null &&
+            !listState.isScrollInProgress
+        ) {
+            listState.animateScrollToItem(tts.paraIndex.coerceAtLeast(0))
+        }
     }
 
     // ---------------------------------------------------------------- pozíció mentése
@@ -211,27 +242,22 @@ fun ReaderScreen(
         val paras = paragraphs
         val q = query.trim()
         if (paras == null || q.length < 2) {
-            matches = emptyList()
-            matchPos = -1
+            matches = emptyList(); matchPos = -1
             return@LaunchedEffect
         }
         searching = true
-        delay(400) // gépelés közbeni fölösleges keresések ellen
+        delay(400)
         val foldedQuery = Normalizer.foldHu(q)
         val result = withContext(Dispatchers.Default) {
             val f = folded ?: paras.map { Normalizer.foldHu(it) }.also { folded = it }
             val out = ArrayList<Int>()
-            for (i in f.indices) {
-                if (f[i].contains(foldedQuery)) out.add(i)
-            }
+            for (i in f.indices) if (f[i].contains(foldedQuery)) out.add(i)
             out
         }
         matches = result
         matchPos = if (result.isEmpty()) -1 else 0
         searching = false
-        if (result.isNotEmpty()) {
-            listState.scrollToItem(result[0])
-        }
+        if (result.isNotEmpty()) listState.scrollToItem(result[0])
     }
 
     fun jumpMatch(dir: Int) {
@@ -243,47 +269,44 @@ fun ReaderScreen(
     fun addBookmarkAt(idx: Int) {
         val paras = paragraphs ?: return
         if (idx !in paras.indices) return
-        val snippet = paras[idx].take(140)
         scope.launch {
             withContext(Dispatchers.IO) {
-                AppDb.addBookmark(path, idx, snippet, title, author)
+                AppDb.addBookmark(path, idx, paras[idx].take(140), title, author)
             }
             bookmarks = withContext(Dispatchers.IO) { AppDb.bookmarksFor(path) }
             Toast.makeText(context, "Könyvjelző: ${idx + 1}. bekezdés", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // -------------------------------------------------------------- navigáció
-
-    fun chapterJump(dir: Int) {
-        val paras = paragraphs ?: return
-        if (paras.isEmpty()) return
-        val cur = listState.firstVisibleItemIndex
-        val target = if (chapters.size >= 2) {
-            if (dir > 0) {
-                chapters.firstOrNull { it > cur } ?: (paras.size - 1)
-            } else {
-                chapters.lastOrNull { it < cur } ?: 0
-            }
+    /** Felolvasás indítása/szüneteltetése; ha még nem ez a könyv szól, innen indul. */
+    fun playPause() {
+        if (sameBook) {
+            TtsService.send(context, TtsService.ACTION_TOGGLE)
         } else {
-            // Nincs fejezetadat: ~5%-os ugrás
-            val fallback = maxOf(20, paras.size / 20)
-            (cur + dir * fallback).coerceIn(0, paras.size - 1)
+            TtsService.playFile(
+                context = context, path = path, title = title, author = author,
+                konyvId = null, startIndex = listState.firstVisibleItemIndex, startChar = 0
+            )
         }
-        scope.launch { listState.scrollToItem(target) }
     }
 
-    fun screenJump(dir: Int) {
-        scope.launch {
-            val vp = listState.layoutInfo.viewportSize.height
-            val amount = (if (vp > 0) vp else 1600).toFloat() * 0.92f * dir
-            listState.animateScrollBy(amount)
+    /** Léptetőgomb: ha nem ez a könyv szól, előbb ide töltjük be. */
+    fun nav(action: String) {
+        if (!sameBook) {
+            TtsService.playFile(
+                context = context, path = path, title = title, author = author,
+                konyvId = null, startIndex = listState.firstVisibleItemIndex, startChar = 0
+            )
+            return
         }
+        TtsService.send(context, action)
     }
 
     val bookmarkedIdx = remember(bookmarks) { bookmarks.map { it.paraIndex }.toHashSet() }
-    val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
-    val ttsSentenceColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+    val chapterSet = remember(chapters) { chapters.toHashSet() }
+    val searchColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.45f)
+    val sentenceColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
+    val paraColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f)
 
     Scaffold(
         topBar = {
@@ -323,25 +346,47 @@ fun ReaderScreen(
                                 contentDescription = "Keresés a szövegben"
                             )
                         }
-                        IconButton(onClick = {
-                            // Ha épp ezt a könyvet olvassa fel, a felolvasott helyre kerül a jelző
-                            val idx = if (tts.path == path && tts.totalParas > 0) {
-                                tts.paraIndex
-                            } else {
-                                listState.firstVisibleItemIndex
+                        IconButton(onClick = onOpenSettings) {
+                            Icon(Icons.Filled.Settings, contentDescription = "Beállítások")
+                        }
+                        Box {
+                            IconButton(onClick = { menuOpen = true }) {
+                                Icon(Icons.Filled.MoreVert, contentDescription = "További műveletek")
                             }
-                            addBookmarkAt(idx)
-                        }) {
-                            Icon(Icons.Filled.BookmarkAdd, contentDescription = "Könyvjelző ide")
-                        }
-                        IconButton(onClick = { bookmarksOpen = true }) {
-                            Icon(Icons.Filled.Bookmarks, contentDescription = "Könyvjelzők")
-                        }
-                        if (tts.path == path) {
-                            IconButton(onClick = {
-                                TtsService.send(context, TtsService.ACTION_STOP)
-                            }) {
-                                Icon(Icons.Filled.Stop, contentDescription = "Felolvasás leállítása")
+                            DropdownMenu(
+                                expanded = menuOpen,
+                                onDismissRequest = { menuOpen = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Könyvjelző ide") },
+                                    leadingIcon = { Icon(Icons.Filled.BookmarkAdd, null) },
+                                    onClick = {
+                                        menuOpen = false
+                                        val idx = if (sameBook && tts.totalParas > 0) tts.paraIndex
+                                        else listState.firstVisibleItemIndex
+                                        addBookmarkAt(idx)
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Könyvjelzők (${bookmarks.size})") },
+                                    leadingIcon = { Icon(Icons.Filled.Bookmarks, null) },
+                                    onClick = { menuOpen = false; bookmarksOpen = true }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("A könyv adatai") },
+                                    leadingIcon = { Icon(Icons.Filled.Info, null) },
+                                    onClick = { menuOpen = false; infoOpen = true }
+                                )
+                                if (sameBook) {
+                                    DropdownMenuItem(
+                                        text = { Text("Felolvasás leállítása") },
+                                        leadingIcon = { Icon(Icons.Filled.Stop, null) },
+                                        onClick = {
+                                            menuOpen = false
+                                            TtsService.send(context, TtsService.ACTION_STOP)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -386,105 +431,140 @@ fun ReaderScreen(
         },
         bottomBar = {
             val paras = paragraphs
-            if (paras != null && paras.isNotEmpty()) {
-                Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
-                    Column(
+            Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp)
+                ) {
+                    // ---- állapotsor
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                            .padding(top = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Navigáció: fejezet | képernyő | mondat | Play/Pause | mondat | képernyő | fejezet
-                        val sameBook = tts.path == path
-                        val playingHere = sameBook && tts.playing
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(onClick = { chapterJump(-1) }, modifier = Modifier.size(40.dp)) {
-                                Icon(
-                                    Icons.Filled.KeyboardDoubleArrowUp,
-                                    contentDescription = "Előző fejezet"
-                                )
-                            }
-                            IconButton(onClick = { screenJump(-1) }, modifier = Modifier.size(40.dp)) {
-                                Icon(
-                                    Icons.Filled.KeyboardArrowUp,
-                                    contentDescription = "Egy képernyő vissza"
-                                )
-                            }
-                            IconButton(
-                                onClick = { TtsService.send(context, TtsService.ACTION_PREV) },
-                                enabled = sameBook,
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(Icons.Filled.SkipPrevious, contentDescription = "Előző mondat")
-                            }
-                            FilledIconButton(
-                                onClick = {
-                                    if (sameBook) {
-                                        TtsService.send(context, TtsService.ACTION_TOGGLE)
-                                    } else {
-                                        TtsService.playFile(
-                                            context = context,
-                                            path = path,
-                                            title = title,
-                                            author = author,
-                                            konyvId = null,
-                                            startIndex = listState.firstVisibleItemIndex,
-                                            startChar = 0
+                        Text(
+                            text = buildString {
+                                if (paras != null) {
+                                    append("Bek. ${listState.firstVisibleItemIndex + 1}/${paras.size}")
+                                }
+                                if (sameBook && tts.totalChapters > 0) {
+                                    append("  •  Fej. ${tts.chapterIndex + 1}/${tts.totalChapters}")
+                                }
+                                if (sameBook && tts.totalParas > 0) {
+                                    append(
+                                        String.format(
+                                            Locale.getDefault(), "  •  %.1f%%  •  %s",
+                                            tts.percent, fmtDuration(tts.listenedMs)
                                         )
-                                    }
-                                },
-                                modifier = Modifier.size(46.dp)
-                            ) {
-                                Icon(
-                                    if (playingHere) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                    contentDescription = if (playingHere) "Szünet" else "Felolvasás"
-                                )
-                            }
-                            IconButton(
-                                onClick = { TtsService.send(context, TtsService.ACTION_NEXT) },
-                                enabled = sameBook,
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(Icons.Filled.SkipNext, contentDescription = "Következő mondat")
-                            }
-                            IconButton(onClick = { screenJump(1) }, modifier = Modifier.size(40.dp)) {
-                                Icon(
-                                    Icons.Filled.KeyboardArrowDown,
-                                    contentDescription = "Egy képernyő előre"
-                                )
-                            }
-                            IconButton(onClick = { chapterJump(1) }, modifier = Modifier.size(40.dp)) {
-                                Icon(
-                                    Icons.Filled.KeyboardDoubleArrowDown,
-                                    contentDescription = "Következő fejezet"
-                                )
-                            }
+                                    )
+                                }
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(
+                            onClick = {
+                                follow = !follow
+                                Prefs.setReaderFollow(context, follow)
+                                if (follow && sameBook && tts.totalParas > 0) {
+                                    scope.launch { listState.animateScrollToItem(tts.paraIndex) }
+                                }
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.MyLocation,
+                                contentDescription = "Felolvasás követése",
+                                modifier = Modifier.size(18.dp),
+                                tint = if (follow) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
+                        IconButton(
+                            onClick = { toolsOpen = !toolsOpen },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Tune,
+                                contentDescription = "Betűméret és hang",
+                                modifier = Modifier.size(18.dp),
+                                tint = if (toolsOpen) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // ---- eszközök
+                    if (toolsOpen) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "Betű",
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.width(64.dp)
+                            )
                             IconButton(
                                 onClick = {
                                     fontSp = (fontSp - 1f).coerceAtLeast(12f)
                                     Prefs.setReaderFont(context, fontSp)
                                 },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(Icons.Filled.TextDecrease, contentDescription = "Kisebb betű")
-                            }
+                                modifier = Modifier.size(34.dp)
+                            ) { Icon(Icons.Filled.TextDecrease, contentDescription = "Kisebb betű") }
                             IconButton(
                                 onClick = {
                                     fontSp = (fontSp + 1f).coerceAtMost(30f)
                                     Prefs.setReaderFont(context, fontSp)
                                 },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(Icons.Filled.TextIncrease, contentDescription = "Nagyobb betű")
+                                modifier = Modifier.size(34.dp)
+                            ) { Icon(Icons.Filled.TextIncrease, contentDescription = "Nagyobb betű") }
+                            Text(
+                                text = "${fontSp.roundToInt()} sp",
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                        SliderRow(
+                            label = "Sebesség",
+                            value = speed,
+                            range = 0.5f..3.0f,
+                            format = "%.2fx",
+                            onChange = { speed = it },
+                            onDone = {
+                                if (sameBook) {
+                                    TtsService.send(context, TtsService.ACTION_SET_SPEED) {
+                                        putExtra(TtsService.EXTRA_VALUE, speed)
+                                    }
+                                } else {
+                                    Prefs.setSpeed(context, speed)
+                                }
                             }
-                            val fraction = sliderDrag
-                                ?: if (paras.size <= 1) 0f
-                                else listState.firstVisibleItemIndex.toFloat() / (paras.size - 1)
+                        )
+                        SliderRow(
+                            label = "Hangmag.",
+                            value = pitch,
+                            range = 0.5f..2.0f,
+                            format = "%.2f",
+                            onChange = { pitch = it },
+                            onDone = {
+                                if (sameBook) {
+                                    TtsService.send(context, TtsService.ACTION_SET_PITCH) {
+                                        putExtra(TtsService.EXTRA_VALUE, pitch)
+                                    }
+                                } else {
+                                    Prefs.setPitch(context, pitch)
+                                }
+                            }
+                        )
+                    }
+
+                    // ---- pozíció csúszka
+                    if (paras != null && paras.size > 1) {
+                        val fraction = sliderDrag
+                            ?: (listState.firstVisibleItemIndex.toFloat() / (paras.size - 1))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Slider(
                                 value = fraction.coerceIn(0f, 1f),
                                 onValueChange = { sliderDrag = it },
@@ -492,134 +572,58 @@ fun ReaderScreen(
                                     val f = sliderDrag ?: return@Slider
                                     scope.launch {
                                         listState.scrollToItem(
-                                            (f * (paras.size - 1)).roundToInt().coerceIn(0, paras.size - 1)
+                                            (f * (paras.size - 1)).roundToInt()
+                                                .coerceIn(0, paras.size - 1)
                                         )
                                         sliderDrag = null
                                     }
                                 },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(horizontal = 4.dp)
+                                modifier = Modifier.weight(1f)
                             )
                             Text(
-                                text = String.format(
-                                    Locale.getDefault(), "%.1f%%",
-                                    ((sliderDrag
-                                        ?: if (paras.size <= 1) 0f
-                                        else listState.firstVisibleItemIndex.toFloat() / (paras.size - 1)) * 100f)
-                                ),
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.width(52.dp),
+                                text = String.format(Locale.getDefault(), "%.0f%%", fraction * 100f),
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.width(38.dp),
                                 textAlign = TextAlign.Right
                             )
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = buildString {
-                                    append("${listState.firstVisibleItemIndex + 1}/${paras.size} bek.")
-                                    if (sameBook && tts.totalParas > 0) {
-                                        append(
-                                            String.format(
-                                                Locale.getDefault(),
-                                                "  •  Felolvasás: %.1f%%  •  %s",
-                                                tts.percent,
-                                                fmtDuration(tts.listenedMs)
-                                            )
-                                        )
-                                    }
-                                },
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(
-                                onClick = {
-                                    follow = !follow
-                                    Prefs.setReaderFollow(context, follow)
-                                    if (follow && sameBook && tts.totalParas > 0) {
-                                        scope.launch { listState.animateScrollToItem(tts.paraIndex) }
-                                    }
-                                },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    Icons.Filled.MyLocation,
-                                    contentDescription = "Felolvasás követése",
-                                    tint = if (follow) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            IconButton(
-                                onClick = { tuneOpen = !tuneOpen },
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Icon(
-                                    Icons.Filled.Tune,
-                                    contentDescription = "Sebesség és hangmagasság",
-                                    tint = if (tuneOpen) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                    }
+
+                    // ---- vezérlőgombok
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        NavButton(Icons.Filled.FirstPage, "fejezet", "Előző fejezet") {
+                            nav(TtsService.ACTION_PREV_CHAPTER)
                         }
-                        if (tuneOpen) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "Sebesség",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.width(76.dp)
-                                )
-                                Slider(
-                                    value = speed,
-                                    onValueChange = { speed = it },
-                                    onValueChangeFinished = {
-                                        if (tts.path != null) {
-                                            TtsService.send(context, TtsService.ACTION_SET_SPEED) {
-                                                putExtra(TtsService.EXTRA_VALUE, speed)
-                                            }
-                                        } else {
-                                            Prefs.setSpeed(context, speed)
-                                        }
-                                    },
-                                    valueRange = 0.5f..3.0f,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    text = String.format(Locale.getDefault(), "%.2fx", speed),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.width(44.dp),
-                                    textAlign = TextAlign.Right
-                                )
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "Hangmag.",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.width(76.dp)
-                                )
-                                Slider(
-                                    value = pitch,
-                                    onValueChange = { pitch = it },
-                                    onValueChangeFinished = {
-                                        if (tts.path != null) {
-                                            TtsService.send(context, TtsService.ACTION_SET_PITCH) {
-                                                putExtra(TtsService.EXTRA_VALUE, pitch)
-                                            }
-                                        } else {
-                                            Prefs.setPitch(context, pitch)
-                                        }
-                                    },
-                                    valueRange = 0.5f..2.0f,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    text = String.format(Locale.getDefault(), "%.2f", pitch),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.width(44.dp),
-                                    textAlign = TextAlign.Right
-                                )
-                            }
+                        NavButton(Icons.Filled.SkipPrevious, "bekezd.", "Előző bekezdés") {
+                            nav(TtsService.ACTION_PREV_PARA)
+                        }
+                        NavButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "mondat", "Előző mondat") {
+                            nav(TtsService.ACTION_PREV)
+                        }
+                        FilledIconButton(
+                            onClick = { playPause() },
+                            modifier = Modifier.size(50.dp)
+                        ) {
+                            Icon(
+                                if (playingHere) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                contentDescription = if (playingHere) "Szünet" else "Felolvasás",
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                        NavButton(Icons.AutoMirrored.Filled.KeyboardArrowRight, "mondat", "Következő mondat") {
+                            nav(TtsService.ACTION_NEXT)
+                        }
+                        NavButton(Icons.Filled.SkipNext, "bekezd.", "Következő bekezdés") {
+                            nav(TtsService.ACTION_NEXT_PARA)
+                        }
+                        NavButton(Icons.AutoMirrored.Filled.LastPage, "fejezet", "Következő fejezet") {
+                            nav(TtsService.ACTION_NEXT_CHAPTER)
                         }
                     }
                 }
@@ -653,59 +657,66 @@ fun ReaderScreen(
                 else -> {
                     LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                         itemsIndexed(paras) { idx, text ->
-                            val isTtsHere = tts.path == path && tts.paraIndex == idx && tts.totalParas > 0
-                            val isCurrentMatch = matchPos >= 0 && matches.getOrNull(matchPos) == idx
+                            val isTtsHere = sameBook && tts.paraIndex == idx && tts.totalParas > 0
+                            val isMatch = matchPos >= 0 && matches.getOrNull(matchPos) == idx
+                            val isChapter = idx in chapterSet
                             val isBm = idx in bookmarkedIdx
-                            val bg = when {
-                                isTtsHere -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
-                                isCurrentMatch -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)
-                                else -> Color.Transparent
-                            }
-                            // A koppintás → karakterpozíció leképezéshez kell az elrendezés
                             var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
                             val prefixLen = if (isBm) BOOKMARK_PREFIX.length else 0
-                            Text(
-                                text = paraText(
-                                    text = text,
-                                    query = query.trim(),
-                                    bookmarked = isBm,
-                                    highlight = highlightColor,
-                                    ttsStart = if (isTtsHere) tts.sentStart else -1,
-                                    ttsEnd = if (isTtsHere) tts.sentEnd else -1,
-                                    ttsHighlight = ttsSentenceColor
-                                ),
-                                fontSize = fontSp.sp,
-                                lineHeight = (fontSp * 1.45f).sp,
-                                onTextLayout = { layout = it },
+
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(bg)
-                                    .padding(horizontal = 14.dp, vertical = 4.dp)
-                                    .pointerInput(idx) {
-                                        detectTapGestures(
-                                            onDoubleTap = { pos ->
-                                                val raw = layout?.getOffsetForPosition(pos) ?: 0
-                                                val inText = (raw - prefixLen).coerceIn(0, text.length)
-                                                val sentStart = Sentences.startAt(text, inText)
-                                                TtsService.playFile(
-                                                    context = context,
-                                                    path = path,
-                                                    title = title,
-                                                    author = author,
-                                                    konyvId = null,
-                                                    startIndex = idx,
-                                                    startChar = sentStart
-                                                )
-                                                Toast.makeText(
-                                                    context,
-                                                    "Felolvasás a kijelölt mondattól",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            },
-                                            onLongPress = { addBookmarkAt(idx) }
-                                        )
-                                    }
-                            )
+                                    .background(
+                                        when {
+                                            isTtsHere -> paraColor
+                                            isMatch -> MaterialTheme.colorScheme.tertiaryContainer
+                                                .copy(alpha = 0.45f)
+                                            else -> Color.Transparent
+                                        }
+                                    )
+                            ) {
+                                if (isChapter) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                                    )
+                                }
+                                Text(
+                                    text = paraText(
+                                        text = text,
+                                        query = query.trim(),
+                                        bookmarked = isBm,
+                                        searchColor = searchColor,
+                                        ttsStart = if (isTtsHere) tts.sentStart else -1,
+                                        ttsEnd = if (isTtsHere) tts.sentEnd else -1,
+                                        ttsColor = sentenceColor
+                                    ),
+                                    fontSize = fontSp.sp,
+                                    lineHeight = (fontSp * 1.45f).sp,
+                                    fontWeight = if (isChapter) FontWeight.Bold else FontWeight.Normal,
+                                    onTextLayout = { layout = it },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 14.dp, vertical = 4.dp)
+                                        .pointerInput(idx) {
+                                            detectTapGestures(
+                                                onDoubleTap = { pos ->
+                                                    val raw = layout?.getOffsetForPosition(pos) ?: 0
+                                                    val inText = (raw - prefixLen)
+                                                        .coerceIn(0, text.length)
+                                                    TtsService.playFile(
+                                                        context = context, path = path,
+                                                        title = title, author = author,
+                                                        konyvId = null, startIndex = idx,
+                                                        startChar = Sentences.startAt(text, inText)
+                                                    )
+                                                },
+                                                onLongPress = { addBookmarkAt(idx) }
+                                            )
+                                        }
+                                )
+                            }
                         }
                     }
                     FastScrollbar(
@@ -718,7 +729,7 @@ fun ReaderScreen(
         }
     }
 
-    // ---------------------------------------------------------------- könyvjelző lista
+    // ---------------------------------------------------------------- könyvjelzők
     if (bookmarksOpen) {
         AlertDialog(
             onDismissRequest = { bookmarksOpen = false },
@@ -788,22 +799,148 @@ fun ReaderScreen(
             }
         )
     }
+
+    // ---------------------------------------------------------------- könyv adatai
+    if (infoOpen) {
+        LaunchedEffect(Unit) {
+            if (bookInfo == null) {
+                bookInfo = withContext(Dispatchers.IO) {
+                    val row = AppDb.cachedForPath(path)
+                    row?.konyvId?.let { CatalogHolder.get(context)?.bookById(it) }
+                }
+            }
+        }
+        val f = File(path)
+        AlertDialog(
+            onDismissRequest = { infoOpen = false },
+            title = { Text("A könyv adatai", style = MaterialTheme.typography.titleMedium) },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 460.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    val b = bookInfo
+                    InfoLine("Cím", b?.cim ?: title)
+                    InfoLine("Szerző", b?.szerzo ?: author)
+                    InfoLine("Kiadó", b?.kiado)
+                    InfoLine("Kiadás éve", b?.kiadasEve)
+                    InfoLine("ISBN", b?.isbn)
+                    InfoLine(
+                        "Sorozat",
+                        listOfNotNull(
+                            b?.sorozat?.takeIf { it.isNotBlank() && it != "N/A" },
+                            b?.sorozatSzama?.takeIf { it.isNotBlank() && it != "N/A" }
+                        ).joinToString(" #").ifBlank { null }
+                    )
+                    InfoLine("Címkék", b?.cimkek)
+                    InfoLine("Fájl", f.name)
+                    InfoLine("Méret", fmtSize(f.length()))
+                    InfoLine("Bekezdések", paragraphs?.size?.toString())
+                    InfoLine("Fejezetek", if (chapters.isEmpty()) null else chapters.size.toString())
+                    val desc = b?.leiras?.let { Normalizer.stripInvisible(it).trim() }
+                    if (!desc.isNullOrBlank()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Leírás",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(text = desc, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { infoOpen = false }) { Text("Bezárás") }
+            }
+        )
+    }
+}
+
+// ---------------------------------------------------------------- kis elemek
+
+@Composable
+private fun NavButton(
+    icon: ImageVector,
+    label: String,
+    description: String,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(44.dp)
+            .pointerInput(description) { detectTapGestures(onTap = { onClick() }) }
+            .padding(vertical = 2.dp)
+    ) {
+        Icon(
+            icon,
+            contentDescription = description,
+            modifier = Modifier.size(26.dp),
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = label,
+            fontSize = 8.5.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1
+        )
+    }
+}
+
+@Composable
+private fun SliderRow(
+    label: String,
+    value: Float,
+    range: ClosedFloatingPointRange<Float>,
+    format: String,
+    onChange: (Float) -> Unit,
+    onDone: () -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(64.dp))
+        Slider(
+            value = value,
+            onValueChange = onChange,
+            onValueChangeFinished = onDone,
+            valueRange = range,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = String.format(Locale.getDefault(), format, value),
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.width(44.dp),
+            textAlign = TextAlign.Right
+        )
+    }
+}
+
+@Composable
+private fun InfoLine(label: String, value: String?) {
+    val v = value?.trim()
+    if (v.isNullOrBlank() || v == "N/A") return
+    Row(modifier = Modifier.padding(vertical = 1.dp)) {
+        Text(
+            text = "$label: ",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(text = Normalizer.stripInvisible(v), style = MaterialTheme.typography.bodySmall)
+    }
 }
 
 private const val BOOKMARK_PREFIX = "🔖 "
 
-/**
- * Bekezdés szövege: könyvjelző-jel, keresési találatok kiemelése,
- * és az éppen felolvasott mondat háttérszíne.
- */
+/** Bekezdés szövege: könyvjelző-jel, keresési találat, felolvasott mondat. */
 private fun paraText(
     text: String,
     query: String,
     bookmarked: Boolean,
-    highlight: Color,
+    searchColor: Color,
     ttsStart: Int = -1,
     ttsEnd: Int = -1,
-    ttsHighlight: Color = Color.Transparent
+    ttsColor: Color = Color.Transparent
 ): AnnotatedString {
     val prefix = if (bookmarked) BOOKMARK_PREFIX else ""
     return buildAnnotatedString {
@@ -814,23 +951,23 @@ private fun paraText(
             val e0 = ttsEnd.coerceIn(s0, text.length)
             if (e0 > s0) {
                 addStyle(
-                    SpanStyle(background = ttsHighlight),
+                    SpanStyle(background = ttsColor, fontWeight = FontWeight.Medium),
                     prefix.length + s0,
                     prefix.length + e0
                 )
             }
         }
         if (query.length >= 2) {
-            val foldedText = Normalizer.foldHu(text)
-            val foldedQuery = Normalizer.foldHu(query)
-            var i = foldedText.indexOf(foldedQuery)
+            val ft = Normalizer.foldHu(text)
+            val fq = Normalizer.foldHu(query)
+            var i = ft.indexOf(fq)
             while (i >= 0) {
                 addStyle(
-                    SpanStyle(background = highlight, fontWeight = FontWeight.Bold),
+                    SpanStyle(background = searchColor, fontWeight = FontWeight.Bold),
                     prefix.length + i,
-                    prefix.length + i + foldedQuery.length
+                    prefix.length + i + fq.length
                 )
-                i = foldedText.indexOf(foldedQuery, i + foldedQuery.length)
+                i = ft.indexOf(fq, i + fq.length)
             }
         }
     }
