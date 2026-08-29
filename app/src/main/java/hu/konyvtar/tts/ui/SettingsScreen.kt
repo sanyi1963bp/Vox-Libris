@@ -74,7 +74,6 @@ fun SettingsScreen(
     var cacheSize by remember { mutableLongStateOf(0L) }
     var cacheReload by remember { mutableLongStateOf(0L) }
     var includePdf by remember { mutableStateOf(true) }
-    var cuePara by remember { mutableStateOf(Prefs.cueParagraph(context)) }
     var cueChapter by remember { mutableStateOf(Prefs.cueChapter(context)) }
     var cueVolume by remember { mutableFloatStateOf(Prefs.cueVolume(context)) }
     var rewindSec by remember { mutableFloatStateOf(Prefs.rewindSeconds(context).toFloat()) }
@@ -462,18 +461,12 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Rövid jelzőhang tagolja a felolvasást, hogy hallás után is " +
-                            "követni lehessen a szöveg szerkezetét.",
+                        text = "Mélyebb, kettős hang jelzi minden új fejezet kezdetét, hogy " +
+                            "hallás után is tudd, hol tartasz a könyvben.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Switch(checked = cuePara, onCheckedChange = {
-                            cuePara = it; Prefs.setCueParagraph(context, it)
-                        })
-                        Text("  Halk jelzés minden bekezdés előtt", style = MaterialTheme.typography.bodySmall)
-                    }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Switch(checked = cueChapter, onCheckedChange = {
                             cueChapter = it; Prefs.setCueChapter(context, it)

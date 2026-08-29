@@ -43,10 +43,11 @@ The app appears on the phone as **Könyvtár TTS** ("Library TTS").
   headers: title, author, synopsis, publisher, series, ISBN, tags) — with no
   internet. Re-running it is **incremental**: existing entries are left
   untouched, only newly copied books are added.
-- **Total Commander style browser.** Dense, icon-free rows (name, size, date,
-  matched author/title), folder navigation, recursive scanning, sort by
+- **Total Commander style browser.** Dense, icon-free file rows (name, size,
+  date, matched author/title), folder navigation, recursive scanning, sort by
   tapping a column header, fast-scroll bar, storage switcher
-  (internal ⇄ SD card ⇄ USB).
+  (internal ⇄ SD card ⇄ USB). Each book has an **ⓘ button** for its details
+  and a **progress bar** once you have started it.
 - **A single book screen.** The text and every control in one place — no
   separate player or details window. One bottom row: **chapter ◀ ·
   paragraph ◀ · sentence ◀ · ▶/⏸ · sentence ▶ · paragraph ▶ · chapter ▶**.

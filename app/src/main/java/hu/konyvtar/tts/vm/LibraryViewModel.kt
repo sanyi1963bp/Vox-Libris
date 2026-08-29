@@ -13,6 +13,7 @@ import hu.konyvtar.tts.data.FileScanner
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.model.FileRow
 import hu.konyvtar.tts.model.SortKey
+import hu.konyvtar.tts.model.displayPercent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,6 +40,8 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
     data class UiState(
         val currentDir: String = "",
         val entries: List<FileRow> = emptyList(),
+        /** Útvonal -> olvasottság százalék, a listában megjelenő csíkhoz. */
+        val progress: Map<String, Double> = emptyMap(),
         val loading: Boolean = false,
         val flatMode: Boolean = false,
         val onlyMatched: Boolean = false,
@@ -207,13 +210,14 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         listJob = viewModelScope.launch {
             _ui.value = _ui.value.copy(loading = true, volumes = listVolumes())
             val rows = withContext(Dispatchers.IO) {
-                if (state.flatMode) {
-                    AppDb.allScanned(state.query, state.sortKey, state.sortAsc, state.onlyMatched)
-                } else {
-                    listDirectory(ctx, state.currentDir, state.query, state.sortKey, state.sortAsc)
-                }
+                listDirectory(ctx, state.currentDir, state.query, state.sortKey, state.sortAsc)
             }
-            _ui.value = _ui.value.copy(entries = rows, loading = false)
+            val prog = withContext(Dispatchers.IO) {
+                val out = HashMap<String, Double>()
+                for (p in AppDb.allProgress()) out[p.path] = p.displayPercent()
+                out
+            }
+            _ui.value = _ui.value.copy(entries = rows, progress = prog, loading = false)
         }
     }
 

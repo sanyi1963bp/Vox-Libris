@@ -11,25 +11,31 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.SdStorage
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +46,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -55,11 +62,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import hu.konyvtar.tts.data.CatalogHolder
+import hu.konyvtar.tts.data.MetadataExtractor
+import hu.konyvtar.tts.data.Normalizer
+import hu.konyvtar.tts.model.CatalogBook
+import hu.konyvtar.tts.model.FINISHED_PERCENT
 import hu.konyvtar.tts.model.FileRow
 import hu.konyvtar.tts.model.SortKey
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
 import hu.konyvtar.tts.vm.LibraryViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.util.Locale
 
 /**
  * Total Commander stílusú, sűrű fájlböngésző.
@@ -79,6 +95,34 @@ fun ExplorerScreen(
     val context = LocalContext.current
     val listState = rememberLazyListState()
     var storageMenuOpen by remember { mutableStateOf(false) }
+    var infoRow by remember { mutableStateOf<FileRow?>(null) }
+    var infoBook by remember { mutableStateOf<CatalogBook?>(null) }
+    var infoMeta by remember { mutableStateOf<String?>(null) }
+
+    // Az info gombra: előbb a katalógusból, ha nincs találat, a fájl saját metaadatából
+    LaunchedEffect(infoRow) {
+        infoBook = null
+        infoMeta = null
+        val r = infoRow ?: return@LaunchedEffect
+        withContext(Dispatchers.IO) {
+            val id = r.konyvId
+            if (id != null) {
+                infoBook = CatalogHolder.get(context)?.bookById(id)
+            }
+            if (infoBook == null) {
+                val m = MetadataExtractor.extract(context, File(r.path), true)
+                infoMeta = listOfNotNull(
+                    m.title?.let { "Cím: " + it },
+                    m.author?.let { "Szerző: " + it },
+                    m.publisher?.let { "Kiadó: " + it },
+                    m.year?.let { "Év: " + it },
+                    m.series?.let { "Sorozat: " + it },
+                    m.tags?.let { "Címkék: " + it },
+                    m.description
+                ).joinToString("\n")
+            }
+        }
+    }
 
     // Üzenetek (pl. adatbázis megnyitva) toastként
     LaunchedEffect(ui.message) {
@@ -89,7 +133,7 @@ fun ExplorerScreen(
     }
 
     // Lista tetejére ugrunk, ha mappát váltunk
-    LaunchedEffect(ui.currentDir, ui.flatMode) {
+    LaunchedEffect(ui.currentDir) {
         listState.scrollToItem(0)
     }
 
@@ -164,36 +208,8 @@ fun ExplorerScreen(
                             }
                         }
                     )
-                    FilterChip(
-                        selected = !ui.flatMode,
-                        onClick = { vm.setFlatMode(false) },
-                        label = { Text("Mappák") }
-                    )
-                    FilterChip(
-                        selected = ui.flatMode,
-                        onClick = { vm.setFlatMode(true) },
-                        label = { Text("Katalógus") }
-                    )
                 }
-                if (ui.flatMode) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "${ui.entries.size} fájl a gyorsítótárban (${ui.cachedMatched} párosítva)",
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        FilterChip(
-                            selected = ui.onlyMatched,
-                            onClick = { vm.setOnlyMatched(!ui.onlyMatched) },
-                            label = { Text("Csak párosított") }
-                        )
-                    }
-                } else {
+                run {
                     // Útvonal-sor: tárolóváltó + felfelé gomb + útvonal
                     Row(
                         modifier = Modifier
@@ -327,10 +343,7 @@ fun ExplorerScreen(
         ) {
             if (ui.entries.isEmpty() && !ui.loading) {
                 Text(
-                    text = if (ui.flatMode)
-                        "A gyorsítótár üres.\nIndíts egy szkennelést a Mappák nézetben a radar ikonnal!"
-                    else
-                        "Nincs könyvfájl ebben a mappában.",
+                    text = "Nincs könyvfájl ebben a mappában.",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -349,6 +362,8 @@ fun ExplorerScreen(
                     FileRowItem(
                         row = row,
                         stripe = index % 2 == 1,
+                        percent = ui.progress[row.path],
+                        onInfo = { infoRow = row },
                         onSingleTap = {
                             if (row.isDir) {
                                 vm.navigateTo(row.path)
@@ -387,6 +402,121 @@ fun ExplorerScreen(
                 modifier = Modifier.align(Alignment.TopEnd)
             )
         }
+    }
+
+    infoRow?.let { r ->
+        BookInfoDialog(
+            row = r,
+            book = infoBook,
+            fallback = infoMeta,
+            percent = ui.progress[r.path],
+            onDismiss = { infoRow = null }
+        )
+    }
+}
+
+@Composable
+private fun BookInfoDialog(
+    row: FileRow,
+    book: CatalogBook?,
+    fallback: String?,
+    percent: Double?,
+    onDismiss: () -> Unit
+) {
+    val f = File(row.path)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = book?.cim ?: row.cim ?: row.name.substringBeforeLast('.'),
+                style = MaterialTheme.typography.titleMedium
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 460.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                val author = book?.szerzo ?: row.szerzo
+                if (!author.isNullOrBlank()) {
+                    Text(
+                        text = Normalizer.stripInvisible(author),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                if (percent != null && percent > 0.05) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = if (percent >= 98.0) "Elolvasva"
+                        else String.format(Locale.getDefault(), "Itt tartasz: %.1f%%", percent),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    LinearProgressIndicator(
+                        progress = { (percent / 100.0).toFloat().coerceIn(0f, 1f) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(5.dp)
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                if (book != null) {
+                    InfoRow("Kiadó", book.kiado)
+                    InfoRow("Kiadás éve", book.kiadasEve)
+                    InfoRow("ISBN", book.isbn)
+                    InfoRow(
+                        "Sorozat",
+                        listOfNotNull(
+                            book.sorozat?.takeIf { it.isNotBlank() && it != "N/A" },
+                            book.sorozatSzama?.takeIf { it.isNotBlank() && it != "N/A" }
+                        ).joinToString(" #").ifBlank { null }
+                    )
+                    InfoRow("Címkék", book.cimkek)
+                }
+                InfoRow("Fájl", f.name)
+                InfoRow("Méret", fmtSize(f.length()))
+                InfoRow("Módosítva", fmtDate(row.mtime))
+
+                val desc = book?.leiras?.let { Normalizer.stripInvisible(it).trim() }
+                if (!desc.isNullOrBlank()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text("Leírás", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text(text = desc, style = MaterialTheme.typography.bodySmall)
+                } else if (!fallback.isNullOrBlank()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "A fájlból kiolvasott adatok",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(text = fallback, style = MaterialTheme.typography.bodySmall)
+                } else {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Ehhez a fájlhoz nincs több adat — sem a katalógusban, sem a fájlban.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Bezárás") } }
+    )
+}
+
+@Composable
+private fun InfoRow(label: String, value: String?) {
+    val v = value?.trim()
+    if (v.isNullOrBlank() || v == "N/A") return
+    Row(modifier = Modifier.padding(vertical = 1.dp)) {
+        Text(
+            text = label + ": ",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(text = Normalizer.stripInvisible(v), style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -427,6 +557,8 @@ private fun HeaderRow(sortKey: SortKey, sortAsc: Boolean, onSort: (SortKey) -> U
 private fun FileRowItem(
     row: FileRow,
     stripe: Boolean,
+    percent: Double?,
+    onInfo: () -> Unit,
     onSingleTap: () -> Unit,
     onDoubleTap: () -> Unit,
     onLongPress: () -> Unit
@@ -434,58 +566,99 @@ private fun FileRowItem(
     val bg = if (stripe) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
     else MaterialTheme.colorScheme.surface
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(bg)
-            .pointerInput(row.path) {
-                detectTapGestures(
-                    onTap = { onSingleTap() },
-                    onDoubleTap = { onDoubleTap() },
-                    onLongPress = { onLongPress() }
+            .background(bg),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .pointerInput(row.path) {
+                    detectTapGestures(
+                        onTap = { onSingleTap() },
+                        onDoubleTap = { onDoubleTap() },
+                        onLongPress = { onLongPress() }
+                    )
+                }
+                .padding(start = 8.dp, top = 3.dp, bottom = 3.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = row.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = if (row.isDir) FontWeight.Bold else FontWeight.Normal,
+                    color = if (row.isDir) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = if (row.isDir) "<DIR>" else fmtSize(row.size),
+                    style = MaterialTheme.typography.labelSmall,
+                    textAlign = TextAlign.Right,
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.width(62.dp)
+                )
+                Text(
+                    text = fmtDate(row.mtime),
+                    style = MaterialTheme.typography.labelSmall,
+                    textAlign = TextAlign.Right,
+                    maxLines = 1,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.width(72.dp)
                 )
             }
-            .padding(horizontal = 8.dp, vertical = 3.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = row.name,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (row.isDir) FontWeight.Bold else FontWeight.Normal,
-                color = if (row.isDir) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = if (row.isDir) "<DIR>" else fmtSize(row.size),
-                style = MaterialTheme.typography.labelSmall,
-                textAlign = TextAlign.Right,
-                maxLines = 1,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.width(62.dp)
-            )
-            Text(
-                text = fmtDate(row.mtime),
-                style = MaterialTheme.typography.labelSmall,
-                textAlign = TextAlign.Right,
-                maxLines = 1,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.width(72.dp)
-            )
+            if (!row.isDir && (row.cim != null || row.szerzo != null)) {
+                Text(
+                    text = listOfNotNull(row.szerzo, row.cim).joinToString(": "),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            // Olvasottsági csík: csak akkor, ha már elkezdted a könyvet
+            if (!row.isDir && percent != null && percent > 0.05) {
+                val done = percent >= FINISHED_PERCENT
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 1.dp)
+                ) {
+                    LinearProgressIndicator(
+                        progress = { (percent / 100.0).toFloat().coerceIn(0f, 1f) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(4.dp),
+                        color = if (done) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.tertiary
+                    )
+                    Text(
+                        text = if (done) "  kész"
+                        else String.format(Locale.getDefault(), "  %.0f%%", percent),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
-        if (!row.isDir && (row.cim != null || row.szerzo != null)) {
-            Text(
-                text = listOfNotNull(row.szerzo, row.cim).joinToString(": "),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+        if (!row.isDir) {
+            IconButton(onClick = onInfo, modifier = Modifier.size(38.dp)) {
+                Icon(
+                    Icons.Filled.Info,
+                    contentDescription = "A könyv adatai",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            Spacer(Modifier.width(8.dp))
         }
     }
 }

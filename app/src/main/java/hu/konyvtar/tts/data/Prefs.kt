@@ -80,13 +80,6 @@ object Prefs {
 
     // ---------------------------------------------------------------- hangjelzések
 
-    /** Halk jelzőhang minden bekezdés előtt. */
-    fun cueParagraph(context: Context): Boolean = sp(context).getBoolean("cue_para", true)
-
-    fun setCueParagraph(context: Context, value: Boolean) {
-        sp(context).edit().putBoolean("cue_para", value).apply()
-    }
-
     /** Mélyebb, kettős jelzőhang minden fejezet előtt. */
     fun cueChapter(context: Context): Boolean = sp(context).getBoolean("cue_chapter", true)
 

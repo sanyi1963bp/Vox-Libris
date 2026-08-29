@@ -39,10 +39,11 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
   fejlécekből: cím, szerző, fülszöveg, kiadó, sorozat, ISBN, címkék) —
   internet nélkül. Újrafuttatva **inkrementális**: a meglévő bejegyzéseket
   érintetlenül hagyja, csak az újonnan bemásolt könyveket veszi fel.
-- **Total Commander-stílusú böngésző.** Sűrű, ikonmentes lista (név, méret,
-  dátum, párosított szerző/cím), mappánkénti navigáció, rekurzív szkennelés,
-  oszlopfejlécre koppintva rendezés, gyorsgörgető sáv, tárolóváltó
-  (belső tároló ⇄ SD-kártya ⇄ USB).
+- **Total Commander-stílusú böngésző.** Sűrű, ikonmentes fájllista (név,
+  méret, dátum, párosított szerző/cím), mappánkénti navigáció, rekurzív
+  szkennelés, oszlopfejlécre koppintva rendezés, gyorsgörgető sáv,
+  tárolóváltó (belső tároló ⇄ SD-kártya ⇄ USB). Minden könyv mellett **ⓘ
+  gomb** az adatokhoz, és **olvasottsági csík** azoknál, amiket elkezdtél.
 - **Egyetlen könyv-képernyő.** A szöveg és minden vezérlő egy helyen —
   nincs külön lejátszó- vagy részletező-ablak. Alul egy sorban:
   **fejezet ◀ · bekezdés ◀ · mondat ◀ · ▶/⏸ · mondat ▶ · bekezdés ▶ ·

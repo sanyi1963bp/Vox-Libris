@@ -9,6 +9,24 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [1.4.0] — 2026-08-29
+
+**Egyszerűbb fájllista**
+
+- Megszűnt a külön "Katalógus" nézet és a nézetváltó gombok: **csak a
+  fájllistát látod**. A katalógus a program belső ügye — abból tölti ki a
+  szerzőt, címet és a leírást.
+- Minden könyv mellett egy **ⓘ gomb**: megnyitja a könyv adatait (szerző, cím,
+  kiadó, év, sorozat, címkék, fülszöveg). Ha nincs katalógus-találat, a
+  **fájl saját metaadatát** olvassa ki helyben.
+- A már elkezdett könyvek alatt **olvasottsági csík** látszik a
+  százalékkal, a befejezetteknél "kész" felirattal.
+
+**Változás**
+
+- A bekezdések előtti jelzőhang megszűnt. Fejezet előtt továbbra is szól a
+  mélyebb, kettős hang.
+
 ### [1.3.0] — 2026-08-29
 
 **Megjelenés**
@@ -160,6 +178,24 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [1.4.0] — 2026-08-29
+
+**A simpler file list**
+
+- The separate "catalogue" view and its switcher buttons are gone: **you only
+  see the file list**. The catalogue is now purely internal — it fills in
+  author, title and description.
+- Every book has an **ⓘ button** opening its details (author, title,
+  publisher, year, series, tags, synopsis). With no catalogue match it reads
+  the **file own embedded metadata** on the spot.
+- Books you have started show a **progress bar** with the percentage, and
+  "kész" (done) once finished.
+
+**Changed**
+
+- The cue before each paragraph is gone. The deeper double tone before each
+  chapter stays.
 
 ### [1.3.0] — 2026-08-29
 

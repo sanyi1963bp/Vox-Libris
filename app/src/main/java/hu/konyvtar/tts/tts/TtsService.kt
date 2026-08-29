@@ -657,17 +657,11 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         val myCounter = utteranceCounter
         publishPosition()
 
-        // Bekezdés- és fejezetjelző hang a bekezdés első mondata előtt
+        // Fejezetjelző hang a fejezet első mondata előtt
         var cueDelay = 0L
-        if (withCue && u.start == 0) {
-            val volume = Prefs.cueVolume(this)
-            if (u.para in chapterSet && Prefs.cueChapter(this)) {
-                ToneCue.chapter(volume)
-                cueDelay = ToneCue.CHAPTER_MS.toLong()
-            } else if (Prefs.cueParagraph(this)) {
-                ToneCue.paragraph(volume)
-                cueDelay = ToneCue.PARAGRAPH_MS.toLong()
-            }
+        if (withCue && u.start == 0 && u.para in chapterSet && Prefs.cueChapter(this)) {
+            ToneCue.chapter(Prefs.cueVolume(this))
+            cueDelay = ToneCue.CHAPTER_MS.toLong()
         }
 
         val speakNow = {

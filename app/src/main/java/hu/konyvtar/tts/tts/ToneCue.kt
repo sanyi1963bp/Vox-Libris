@@ -15,16 +15,8 @@ object ToneCue {
 
     private const val SAMPLE_RATE = 22050
 
-    /** A bekezdésjelzés hossza ezredmásodpercben. */
-    const val PARAGRAPH_MS = 130
-
     /** A fejezetjelzés hossza ezredmásodpercben. */
     const val CHAPTER_MS = 520
-
-    /** Halk, magas jelzés — bekezdés eleje. */
-    fun paragraph(volume: Float) {
-        play(listOf(Tone(784.0, 130, volume * 0.5f)))
-    }
 
     /** Mélyebb, kettős, ereszkedő jelzés — fejezet eleje. */
     fun chapter(volume: Float) {
