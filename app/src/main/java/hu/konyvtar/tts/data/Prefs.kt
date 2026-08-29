@@ -141,6 +141,13 @@ object Prefs {
         sp(context).edit().putFloat("ui_scale", value).apply()
     }
 
+    /** A felület nyelve BCP-47 címkeként; üres = a rendszer nyelve. */
+    fun uiLanguage(context: Context): String = sp(context).getString("ui_language", "") ?: ""
+
+    fun setUiLanguage(context: Context, value: String) {
+        sp(context).edit().putString("ui_language", value).apply()
+    }
+
     // ---------------------------------------------------------------- felolvasás nyelve
 
     /**

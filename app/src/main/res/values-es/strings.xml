@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vox Libris</string>
+
+    <string name="tts_channel_name">Lectura en voz alta</string>
+    <string name="tts_channel_desc">Lectura del libro en segundo plano</string>
+
+    <string name="common_close">Cerrar</string>
+    <string name="common_ok">Aceptar</string>
+    <string name="common_cancel">Cancelar</string>
+    <string name="common_abort">Interrumpir</string>
+    <string name="common_delete">Eliminar</string>
+    <string name="common_back">Atrás</string>
+    <string name="common_up">Subir</string>
+    <string name="common_error">Error</string>
+    <string name="common_settings">Ajustes</string>
+    <string name="common_play">Reproducir</string>
+    <string name="common_pause">Pausa</string>
+
+    <string name="perm_title">Se necesita acceso a los archivos</string>
+    <string name="perm_text">La aplicación lee los archivos de libros y la base de datos del catálogo en tu teléfono, por lo que necesita el permiso «Acceso a todos los archivos».\n\nActívalo en la pantalla siguiente y vuelve aquí.</string>
+    <string name="perm_button">Conceder permiso</string>
+
+    <string name="explorer_scan">Escanear</string>
+    <string name="explorer_stats">Lista de lectura</string>
+    <string name="explorer_search_hint">Buscar (nombre, título, autor)…</string>
+    <string name="explorer_clear">Borrar</string>
+    <string name="explorer_subfolders">También subcarpetas</string>
+    <string name="explorer_deep_hits">Buscando también en subcarpetas — %1$d resultados</string>
+    <string name="explorer_storage_switch">Cambiar de almacenamiento</string>
+    <string name="explorer_no_other_storage">No hay otro almacenamiento (tarjeta SD) montado</string>
+    <string name="explorer_books_count">%1$d libros</string>
+    <string name="explorer_no_db">sin base de datos</string>
+    <string name="explorer_scanning">Escaneando: %1$d archivos, %2$d emparejados</string>
+    <string name="explorer_empty">No hay archivos de libros en esta carpeta.</string>
+    <string name="explorer_preparing"> • preparando…</string>
+    <string name="col_name">Nombre</string>
+    <string name="col_author">Autor</string>
+    <string name="col_size">Tamaño</string>
+    <string name="col_date">Fecha</string>
+    <string name="row_done">hecho</string>
+    <string name="row_info">Datos del libro</string>
+
+    <string name="info_title">Título</string>
+    <string name="info_author">Autor</string>
+    <string name="info_publisher">Editorial</string>
+    <string name="info_year">Año</string>
+    <string name="info_isbn">ISBN</string>
+    <string name="info_series">Serie</string>
+    <string name="info_tags">Etiquetas</string>
+    <string name="info_file">Archivo</string>
+    <string name="info_size">Tamaño</string>
+    <string name="info_modified">Modificado</string>
+    <string name="info_paragraphs">Párrafos</string>
+    <string name="info_chapters">Capítulos</string>
+    <string name="info_description">Descripción</string>
+    <string name="info_from_file">Datos leídos del propio archivo</string>
+    <string name="info_none">No hay más datos para este archivo — ni en el catálogo ni dentro del archivo.</string>
+    <string name="info_progress">Vas por: %1$s%%</string>
+    <string name="info_finished">Leído</string>
+
+    <string name="reader_load_error">No se pudo cargar el texto.</string>
+    <string name="reader_bookmark_added">Marcador: párrafo %1$d</string>
+    <string name="reader_search_in_text">Buscar en el texto</string>
+    <string name="reader_search_hint">Buscar en el texto…</string>
+    <string name="reader_more_actions">Más acciones</string>
+    <string name="reader_bookmark_here">Marcador aquí</string>
+    <string name="reader_bookmarks_n">Marcadores (%1$d)</string>
+    <string name="reader_stop_narration">Detener la lectura</string>
+    <string name="reader_prev_hit">Resultado anterior</string>
+    <string name="reader_next_hit">Resultado siguiente</string>
+    <string name="reader_follow">Seguir la lectura</string>
+    <string name="reader_font_and_voice">Tamaño de letra y voz</string>
+    <string name="reader_font">Letra</string>
+    <string name="reader_smaller_font">Letra más pequeña</string>
+    <string name="reader_larger_font">Letra más grande</string>
+    <string name="reader_speed">Velocidad</string>
+    <string name="reader_pitch">Tono</string>
+    <string name="reader_loading">Cargando el texto…</string>
+    <string name="reader_bookmarks_title">Marcadores</string>
+    <string name="reader_no_bookmarks">Aún no hay marcadores.\nMantén pulsado un párrafo para añadir uno.</string>
+    <string name="reader_bookmark_line">Párrafo %1$d • %2$s</string>
+    <string name="reader_status_para">Pár. %1$d/%2$d</string>
+    <string name="reader_status_chapter">  •  Cap. %1$d/%2$d</string>
+    <string name="reader_status_progress">  •  %1$s%%  •  %2$s</string>
+
+    <string name="nav_chapter">capítulo</string>
+    <string name="nav_paragraph">párrafo</string>
+    <string name="nav_sentence">frase</string>
+    <string name="nav_prev_chapter">Capítulo anterior</string>
+    <string name="nav_next_chapter">Capítulo siguiente</string>
+    <string name="nav_prev_paragraph">Párrafo anterior</string>
+    <string name="nav_next_paragraph">Párrafo siguiente</string>
+    <string name="nav_prev_sentence">Frase anterior</string>
+    <string name="nav_next_sentence">Frase siguiente</string>
+
+    <string name="stats_title">Lista de lectura</string>
+    <string name="stats_export_save">Guardar en Descargas</string>
+    <string name="stats_export_share">Enviar al ordenador</string>
+    <string name="stats_started">Empezados</string>
+    <string name="stats_finished">Leídos</string>
+    <string name="stats_inprogress">En curso</string>
+    <string name="stats_listening">Escucha</string>
+    <string name="stats_empty">Aún no has empezado ningún libro.\nToca dos veces un archivo para iniciar la lectura en voz alta — o una vez para leer en pantalla.</string>
+    <string name="stats_section_progress">📖 En curso (%1$d)</string>
+    <string name="stats_section_finished">✔ Leídos (%1$d)</string>
+    <string name="stats_row_line">%1$s%% • %2$s • última vez: %3$s</string>
+    <string name="stats_continue">Continuar la lectura</string>
+    <string name="stats_read_screen">Leer en pantalla</string>
+    <string name="stats_remove">Quitar de la lista</string>
+    <string name="stats_file_missing">El archivo ya no existe: %1$s</string>
+    <string name="export_done_title">Exportación completada</string>
+    <string name="export_done_text">%1$d libros (%2$d leídos) y %3$d marcadores guardados en:</string>
+    <string name="export_usb_hint">Conecta el teléfono por USB y encontrarás los archivos en el PC, en la carpeta Descargas.</string>
+    <string name="export_failed">La exportación ha fallado.</string>
+    <string name="share_failed">No se pudo compartir: %1$s</string>
+    <string name="share_subject">Vox Libris — registro de lectura</string>
+    <string name="share_chooser">Enviar al ordenador</string>
+    <string name="share_text_chooser">Enviar el texto a una aplicación de voz</string>
+
+    <string name="csv_status">Estado</string>
+    <string name="csv_title">Título</string>
+    <string name="csv_author">Autor</string>
+    <string name="csv_percent">Avance %</string>
+    <string name="csv_paragraph">Párrafo</string>
+    <string name="csv_total_paragraphs">Párrafos totales</string>
+    <string name="csv_minutes">Minutos escuchados</string>
+    <string name="csv_last">Última apertura</string>
+    <string name="csv_file">Archivo</string>
+    <string name="csv_book_id">ID del libro</string>
+    <string name="csv_snippet">Fragmento</string>
+    <string name="csv_created">Creado</string>
+    <string name="status_finished">Leído</string>
+    <string name="status_in_progress">En curso</string>
+
+    <string name="picker_db_title">Seleccionar base de datos</string>
+    <string name="picker_root_title">Seleccionar carpeta raíz</string>
+    <string name="picker_choose_this">Elegir esta carpeta</string>
+    <string name="picker_no_subfolder">No hay subcarpetas.</string>
+    <string name="picker_no_files">No hay ningún archivo compatible en esta carpeta.</string>
+    <string name="storage_internal">Almacenamiento interno</string>
+    <string name="storage_sd">Tarjeta SD</string>
+
+    <string name="settings_title">Ajustes</string>
+    <string name="set_db_title">Base de datos del catálogo</string>
+    <string name="set_db_none">No seleccionada (copia un archivo .db de catálogo al teléfono)</string>
+    <string name="set_db_opened">Abierta — %1$d libros</string>
+    <string name="set_db_closed">No abierta</string>
+    <string name="set_db_pick">Seleccionar archivo de base de datos…</string>
+    <string name="set_db_opened_toast">Base de datos abierta: %1$d libros</string>
+    <string name="set_db_failed_toast">No se pudo abrir la base de datos. ¿Seguro que es un archivo de catálogo?</string>
+    <string name="set_root_title">Carpeta raíz de los libros</string>
+    <string name="set_root_pick">Seleccionar carpeta raíz…</string>
+
+    <string name="set_build_title">Crear un catálogo a partir de tus libros</string>
+    <string name="set_build_desc">Si no tienes un catálogo preparado, la aplicación crea uno con los metadatos de los propios libros (título, autor, sinopsis) — sin Internet. Al repetirlo, deja intactas las entradas existentes y solo añade los libros nuevos.</string>
+    <string name="set_build_source">Origen: %1$s</string>
+    <string name="set_build_target">Destino: %1$s</string>
+    <string name="set_build_stats">Actualmente: %1$d libros, %2$d archivos (%3$d con metadatos reales)</string>
+    <string name="set_build_pdf">  También metadatos de PDF (más lento)</string>
+    <string name="set_build_progress">%1$d archivos • %2$d entradas nuevas • %3$d omitidos</string>
+    <string name="set_build_start">Crear catálogo</string>
+    <string name="set_build_update">Actualizar con los libros nuevos</string>
+    <string name="build_done_title">Catálogo listo</string>
+    <string name="build_cancelled_title">Interrumpido</string>
+    <string name="build_result">%1$d archivos examinados\n%2$d archivos nuevos registrados\n%3$d libros nuevos en el catálogo\n%4$d entradas anteriores intactas</string>
+    <string name="build_use_it">Usarlo ahora</string>
+    <string name="build_error_open">No se pudo abrir la base de datos: %1$s</string>
+    <string name="build_error_generic">Error desconocido al crear el catálogo</string>
+
+    <string name="set_cache_title">Cachés</string>
+    <string name="set_cache_scanned">Archivos escaneados: %1$d (%2$d emparejados)</string>
+    <string name="set_cache_text">Texto extraído: %1$s</string>
+    <string name="set_cache_clear_scan">Vaciar caché de escaneo</string>
+    <string name="set_cache_clear_text">Vaciar caché de texto</string>
+    <string name="set_cache_scan_cleared">Caché de escaneo vaciada.</string>
+    <string name="set_cache_text_cleared">Caché de texto vaciada.</string>
+
+    <string name="set_look_title">Apariencia</string>
+    <string name="set_theme">Tema</string>
+    <string name="set_theme_system">Según el sistema</string>
+    <string name="set_theme_light">Claro</string>
+    <string name="set_theme_dark">Oscuro</string>
+    <string name="set_color_scheme">Combinación de colores</string>
+    <string name="set_ui_scale">Tamaño de letra de la interfaz: %1$d%%</string>
+    <string name="set_ui_scale_hint">El tamaño del texto del libro se ajusta aparte en el lector, con los botones A− y A+.</string>
+    <string name="scheme_classic">Verde clásico</string>
+    <string name="scheme_ocean">Azul océano</string>
+    <string name="scheme_sepia">Sepia (papel)</string>
+    <string name="scheme_sunset">Atardecer</string>
+    <string name="scheme_night">Noche (suave)</string>
+    <string name="scheme_contrast">Alto contraste</string>
+
+    <string name="set_ui_lang_title">Idioma de la interfaz</string>
+    <string name="set_ui_lang_system">Según el sistema</string>
+    <string name="set_ui_lang_pick">Elegir idioma…</string>
+    <string name="set_ui_lang_hint">Esto solo cambia los textos de la aplicación. El idioma de la lectura en voz alta se ajusta aparte, más abajo.</string>
+
+    <string name="set_tts_lang_title">Idioma de la lectura</string>
+    <string name="set_tts_lang_auto">Automático (idioma del sistema si está disponible)</string>
+    <string name="set_tts_lang_loading">Consultando las voces instaladas…</string>
+    <string name="set_tts_lang_count">Hay %1$d idiomas disponibles con el motor de voz instalado.</string>
+    <string name="set_tts_lang_pick">Elegir idioma…</string>
+    <string name="set_tts_lang_download">Descargar voces</string>
+    <string name="set_tts_lang_none">No se pudo consultar ningún idioma. Instala un motor de síntesis de voz (por ejemplo Google Text-to-Speech) y vuelve a abrir esta ventana.</string>
+    <string name="set_tts_download_failed">El instalador de voces no está disponible. Abre los ajustes de voz del sistema.</string>
+
+    <string name="set_scan_title">Escanear la biblioteca</string>
+    <string name="set_scan_desc">Recorre la carpeta raíz y empareja los archivos con el catálogo. Nunca se inicia solo — siempre lo pides tú.</string>
+    <string name="set_scan_stats">Hasta ahora %1$d archivos (%2$d emparejados)</string>
+    <string name="set_scan_progress">%1$d archivos • %2$d emparejados</string>
+    <string name="set_scan_start">Iniciar escaneo</string>
+
+    <string name="set_cue_title">Señales sonoras</string>
+    <string name="set_cue_desc">Un doble tono grave marca el comienzo de cada capítulo nuevo, para saber dónde estás incluso de oído.</string>
+    <string name="set_cue_chapter">  Doble tono grave antes de un capítulo</string>
+    <string name="set_cue_volume">Volumen</string>
+
+    <string name="set_reading_title">Lectura y control</string>
+    <string name="set_reading_follow">  El texto sigue a la lectura</string>
+    <string name="set_reading_keep_screen">  Mantener la pantalla encendida al leer</string>
+    <string name="set_reading_rewind">Doble pulsación en los auriculares: %1$d segundos atrás</string>
+
+    <string name="set_tts_title">Síntesis de voz (TTS)</string>
+    <string name="set_tts_desc">La aplicación usa el motor de voz del sistema (por ejemplo Google Text-to-Speech). El motor y la voz se cambian en los ajustes del sistema.</string>
+    <string name="set_tts_open">Ajustes de voz del sistema…</string>
+    <string name="set_tts_open_failed">No se pudieron abrir los ajustes de voz.</string>
+
+    <string name="err_file_not_found">Archivo no encontrado: %1$s</string>
+    <string name="err_no_text">No se pudo extraer texto de este archivo.</string>
+    <string name="err_format_unsupported">Este formato (.%1$s) no se admite para la lectura en voz alta.</string>
+    <string name="err_doc">El antiguo formato binario .doc no se admite — conviértelo a .docx o .txt (por ejemplo con Calibre).</string>
+    <string name="err_djvu">DjVu es un formato de imagen sin texto extraíble — tras un OCR, el .txt se puede leer en voz alta.</string>
+    <string name="err_drm">Este libro tiene DRM (cifrado Mobipocket) y no se puede leer en voz alta. Conviértelo, por ejemplo con Calibre.</string>
+    <string name="err_huff">MOBI comprimido con HUFF/CDIC — conviértelo a EPUB (por ejemplo con Calibre) y podrá leerse.</string>
+    <string name="err_mobi_broken">Archivo MOBI dañado o incompleto.</string>
+    <string name="err_mobi_compression">Compresión MOBI desconocida: %1$d</string>
+    <string name="err_mobi_no_text">No se pudo extraer texto del archivo MOBI.</string>
+    <string name="err_epub_no_html">El EPUB no contiene ningún capítulo HTML legible.</string>
+    <string name="err_epub_no_text">No se pudo extraer texto de los capítulos del EPUB.</string>
+    <string name="err_fb2_no_text">No se pudo extraer texto del archivo FB2.</string>
+    <string name="err_rtf_invalid">Archivo RTF no válido.</string>
+    <string name="err_rtf_no_text">No se pudo extraer texto del archivo RTF.</string>
+    <string name="err_docx_invalid">DOCX no válido: falta word/document.xml.</string>
+    <string name="err_docx_no_text">No se pudo extraer texto del archivo DOCX.</string>
+    <string name="err_pdf_password">Este PDF está protegido con contraseña y no se puede leer en voz alta.</string>
+    <string name="err_pdf_no_text">Este PDF no tiene capa de texto (probablemente está escaneado). Tras un OCR, el .txt se puede leer en voz alta.</string>
+    <string name="err_pdf_failed">No se puede procesar el PDF: %1$s</string>
+    <string name="err_pdf_no_extract">No se pudo extraer texto del PDF.</string>
+    <string name="err_extract_generic">Error al extraer el texto: %1$s</string>
+    <string name="err_tts_init">El motor de voz no se ha iniciado. Comprueba los ajustes de síntesis de voz del sistema.</string>
+
+    <string name="notif_preparing">Preparando…</string>
+    <string name="notif_status">%1$d/%2$d párrafos • %3$s</string>
+    <string name="notif_prev">Anterior</string>
+    <string name="notif_next">Siguiente</string>
+    <string name="notif_stop">Detener</string>
+
+    <string name="duration_hm">%1$d h %2$d min</string>
+    <string name="duration_m">%1$d min</string>
+    <string name="scan_loading_catalogue">Cargando el catálogo…</string>
+    <string name="scan_unknown_error">Error desconocido durante el escaneo</string>
+</resources>

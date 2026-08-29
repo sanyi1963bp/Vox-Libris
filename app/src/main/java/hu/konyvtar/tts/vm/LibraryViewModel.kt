@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import hu.konyvtar.tts.R
 
 /**
  * A böngésző/katalógus képernyő állapota és műveletei.
@@ -103,8 +104,9 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
                 if (v.state != Environment.MEDIA_MOUNTED &&
                     v.state != Environment.MEDIA_MOUNTED_READ_ONLY
                 ) return@mapNotNull null
-                val label = if (v.isPrimary) "Belső tároló"
-                else (v.getDescription(getApplication()) ?: "SD-kártya")
+                val ctx0 = getApplication<Application>()
+                val label = if (v.isPrimary) ctx0.getString(R.string.storage_internal)
+                else (v.getDescription(ctx0) ?: ctx0.getString(R.string.storage_sd))
                 StorageVol(label, dir.absolutePath)
             }
         } catch (e: Exception) {
@@ -156,7 +158,11 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             val cat = CatalogHolder.reopen(ctx, path)
             _ui.value = _ui.value.copy(
                 db = DbStatus(path = path, opened = cat != null, bookCount = cat?.bookCount() ?: 0),
-                message = if (cat != null) "Adatbázis megnyitva: ${cat.bookCount()} könyv" else "Nem sikerült megnyitni az adatbázist. Biztosan a ncore_konyvtar.db-t választottad?"
+                message = if (cat != null) {
+                    ctx.getString(R.string.set_db_opened_toast, cat.bookCount())
+                } else {
+                    ctx.getString(R.string.set_db_failed_toast)
+                }
             )
             refresh()
         }

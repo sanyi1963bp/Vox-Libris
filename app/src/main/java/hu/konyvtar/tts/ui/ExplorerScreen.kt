@@ -77,6 +77,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Locale
+import androidx.compose.ui.res.stringResource
+import hu.konyvtar.tts.R
 
 /**
  * Total Commander stílusú, sűrű fájlböngésző.
@@ -112,13 +114,14 @@ fun ExplorerScreen(
             }
             if (infoBook == null) {
                 val m = MetadataExtractor.extract(context, File(r.path), true)
+                fun line(res: Int, v: String?) = v?.let { context.getString(res) + ": " + it }
                 infoMeta = listOfNotNull(
-                    m.title?.let { "Cím: " + it },
-                    m.author?.let { "Szerző: " + it },
-                    m.publisher?.let { "Kiadó: " + it },
-                    m.year?.let { "Év: " + it },
-                    m.series?.let { "Sorozat: " + it },
-                    m.tags?.let { "Címkék: " + it },
+                    line(R.string.info_title, m.title),
+                    line(R.string.info_author, m.author),
+                    line(R.string.info_publisher, m.publisher),
+                    line(R.string.info_year, m.year),
+                    line(R.string.info_series, m.series),
+                    line(R.string.info_tags, m.tags),
                     m.description
                 ).joinToString("\n")
             }
@@ -140,7 +143,11 @@ fun ExplorerScreen(
 
     fun playRow(row: FileRow) {
         if (!TextExtractor.isSupported(row.ext)) {
-            Toast.makeText(context, TextExtractor.unsupportedHint(row.ext), Toast.LENGTH_LONG).show()
+            Toast.makeText(
+            context,
+            TextExtractor.unsupportedHint(context, row.ext),
+            Toast.LENGTH_LONG
+        ).show()
             return
         }
         TtsService.playFile(
@@ -164,25 +171,35 @@ fun ExplorerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Könyvtár TTS",
+                        text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = if (ui.db.opened) "${ui.db.bookCount} könyv" else "nincs DB",
+                        text = if (ui.db.opened) stringResource(R.string.explorer_books_count, ui.db.bookCount)
+                        else stringResource(R.string.explorer_no_db),
                         style = MaterialTheme.typography.labelMedium,
                         color = if (ui.db.opened) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.error
                     )
                     IconButton(onClick = { vm.startScan() }) {
-                        Icon(Icons.Filled.Radar, contentDescription = "Szkennelés")
+                        Icon(
+                            Icons.Filled.Radar,
+                            contentDescription = stringResource(R.string.explorer_scan)
+                        )
                     }
                     IconButton(onClick = onOpenStats) {
-                        Icon(Icons.Filled.BarChart, contentDescription = "Statisztika")
+                        Icon(
+                            Icons.Filled.BarChart,
+                            contentDescription = stringResource(R.string.explorer_stats)
+                        )
                     }
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Filled.Settings, contentDescription = "Beállítások")
+                        Icon(
+                            Icons.Filled.Settings,
+                            contentDescription = stringResource(R.string.common_settings)
+                        )
                     }
                 }
                 // Kereső + nézetváltó
@@ -199,12 +216,20 @@ fun ExplorerScreen(
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         textStyle = MaterialTheme.typography.bodyMedium,
-                        placeholder = { Text("Keresés (név, cím, szerző)…", style = MaterialTheme.typography.bodyMedium) },
+                        placeholder = {
+                            Text(
+                                stringResource(R.string.explorer_search_hint),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
                         keyboardOptions = KeyboardOptions.Default,
                         trailingIcon = {
                             if (ui.query.isNotEmpty()) {
                                 IconButton(onClick = { vm.setQuery("") }) {
-                                    Icon(Icons.Filled.Close, contentDescription = "Törlés")
+                                    Icon(
+                                        Icons.Filled.Close,
+                                        contentDescription = stringResource(R.string.explorer_clear)
+                                    )
                                 }
                             }
                         }
@@ -212,12 +237,12 @@ fun ExplorerScreen(
                     FilterChip(
                         selected = ui.recursiveSearch,
                         onClick = { vm.setRecursiveSearch(!ui.recursiveSearch) },
-                        label = { Text("Almappák is") }
+                        label = { Text(stringResource(R.string.explorer_subfolders)) }
                     )
                 }
                 if (ui.searchingDeep) {
                     Text(
-                        text = "Keresés az almappákban is — ${ui.entries.size} találat",
+                        text = stringResource(R.string.explorer_deep_hits, ui.entries.size),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(horizontal = 10.dp)
@@ -236,7 +261,10 @@ fun ExplorerScreen(
                                 onClick = { storageMenuOpen = true },
                                 modifier = Modifier.width(34.dp)
                             ) {
-                                Icon(Icons.Filled.SdStorage, contentDescription = "Tároló váltása")
+                                Icon(
+                                    Icons.Filled.SdStorage,
+                                    contentDescription = stringResource(R.string.explorer_storage_switch)
+                                )
                             }
                             DropdownMenu(
                                 expanded = storageMenuOpen,
@@ -264,7 +292,7 @@ fun ExplorerScreen(
                                     DropdownMenuItem(
                                         text = {
                                             Text(
-                                                "Nincs másik tároló (SD-kártya) csatolva",
+                                                stringResource(R.string.explorer_no_other_storage),
                                                 style = MaterialTheme.typography.labelMedium
                                             )
                                         },
@@ -274,7 +302,10 @@ fun ExplorerScreen(
                             }
                         }
                         IconButton(onClick = { vm.up() }, modifier = Modifier.width(34.dp)) {
-                            Icon(Icons.Filled.ArrowUpward, contentDescription = "Fel")
+                            Icon(
+                                Icons.Filled.ArrowUpward,
+                                contentDescription = stringResource(R.string.common_up)
+                            )
                         }
                         Text(
                             text = ui.currentDir,
@@ -298,12 +329,14 @@ fun ExplorerScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Szkennelés: ${ui.scan.filesFound} fájl, ${ui.scan.matched} párosítva",
+                                text = stringResource(
+                                    R.string.explorer_scanning, ui.scan.filesFound, ui.scan.matched
+                                ),
                                 style = MaterialTheme.typography.labelMedium,
                                 modifier = Modifier.weight(1f)
                             )
                             TextButton(onClick = { vm.cancelScan() }) {
-                                Text("Mégse")
+                                Text(stringResource(R.string.common_cancel))
                             }
                         }
                     }
@@ -335,14 +368,16 @@ fun ExplorerScreen(
                             )
                             Text(
                                 text = String.format(java.util.Locale.getDefault(), "%.1f%%", player.percent) +
-                                    if (player.preparing) " • előkészítés…" else "",
+                                    if (player.preparing) stringResource(R.string.explorer_preparing) else "",
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
                         IconButton(onClick = { TtsService.send(context, TtsService.ACTION_TOGGLE) }) {
                             Icon(
                                 if (player.playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                contentDescription = if (player.playing) "Szünet" else "Lejátszás"
+                                contentDescription = stringResource(
+                                    if (player.playing) R.string.common_pause else R.string.common_play
+                                )
                             )
                         }
                     }
@@ -357,7 +392,7 @@ fun ExplorerScreen(
         ) {
             if (ui.entries.isEmpty() && !ui.loading) {
                 Text(
-                    text = "Nincs könyvfájl ebben a mappában.",
+                    text = stringResource(R.string.explorer_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -386,7 +421,7 @@ fun ExplorerScreen(
                             } else {
                                 Toast.makeText(
                                     context,
-                                    TextExtractor.unsupportedHint(row.ext),
+                                    TextExtractor.unsupportedHint(context, row.ext),
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
@@ -401,7 +436,7 @@ fun ExplorerScreen(
                                 } else {
                                     Toast.makeText(
                                         context,
-                                        TextExtractor.unsupportedHint(row.ext),
+                                        TextExtractor.unsupportedHint(context, row.ext),
                                         Toast.LENGTH_LONG
                                     ).show()
                                 }
@@ -463,8 +498,11 @@ private fun BookInfoDialog(
                 if (percent != null && percent > 0.05) {
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        text = if (percent >= 98.0) "Elolvasva"
-                        else String.format(Locale.getDefault(), "Itt tartasz: %.1f%%", percent),
+                        text = if (percent >= 98.0) stringResource(R.string.info_finished)
+                        else stringResource(
+                            R.string.info_progress,
+                            String.format(Locale.getDefault(), "%.1f", percent)
+                        ),
                         style = MaterialTheme.typography.bodySmall
                     )
                     LinearProgressIndicator(
@@ -476,31 +514,35 @@ private fun BookInfoDialog(
                 }
                 Spacer(Modifier.height(8.dp))
                 if (book != null) {
-                    InfoRow("Kiadó", book.kiado)
-                    InfoRow("Kiadás éve", book.kiadasEve)
-                    InfoRow("ISBN", book.isbn)
+                    InfoRow(stringResource(R.string.info_publisher), book.kiado)
+                    InfoRow(stringResource(R.string.info_year), book.kiadasEve)
+                    InfoRow(stringResource(R.string.info_isbn), book.isbn)
                     InfoRow(
-                        "Sorozat",
+                        stringResource(R.string.info_series),
                         listOfNotNull(
                             book.sorozat?.takeIf { it.isNotBlank() && it != "N/A" },
                             book.sorozatSzama?.takeIf { it.isNotBlank() && it != "N/A" }
                         ).joinToString(" #").ifBlank { null }
                     )
-                    InfoRow("Címkék", book.cimkek)
+                    InfoRow(stringResource(R.string.info_tags), book.cimkek)
                 }
-                InfoRow("Fájl", f.name)
-                InfoRow("Méret", fmtSize(f.length()))
-                InfoRow("Módosítva", fmtDate(row.mtime))
+                InfoRow(stringResource(R.string.info_file), f.name)
+                InfoRow(stringResource(R.string.info_size), fmtSize(f.length()))
+                InfoRow(stringResource(R.string.info_modified), fmtDate(row.mtime))
 
                 val desc = book?.leiras?.let { Normalizer.stripInvisible(it).trim() }
                 if (!desc.isNullOrBlank()) {
                     Spacer(Modifier.height(8.dp))
-                    Text("Leírás", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text(
+                        stringResource(R.string.info_description),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
                     Text(text = desc, style = MaterialTheme.typography.bodySmall)
                 } else if (!fallback.isNullOrBlank()) {
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "A fájlból kiolvasott adatok",
+                        stringResource(R.string.info_from_file),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -508,14 +550,14 @@ private fun BookInfoDialog(
                 } else {
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "Ehhez a fájlhoz nincs több adat — sem a katalógusban, sem a fájlban.",
+                        stringResource(R.string.info_none),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Bezárás") } }
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_close)) } }
     )
 }
 
@@ -560,10 +602,10 @@ private fun HeaderRow(sortKey: SortKey, sortAsc: Boolean, onSort: (SortKey) -> U
             .padding(horizontal = 8.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        cell("Név", SortKey.NAME, Modifier.weight(1f))
-        cell("Szerző", SortKey.AUTHOR, Modifier.width(70.dp))
-        cell("Méret", SortKey.SIZE, Modifier.width(62.dp), TextAlign.Right)
-        cell("Dátum", SortKey.DATE, Modifier.width(72.dp), TextAlign.Right)
+        cell(stringResource(R.string.col_name), SortKey.NAME, Modifier.weight(1f))
+        cell(stringResource(R.string.col_author), SortKey.AUTHOR, Modifier.width(70.dp))
+        cell(stringResource(R.string.col_size), SortKey.SIZE, Modifier.width(62.dp), TextAlign.Right)
+        cell(stringResource(R.string.col_date), SortKey.DATE, Modifier.width(72.dp), TextAlign.Right)
     }
 }
 
@@ -654,7 +696,7 @@ private fun FileRowItem(
                         else MaterialTheme.colorScheme.tertiary
                     )
                     Text(
-                        text = if (done) "  kész"
+                        text = if (done) "  " + stringResource(R.string.row_done)
                         else String.format(Locale.getDefault(), "  %.0f%%", percent),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -666,7 +708,7 @@ private fun FileRowItem(
             IconButton(onClick = onInfo, modifier = Modifier.size(38.dp)) {
                 Icon(
                     Icons.Filled.Info,
-                    contentDescription = "A könyv adatai",
+                    contentDescription = stringResource(R.string.row_info),
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )

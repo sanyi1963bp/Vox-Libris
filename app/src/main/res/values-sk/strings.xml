@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vox Libris</string>
+
+    <string name="tts_channel_name">Predčítanie</string>
+    <string name="tts_channel_desc">Predčítanie knihy na pozadí</string>
+
+    <string name="common_close">Zavrieť</string>
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Zrušiť</string>
+    <string name="common_abort">Prerušiť</string>
+    <string name="common_delete">Odstrániť</string>
+    <string name="common_back">Späť</string>
+    <string name="common_up">Nahor</string>
+    <string name="common_error">Chyba</string>
+    <string name="common_settings">Nastavenia</string>
+    <string name="common_play">Prehrať</string>
+    <string name="common_pause">Pauza</string>
+
+    <string name="perm_title">Potrebný prístup k súborom</string>
+    <string name="perm_text">Aplikácia číta súbory kníh a databázu katalógu vo vašom telefóne, preto potrebuje povolenie „Prístup ku všetkým súborom“.\n\nZapnite ho na ďalšej obrazovke a vráťte sa sem.</string>
+    <string name="perm_button">Udeliť povolenie</string>
+
+    <string name="explorer_scan">Prehľadať</string>
+    <string name="explorer_stats">Zoznam čítania</string>
+    <string name="explorer_search_hint">Hľadať (názov, titul, autor)…</string>
+    <string name="explorer_clear">Vymazať</string>
+    <string name="explorer_subfolders">Aj podpriečinky</string>
+    <string name="explorer_deep_hits">Hľadanie aj v podpriečinkoch — %1$d výsledkov</string>
+    <string name="explorer_storage_switch">Zmeniť úložisko</string>
+    <string name="explorer_no_other_storage">Žiadne ďalšie úložisko (SD karta) nie je pripojené</string>
+    <string name="explorer_books_count">%1$d kníh</string>
+    <string name="explorer_no_db">bez databázy</string>
+    <string name="explorer_scanning">Prehľadávanie: %1$d súborov, %2$d spárovaných</string>
+    <string name="explorer_empty">V tomto priečinku nie sú žiadne súbory kníh.</string>
+    <string name="explorer_preparing"> • príprava…</string>
+    <string name="col_name">Názov</string>
+    <string name="col_author">Autor</string>
+    <string name="col_size">Veľkosť</string>
+    <string name="col_date">Dátum</string>
+    <string name="row_done">hotovo</string>
+    <string name="row_info">Údaje o knihe</string>
+
+    <string name="info_title">Titul</string>
+    <string name="info_author">Autor</string>
+    <string name="info_publisher">Vydavateľ</string>
+    <string name="info_year">Rok</string>
+    <string name="info_isbn">ISBN</string>
+    <string name="info_series">Séria</string>
+    <string name="info_tags">Štítky</string>
+    <string name="info_file">Súbor</string>
+    <string name="info_size">Veľkosť</string>
+    <string name="info_modified">Zmenené</string>
+    <string name="info_paragraphs">Odseky</string>
+    <string name="info_chapters">Kapitoly</string>
+    <string name="info_description">Popis</string>
+    <string name="info_from_file">Údaje načítané priamo zo súboru</string>
+    <string name="info_none">K tomuto súboru nie sú ďalšie údaje — ani v katalógu, ani v samotnom súbore.</string>
+    <string name="info_progress">Ste tu: %1$s%%</string>
+    <string name="info_finished">Prečítané</string>
+
+    <string name="reader_load_error">Text sa nepodarilo načítať.</string>
+    <string name="reader_bookmark_added">Záložka: odsek %1$d</string>
+    <string name="reader_search_in_text">Hľadať v texte</string>
+    <string name="reader_search_hint">Hľadať v texte…</string>
+    <string name="reader_more_actions">Ďalšie akcie</string>
+    <string name="reader_bookmark_here">Záložka sem</string>
+    <string name="reader_bookmarks_n">Záložky (%1$d)</string>
+    <string name="reader_stop_narration">Zastaviť predčítanie</string>
+    <string name="reader_prev_hit">Predchádzajúci výsledok</string>
+    <string name="reader_next_hit">Ďalší výsledok</string>
+    <string name="reader_follow">Sledovať predčítanie</string>
+    <string name="reader_font_and_voice">Veľkosť písma a hlas</string>
+    <string name="reader_font">Písmo</string>
+    <string name="reader_smaller_font">Menšie písmo</string>
+    <string name="reader_larger_font">Väčšie písmo</string>
+    <string name="reader_speed">Rýchlosť</string>
+    <string name="reader_pitch">Výška</string>
+    <string name="reader_loading">Načítavanie textu…</string>
+    <string name="reader_bookmarks_title">Záložky</string>
+    <string name="reader_no_bookmarks">Zatiaľ žiadne záložky.\nPodržte odsek a pridáte záložku.</string>
+    <string name="reader_bookmark_line">Odsek %1$d • %2$s</string>
+    <string name="reader_status_para">Ods. %1$d/%2$d</string>
+    <string name="reader_status_chapter">  •  Kap. %1$d/%2$d</string>
+    <string name="reader_status_progress">  •  %1$s%%  •  %2$s</string>
+
+    <string name="nav_chapter">kapitola</string>
+    <string name="nav_paragraph">odsek</string>
+    <string name="nav_sentence">veta</string>
+    <string name="nav_prev_chapter">Predchádzajúca kapitola</string>
+    <string name="nav_next_chapter">Ďalšia kapitola</string>
+    <string name="nav_prev_paragraph">Predchádzajúci odsek</string>
+    <string name="nav_next_paragraph">Ďalší odsek</string>
+    <string name="nav_prev_sentence">Predchádzajúca veta</string>
+    <string name="nav_next_sentence">Ďalšia veta</string>
+
+    <string name="stats_title">Zoznam čítania</string>
+    <string name="stats_export_save">Uložiť do Stiahnutých súborov</string>
+    <string name="stats_export_share">Odoslať do počítača</string>
+    <string name="stats_started">Rozčítané</string>
+    <string name="stats_finished">Prečítané</string>
+    <string name="stats_inprogress">Prebiehajúce</string>
+    <string name="stats_listening">Počúvanie</string>
+    <string name="stats_empty">Zatiaľ ste nezačali žiadnu knihu.\nDvojitým ťuknutím na súbor spustíte predčítanie — jedným ťuknutím ho otvoríte na čítanie.</string>
+    <string name="stats_section_progress">📖 Prebiehajúce (%1$d)</string>
+    <string name="stats_section_finished">✔ Prečítané (%1$d)</string>
+    <string name="stats_row_line">%1$s%% • %2$s • naposledy: %3$s</string>
+    <string name="stats_continue">Pokračovať v predčítaní</string>
+    <string name="stats_read_screen">Čítať na obrazovke</string>
+    <string name="stats_remove">Odobrať zo zoznamu</string>
+    <string name="stats_file_missing">Súbor už neexistuje: %1$s</string>
+    <string name="export_done_title">Export dokončený</string>
+    <string name="export_done_text">%1$d kníh (z toho %2$d prečítaných) a %3$d záložiek uložených do:</string>
+    <string name="export_usb_hint">Pripojte telefón cez USB a v počítači nájdete súbory v priečinku Stiahnuté súbory.</string>
+    <string name="export_failed">Export sa nepodaril.</string>
+    <string name="share_failed">Zdieľanie sa nepodarilo: %1$s</string>
+    <string name="share_subject">Vox Libris — záznam čítania</string>
+    <string name="share_chooser">Odoslať do počítača</string>
+    <string name="share_text_chooser">Odoslať text do aplikácie na predčítanie</string>
+
+    <string name="csv_status">Stav</string>
+    <string name="csv_title">Titul</string>
+    <string name="csv_author">Autor</string>
+    <string name="csv_percent">Postup %</string>
+    <string name="csv_paragraph">Odsek</string>
+    <string name="csv_total_paragraphs">Odsekov celkom</string>
+    <string name="csv_minutes">Odpočúvané minúty</string>
+    <string name="csv_last">Naposledy otvorené</string>
+    <string name="csv_file">Súbor</string>
+    <string name="csv_book_id">ID knihy</string>
+    <string name="csv_snippet">Úryvok</string>
+    <string name="csv_created">Vytvorené</string>
+    <string name="status_finished">Prečítané</string>
+    <string name="status_in_progress">Prebieha</string>
+
+    <string name="picker_db_title">Vybrať databázu</string>
+    <string name="picker_root_title">Vybrať koreňový priečinok</string>
+    <string name="picker_choose_this">Vybrať tento priečinok</string>
+    <string name="picker_no_subfolder">Žiadne podpriečinky.</string>
+    <string name="picker_no_files">V tomto priečinku nie je vhodný súbor.</string>
+    <string name="storage_internal">Interné úložisko</string>
+    <string name="storage_sd">SD karta</string>
+
+    <string name="settings_title">Nastavenia</string>
+    <string name="set_db_title">Databáza katalógu</string>
+    <string name="set_db_none">Nevybraté (skopírujte do telefónu súbor .db s katalógom)</string>
+    <string name="set_db_opened">Otvorené — %1$d kníh</string>
+    <string name="set_db_closed">Neotvorené</string>
+    <string name="set_db_pick">Vybrať súbor databázy…</string>
+    <string name="set_db_opened_toast">Databáza otvorená: %1$d kníh</string>
+    <string name="set_db_failed_toast">Databázu sa nepodarilo otvoriť. Je to naozaj súbor katalógu?</string>
+    <string name="set_root_title">Koreňový priečinok kníh</string>
+    <string name="set_root_pick">Vybrať koreňový priečinok…</string>
+
+    <string name="set_build_title">Vytvoriť katalóg z vašich kníh</string>
+    <string name="set_build_desc">Bez hotového katalógu si aplikácia vytvorí vlastný z metadát samotných kníh (titul, autor, anotácia) — bez internetu. Pri ďalšom spustení nechá existujúce záznamy nedotknuté a pridá len nové knihy.</string>
+    <string name="set_build_source">Zdroj: %1$s</string>
+    <string name="set_build_target">Cieľ: %1$s</string>
+    <string name="set_build_stats">Teraz: %1$d kníh, %2$d súborov (z toho %3$d so skutočnými metadátami)</string>
+    <string name="set_build_pdf">  Aj metadáta PDF (pomalšie)</string>
+    <string name="set_build_progress">%1$d súborov • %2$d nových záznamov • %3$d preskočených</string>
+    <string name="set_build_start">Vytvoriť katalóg</string>
+    <string name="set_build_update">Aktualizovať o nové knihy</string>
+    <string name="build_done_title">Katalóg hotový</string>
+    <string name="build_cancelled_title">Prerušené</string>
+    <string name="build_result">Skontrolovaných súborov: %1$d\nNovo zapísaných súborov: %2$d\nNových kníh v katalógu: %3$d\nSkorších záznamov nedotknutých: %4$d</string>
+    <string name="build_use_it">Použiť teraz</string>
+    <string name="build_error_open">Databázu sa nepodarilo otvoriť: %1$s</string>
+    <string name="build_error_generic">Neznáma chyba pri vytváraní katalógu</string>
+
+    <string name="set_cache_title">Vyrovnávacie pamäte</string>
+    <string name="set_cache_scanned">Prehľadané súbory: %1$d (%2$d spárovaných)</string>
+    <string name="set_cache_text">Získaný text: %1$s</string>
+    <string name="set_cache_clear_scan">Vymazať pamäť prehľadávania</string>
+    <string name="set_cache_clear_text">Vymazať pamäť textu</string>
+    <string name="set_cache_scan_cleared">Pamäť prehľadávania vymazaná.</string>
+    <string name="set_cache_text_cleared">Pamäť textu vymazaná.</string>
+
+    <string name="set_look_title">Vzhľad</string>
+    <string name="set_theme">Motív</string>
+    <string name="set_theme_system">Podľa systému</string>
+    <string name="set_theme_light">Svetlý</string>
+    <string name="set_theme_dark">Tmavý</string>
+    <string name="set_color_scheme">Farebná schéma</string>
+    <string name="set_ui_scale">Veľkosť písma rozhrania: %1$d%%</string>
+    <string name="set_ui_scale_hint">Veľkosť textu knihy sa nastavuje zvlášť v čítačke, tlačidlami A− a A+.</string>
+    <string name="scheme_classic">Klasická zelená</string>
+    <string name="scheme_ocean">Morská modrá</string>
+    <string name="scheme_sepia">Sépia (papier)</string>
+    <string name="scheme_sunset">Západ slnka</string>
+    <string name="scheme_night">Noc (šetrná)</string>
+    <string name="scheme_contrast">Vysoký kontrast</string>
+
+    <string name="set_ui_lang_title">Jazyk rozhrania</string>
+    <string name="set_ui_lang_system">Podľa systému</string>
+    <string name="set_ui_lang_pick">Vybrať jazyk…</string>
+    <string name="set_ui_lang_hint">Toto zmení len texty aplikácie. Jazyk predčítania sa nastavuje zvlášť nižšie.</string>
+
+    <string name="set_tts_lang_title">Jazyk predčítania</string>
+    <string name="set_tts_lang_auto">Automaticky (jazyk systému, ak je dostupný)</string>
+    <string name="set_tts_lang_loading">Zisťovanie nainštalovaných hlasov…</string>
+    <string name="set_tts_lang_count">S nainštalovaným hlasovým modulom je dostupných jazykov: %1$d.</string>
+    <string name="set_tts_lang_pick">Vybrať jazyk…</string>
+    <string name="set_tts_lang_download">Stiahnuť hlasy</string>
+    <string name="set_tts_lang_none">Nepodarilo sa zistiť žiadne jazyky. Nainštalujte hlasový modul (napríklad Google Text-to-Speech) a otvorte toto okno znova.</string>
+    <string name="set_tts_download_failed">Inštalátor hlasov nie je dostupný. Otvorte systémové nastavenia prevodu textu na reč.</string>
+
+    <string name="set_scan_title">Prehľadať knižnicu</string>
+    <string name="set_scan_desc">Prejde koreňový priečinok a spáruje súbory s katalógom. Nikdy sa nespustí sám — vždy to vyvoláte vy.</string>
+    <string name="set_scan_stats">Zatiaľ %1$d súborov (%2$d spárovaných)</string>
+    <string name="set_scan_progress">%1$d súborov • %2$d spárovaných</string>
+    <string name="set_scan_start">Spustiť prehľadávanie</string>
+
+    <string name="set_cue_title">Zvukové signály</string>
+    <string name="set_cue_desc">Hlbší dvojtón označí začiatok každej novej kapitoly, aby ste aj podľa sluchu vedeli, kde ste.</string>
+    <string name="set_cue_chapter">  Hlbší dvojtón pred kapitolou</string>
+    <string name="set_cue_volume">Hlasitosť</string>
+
+    <string name="set_reading_title">Čítanie a ovládanie</string>
+    <string name="set_reading_follow">  Text sleduje predčítanie</string>
+    <string name="set_reading_keep_screen">  Nechať obrazovku zapnutú pri čítaní</string>
+    <string name="set_reading_rewind">Dvojité stlačenie na slúchadlách: %1$d sekúnd späť</string>
+
+    <string name="set_tts_title">Prevod textu na reč (TTS)</string>
+    <string name="set_tts_desc">Aplikácia používa systémový hlasový modul (napríklad Google Text-to-Speech). Modul a hlas zmeníte v nastaveniach systému.</string>
+    <string name="set_tts_open">Systémové nastavenia reči…</string>
+    <string name="set_tts_open_failed">Nastavenia prevodu textu na reč sa nepodarilo otvoriť.</string>
+
+    <string name="err_file_not_found">Súbor sa nenašiel: %1$s</string>
+    <string name="err_no_text">Z tohto súboru sa nepodarilo získať text.</string>
+    <string name="err_format_unsupported">Tento formát (.%1$s) nie je podporovaný pri predčítaní.</string>
+    <string name="err_doc">Starý binárny formát .doc nie je podporovaný — preveďte ho na .docx alebo .txt (napríklad v Calibre).</string>
+    <string name="err_djvu">DjVu je obrázkový formát bez textu — po OCR možno .txt predčítať.</string>
+    <string name="err_drm">Táto kniha je chránená DRM (šifrovanie Mobipocket) a nedá sa predčítať. Preveďte ju, napríklad v Calibre.</string>
+    <string name="err_huff">MOBI komprimované metódou HUFF/CDIC — preveďte ho na EPUB (napríklad v Calibre) a bude sa dať predčítať.</string>
+    <string name="err_mobi_broken">Poškodený alebo neúplný súbor MOBI.</string>
+    <string name="err_mobi_compression">Neznáma kompresia MOBI: %1$d</string>
+    <string name="err_mobi_no_text">Zo súboru MOBI sa nepodarilo získať text.</string>
+    <string name="err_epub_no_html">EPUB neobsahuje čitateľnú kapitolu HTML.</string>
+    <string name="err_epub_no_text">Z kapitol EPUBu sa nepodarilo získať text.</string>
+    <string name="err_fb2_no_text">Zo súboru FB2 sa nepodarilo získať text.</string>
+    <string name="err_rtf_invalid">Neplatný súbor RTF.</string>
+    <string name="err_rtf_no_text">Zo súboru RTF sa nepodarilo získať text.</string>
+    <string name="err_docx_invalid">Neplatný DOCX: chýba word/document.xml.</string>
+    <string name="err_docx_no_text">Zo súboru DOCX sa nepodarilo získať text.</string>
+    <string name="err_pdf_password">Toto PDF je chránené heslom a nedá sa predčítať.</string>
+    <string name="err_pdf_no_text">Toto PDF nemá textovú vrstvu (pravdepodobne je naskenované). Po OCR možno .txt predčítať.</string>
+    <string name="err_pdf_failed">PDF sa nedá spracovať: %1$s</string>
+    <string name="err_pdf_no_extract">Z PDF sa nepodarilo získať text.</string>
+    <string name="err_extract_generic">Chyba pri získavaní textu: %1$s</string>
+    <string name="err_tts_init">Hlasový modul sa nespustil. Skontrolujte systémové nastavenia prevodu textu na reč.</string>
+
+    <string name="notif_preparing">Príprava…</string>
+    <string name="notif_status">%1$d/%2$d odsekov • %3$s</string>
+    <string name="notif_prev">Predchádzajúci</string>
+    <string name="notif_next">Ďalší</string>
+    <string name="notif_stop">Zastaviť</string>
+
+    <string name="duration_hm">%1$d h %2$d min</string>
+    <string name="duration_m">%1$d min</string>
+    <string name="scan_loading_catalogue">Načítavanie katalógu…</string>
+    <string name="scan_unknown_error">Neznáma chyba pri prehľadávaní</string>
+</resources>

@@ -108,6 +108,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Locale
 import kotlin.math.roundToInt
+import androidx.compose.ui.res.stringResource
+import hu.konyvtar.tts.R
+import hu.konyvtar.tts.reader.ExtractException
 
 /**
  * A könyv EGYETLEN képernyője: itt látszik a szöveg, és itt van minden
@@ -182,7 +185,8 @@ fun ReaderScreen(
                 val bms = AppDb.bookmarksFor(path)
                 Triple(book, prog, bms)
             } catch (e: Exception) {
-                error = e.message ?: "Hiba a szöveg betöltésekor."
+                error = (e as? ExtractException)?.localized(context)
+                    ?: context.getString(R.string.reader_load_error)
                 null
             }
         } ?: return@LaunchedEffect
@@ -275,7 +279,11 @@ fun ReaderScreen(
                 AppDb.addBookmark(path, idx, paras[idx].take(140), title, author)
             }
             bookmarks = withContext(Dispatchers.IO) { AppDb.bookmarksFor(path) }
-            Toast.makeText(context, "Könyvjelző: ${idx + 1}. bekezdés", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                context.getString(R.string.reader_bookmark_added, idx + 1),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -334,7 +342,10 @@ fun ReaderScreen(
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Vissza")
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.common_back)
+                            )
                         }
                     },
                     actions = {
@@ -344,22 +355,28 @@ fun ReaderScreen(
                         }) {
                             Icon(
                                 if (searchOpen) Icons.Filled.Close else Icons.Filled.Search,
-                                contentDescription = "Keresés a szövegben"
+                                contentDescription = stringResource(R.string.reader_search_in_text)
                             )
                         }
                         IconButton(onClick = onOpenSettings) {
-                            Icon(Icons.Filled.Settings, contentDescription = "Beállítások")
+                            Icon(
+                                Icons.Filled.Settings,
+                                contentDescription = stringResource(R.string.common_settings)
+                            )
                         }
                         Box {
                             IconButton(onClick = { menuOpen = true }) {
-                                Icon(Icons.Filled.MoreVert, contentDescription = "További műveletek")
+                                Icon(
+                                    Icons.Filled.MoreVert,
+                                    contentDescription = stringResource(R.string.reader_more_actions)
+                                )
                             }
                             DropdownMenu(
                                 expanded = menuOpen,
                                 onDismissRequest = { menuOpen = false }
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Könyvjelző ide") },
+                                    text = { Text(stringResource(R.string.reader_bookmark_here)) },
                                     leadingIcon = { Icon(Icons.Filled.BookmarkAdd, null) },
                                     onClick = {
                                         menuOpen = false
@@ -369,18 +386,18 @@ fun ReaderScreen(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Könyvjelzők (${bookmarks.size})") },
+                                    text = { Text(stringResource(R.string.reader_bookmarks_n, bookmarks.size)) },
                                     leadingIcon = { Icon(Icons.Filled.Bookmarks, null) },
                                     onClick = { menuOpen = false; bookmarksOpen = true }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("A könyv adatai") },
+                                    text = { Text(stringResource(R.string.row_info)) },
                                     leadingIcon = { Icon(Icons.Filled.Info, null) },
                                     onClick = { menuOpen = false; infoOpen = true }
                                 )
                                 if (sameBook) {
                                     DropdownMenuItem(
-                                        text = { Text("Felolvasás leállítása") },
+                                        text = { Text(stringResource(R.string.reader_stop_narration)) },
                                         leadingIcon = { Icon(Icons.Filled.Stop, null) },
                                         onClick = {
                                             menuOpen = false
@@ -407,7 +424,10 @@ fun ReaderScreen(
                             singleLine = true,
                             textStyle = MaterialTheme.typography.bodyMedium,
                             placeholder = {
-                                Text("Keresés a szövegben…", style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    stringResource(R.string.reader_search_hint),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
                             }
                         )
                         Text(
@@ -421,10 +441,16 @@ fun ReaderScreen(
                             modifier = Modifier.padding(horizontal = 6.dp)
                         )
                         IconButton(onClick = { jumpMatch(-1) }, modifier = Modifier.size(36.dp)) {
-                            Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Előző találat")
+                            Icon(
+                                Icons.Filled.KeyboardArrowUp,
+                                contentDescription = stringResource(R.string.reader_prev_hit)
+                            )
                         }
                         IconButton(onClick = { jumpMatch(1) }, modifier = Modifier.size(36.dp)) {
-                            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Következő találat")
+                            Icon(
+                                Icons.Filled.KeyboardArrowDown,
+                                contentDescription = stringResource(R.string.reader_next_hit)
+                            )
                         }
                     }
                 }
@@ -445,23 +471,21 @@ fun ReaderScreen(
                             .padding(top = 2.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val paraStatus = if (paras != null) stringResource(
+                            R.string.reader_status_para,
+                            listState.firstVisibleItemIndex + 1, paras.size
+                        ) else ""
+                        val chapStatus = if (sameBook && tts.totalChapters > 0) stringResource(
+                            R.string.reader_status_chapter,
+                            tts.chapterIndex + 1, tts.totalChapters
+                        ) else ""
+                        val progStatus = if (sameBook && tts.totalParas > 0) stringResource(
+                            R.string.reader_status_progress,
+                            String.format(Locale.getDefault(), "%.1f", tts.percent),
+                            fmtDuration(context, tts.listenedMs)
+                        ) else ""
                         Text(
-                            text = buildString {
-                                if (paras != null) {
-                                    append("Bek. ${listState.firstVisibleItemIndex + 1}/${paras.size}")
-                                }
-                                if (sameBook && tts.totalChapters > 0) {
-                                    append("  •  Fej. ${tts.chapterIndex + 1}/${tts.totalChapters}")
-                                }
-                                if (sameBook && tts.totalParas > 0) {
-                                    append(
-                                        String.format(
-                                            Locale.getDefault(), "  •  %.1f%%  •  %s",
-                                            tts.percent, fmtDuration(tts.listenedMs)
-                                        )
-                                    )
-                                }
-                            },
+                            text = paraStatus + chapStatus + progStatus,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
@@ -480,7 +504,7 @@ fun ReaderScreen(
                         ) {
                             Icon(
                                 Icons.Filled.MyLocation,
-                                contentDescription = "Felolvasás követése",
+                                contentDescription = stringResource(R.string.reader_follow),
                                 modifier = Modifier.size(18.dp),
                                 tint = if (follow) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.onSurfaceVariant
@@ -492,7 +516,7 @@ fun ReaderScreen(
                         ) {
                             Icon(
                                 Icons.Filled.Tune,
-                                contentDescription = "Betűméret és hang",
+                                contentDescription = stringResource(R.string.reader_font_and_voice),
                                 modifier = Modifier.size(18.dp),
                                 tint = if (toolsOpen) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.onSurfaceVariant
@@ -504,7 +528,7 @@ fun ReaderScreen(
                     if (toolsOpen) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                "Betű",
+                                stringResource(R.string.reader_font),
                                 style = MaterialTheme.typography.labelSmall,
                                 modifier = Modifier.width(64.dp)
                             )
@@ -514,21 +538,31 @@ fun ReaderScreen(
                                     Prefs.setReaderFont(context, fontSp)
                                 },
                                 modifier = Modifier.size(34.dp)
-                            ) { Icon(Icons.Filled.TextDecrease, contentDescription = "Kisebb betű") }
+                            ) {
+                                Icon(
+                                    Icons.Filled.TextDecrease,
+                                    contentDescription = stringResource(R.string.reader_smaller_font)
+                                )
+                            }
                             IconButton(
                                 onClick = {
                                     fontSp = (fontSp + 1f).coerceAtMost(30f)
                                     Prefs.setReaderFont(context, fontSp)
                                 },
                                 modifier = Modifier.size(34.dp)
-                            ) { Icon(Icons.Filled.TextIncrease, contentDescription = "Nagyobb betű") }
+                            ) {
+                                Icon(
+                                    Icons.Filled.TextIncrease,
+                                    contentDescription = stringResource(R.string.reader_larger_font)
+                                )
+                            }
                             Text(
                                 text = "${fontSp.roundToInt()} sp",
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
                         SliderRow(
-                            label = "Sebesség",
+                            label = stringResource(R.string.reader_speed),
                             value = speed,
                             range = 0.5f..3.0f,
                             format = "%.2fx",
@@ -544,7 +578,7 @@ fun ReaderScreen(
                             }
                         )
                         SliderRow(
-                            label = "Hangmag.",
+                            label = stringResource(R.string.reader_pitch),
                             value = pitch,
                             range = 0.5f..2.0f,
                             format = "%.2f",
@@ -598,13 +632,25 @@ fun ReaderScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        NavButton(Icons.Filled.FirstPage, "fejezet", "Előző fejezet") {
+                        NavButton(
+                            Icons.Filled.FirstPage,
+                            stringResource(R.string.nav_chapter),
+                            stringResource(R.string.nav_prev_chapter)
+                        ) {
                             nav(TtsService.ACTION_PREV_CHAPTER)
                         }
-                        NavButton(Icons.Filled.SkipPrevious, "bekezd.", "Előző bekezdés") {
+                        NavButton(
+                            Icons.Filled.SkipPrevious,
+                            stringResource(R.string.nav_paragraph),
+                            stringResource(R.string.nav_prev_paragraph)
+                        ) {
                             nav(TtsService.ACTION_PREV_PARA)
                         }
-                        NavButton(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "mondat", "Előző mondat") {
+                        NavButton(
+                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            stringResource(R.string.nav_sentence),
+                            stringResource(R.string.nav_prev_sentence)
+                        ) {
                             nav(TtsService.ACTION_PREV)
                         }
                         FilledIconButton(
@@ -613,17 +659,31 @@ fun ReaderScreen(
                         ) {
                             Icon(
                                 if (playingHere) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                contentDescription = if (playingHere) "Szünet" else "Felolvasás",
+                                contentDescription = stringResource(
+                                    if (playingHere) R.string.common_pause else R.string.common_play
+                                ),
                                 modifier = Modifier.size(30.dp)
                             )
                         }
-                        NavButton(Icons.AutoMirrored.Filled.KeyboardArrowRight, "mondat", "Következő mondat") {
+                        NavButton(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            stringResource(R.string.nav_sentence),
+                            stringResource(R.string.nav_next_sentence)
+                        ) {
                             nav(TtsService.ACTION_NEXT)
                         }
-                        NavButton(Icons.Filled.SkipNext, "bekezd.", "Következő bekezdés") {
+                        NavButton(
+                            Icons.Filled.SkipNext,
+                            stringResource(R.string.nav_paragraph),
+                            stringResource(R.string.nav_next_paragraph)
+                        ) {
                             nav(TtsService.ACTION_NEXT_PARA)
                         }
-                        NavButton(Icons.AutoMirrored.Filled.LastPage, "fejezet", "Következő fejezet") {
+                        NavButton(
+                            Icons.AutoMirrored.Filled.LastPage,
+                            stringResource(R.string.nav_chapter),
+                            stringResource(R.string.nav_next_chapter)
+                        ) {
                             nav(TtsService.ACTION_NEXT_CHAPTER)
                         }
                     }
@@ -653,7 +713,7 @@ fun ReaderScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     CircularProgressIndicator(modifier = Modifier.size(22.dp))
-                    Text("Szöveg betöltése…", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.reader_loading), style = MaterialTheme.typography.bodyMedium)
                 }
                 else -> {
                     LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
@@ -739,11 +799,16 @@ fun ReaderScreen(
     if (bookmarksOpen) {
         AlertDialog(
             onDismissRequest = { bookmarksOpen = false },
-            title = { Text("Könyvjelzők", style = MaterialTheme.typography.titleMedium) },
+            title = {
+                Text(
+                    stringResource(R.string.reader_bookmarks_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
             text = {
                 if (bookmarks.isEmpty()) {
                     Text(
-                        "Még nincs könyvjelző.\nHosszan nyomj meg egy bekezdést a hozzáadáshoz!",
+                        stringResource(R.string.reader_no_bookmarks),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 } else {
@@ -764,7 +829,10 @@ fun ReaderScreen(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "${bm.paraIndex + 1}. bekezdés • ${fmtDate(bm.created)}",
+                                            text = stringResource(
+                                                R.string.reader_bookmark_line,
+                                                bm.paraIndex + 1, fmtDate(bm.created)
+                                            ),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.primary,
                                             fontWeight = FontWeight.Bold
@@ -789,7 +857,7 @@ fun ReaderScreen(
                                     ) {
                                         Icon(
                                             Icons.Filled.Delete,
-                                            contentDescription = "Törlés",
+                                            contentDescription = stringResource(R.string.common_delete),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
@@ -801,7 +869,9 @@ fun ReaderScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { bookmarksOpen = false }) { Text("Bezárás") }
+                TextButton(onClick = { bookmarksOpen = false }) {
+                    Text(stringResource(R.string.common_close))
+                }
             }
         )
     }
@@ -819,7 +889,9 @@ fun ReaderScreen(
         val f = File(path)
         AlertDialog(
             onDismissRequest = { infoOpen = false },
-            title = { Text("A könyv adatai", style = MaterialTheme.typography.titleMedium) },
+            title = {
+                Text(stringResource(R.string.row_info), style = MaterialTheme.typography.titleMedium)
+            },
             text = {
                 Column(
                     modifier = Modifier
@@ -827,28 +899,31 @@ fun ReaderScreen(
                         .verticalScroll(rememberScrollState())
                 ) {
                     val b = bookInfo
-                    InfoLine("Cím", b?.cim ?: title)
-                    InfoLine("Szerző", b?.szerzo ?: author)
-                    InfoLine("Kiadó", b?.kiado)
-                    InfoLine("Kiadás éve", b?.kiadasEve)
-                    InfoLine("ISBN", b?.isbn)
+                    InfoLine(stringResource(R.string.info_title), b?.cim ?: title)
+                    InfoLine(stringResource(R.string.info_author), b?.szerzo ?: author)
+                    InfoLine(stringResource(R.string.info_publisher), b?.kiado)
+                    InfoLine(stringResource(R.string.info_year), b?.kiadasEve)
+                    InfoLine(stringResource(R.string.info_isbn), b?.isbn)
                     InfoLine(
-                        "Sorozat",
+                        stringResource(R.string.info_series),
                         listOfNotNull(
                             b?.sorozat?.takeIf { it.isNotBlank() && it != "N/A" },
                             b?.sorozatSzama?.takeIf { it.isNotBlank() && it != "N/A" }
                         ).joinToString(" #").ifBlank { null }
                     )
-                    InfoLine("Címkék", b?.cimkek)
-                    InfoLine("Fájl", f.name)
-                    InfoLine("Méret", fmtSize(f.length()))
-                    InfoLine("Bekezdések", paragraphs?.size?.toString())
-                    InfoLine("Fejezetek", if (chapters.isEmpty()) null else chapters.size.toString())
+                    InfoLine(stringResource(R.string.info_tags), b?.cimkek)
+                    InfoLine(stringResource(R.string.info_file), f.name)
+                    InfoLine(stringResource(R.string.info_size), fmtSize(f.length()))
+                    InfoLine(stringResource(R.string.info_paragraphs), paragraphs?.size?.toString())
+                    InfoLine(
+                        stringResource(R.string.info_chapters),
+                        if (chapters.isEmpty()) null else chapters.size.toString()
+                    )
                     val desc = b?.leiras?.let { Normalizer.stripInvisible(it).trim() }
                     if (!desc.isNullOrBlank()) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Leírás",
+                            stringResource(R.string.info_description),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold
                         )
@@ -857,7 +932,7 @@ fun ReaderScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { infoOpen = false }) { Text("Bezárás") }
+                TextButton(onClick = { infoOpen = false }) { Text(stringResource(R.string.common_close)) }
             }
         )
     }

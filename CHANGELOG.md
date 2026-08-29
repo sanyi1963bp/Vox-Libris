@@ -9,6 +9,51 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [2.0.0] — 2026-08-30
+
+**Tíz nyelven beszél az app**
+
+- A teljes kezelőfelület lefordítva: **magyar, angol, német, francia, spanyol,
+  portugál, lengyel, cseh, szlovák és orosz**. Mind a 237 szöveg minden
+  nyelven megvan — a gomboktól a hibaüzenetekig és a CSV-export
+  oszlopfejléceiig.
+- **A felület nyelve és a felolvasás nyelve külön állítható.** Olvashatsz
+  magyar felülettel angol könyvet, vagy fordítva.
+- Új beállítás: *A felület nyelve* — rendszerkövetés vagy kézi választás,
+  minden nyelv a saját nevén. A váltás azonnal érvényes.
+- Ismeretlen nyelvű telefonon az **angol** az alapértelmezés, hogy bárhol a
+  világon érthető legyen.
+- Android 13-tól az app a rendszer nyelvi beállításai közt is megjelenik.
+- A fejezetfelismerés is nemzetközi lett: a magyar mellett angol, német,
+  francia, spanyol, lengyel, cseh és orosz fejezetszavakat is felismer.
+
+**Új nyelv hozzáadása**: másold a `res/values/strings.xml` fájlt egy új
+`res/values-<kód>/` mappába, fordítsd le az értékeket, és vedd fel a nyelvet
+a `data/AppLanguages.kt` listájába. Kódolás nem kell hozzá.
+
+### [2.0.0] — 2026-08-30
+
+**The app now speaks ten languages**
+
+- The entire interface is translated: **Hungarian, English, German, French,
+  Spanish, Portuguese, Polish, Czech, Slovak and Russian**. All 237 strings
+  exist in every language — from buttons to error messages and the CSV export
+  column headers.
+- **Interface language and narration language are set separately.** Read an
+  English book with a Hungarian interface, or the other way round.
+- New setting: *Interface language* — follow the system or pick manually, each
+  language shown in its own name. The switch takes effect immediately.
+- On a phone with an unsupported system language the app falls back to
+  **English**, so it stays understandable anywhere.
+- From Android 13 the app also appears in the system language settings.
+- Chapter detection went international too: alongside Hungarian it now
+  recognises English, German, French, Spanish, Polish, Czech and Russian
+  chapter words.
+
+**Adding a language**: copy `res/values/strings.xml` into a new
+`res/values-<code>/` folder, translate the values, and add the language to the
+list in `data/AppLanguages.kt`. No coding required.
+
 ### [1.4.1] — 2026-08-29
 
 - **"Almappák is" kapcsoló** a kereső mellett: bekapcsolva az aktuális mappa

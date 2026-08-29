@@ -4,6 +4,9 @@
 
 🇬🇧 English (this page) · 🇭🇺 [Magyar](README.md)
 
+**Interface in ten languages**: English · Hungarian · German · French ·
+Spanish · Portuguese · Polish · Czech · Slovak · Russian
+
 🔧 [Setup & dependencies](docs/SETUP.en.md) · 📖 [User guide](docs/USAGE.en.md) · 📝 [Changelog](CHANGELOG.md)
 
 ---
@@ -17,10 +20,10 @@ Cover images are **deliberately never touched**: the app reads no image from
 external folders, nor from inside the book files. That is what keeps scrolling
 instant with 70,000+ records, and keeps memory usage flat.
 
-> **Note:** the user interface is in Hungarian. The app itself is
-> language-agnostic (any SQLite catalogue and any supported book format works),
-> but the labels, dialogs and the sentence-splitting heuristics are tuned for
-> Hungarian.
+> **Note:** the interface is available in ten languages and can be switched
+> in the settings, independently of the narration language. The
+> sentence-splitting heuristics were tuned for Hungarian but work for other
+> Latin-script languages as well.
 
 The app appears on the phone as **Könyvtár TTS** ("Library TTS").
 
@@ -71,6 +74,9 @@ The app appears on the phone as **Könyvtár TTS** ("Library TTS").
   during playback lands on the sentence being read.
 - **Headset buttons** (Bluetooth and wired, via MediaSession):
   1 press = play/pause, 2 presses = rewind ~5 seconds.
+- **Ten languages.** The whole interface is translated, and the **interface
+  language is set separately from the narration language**. Adding a language
+  is a single XML file, no coding involved.
 - **Reading list and statistics.** Separate **finished** and **in progress**
   sections, with progress bars, listening time and last-opened dates.
 - **Export.** The reading record as CSV plus a copy of the SQLite database

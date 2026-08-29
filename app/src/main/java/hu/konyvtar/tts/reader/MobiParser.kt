@@ -3,6 +3,7 @@ package hu.konyvtar.tts.reader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.charset.Charset
+import hu.konyvtar.tts.R
 
 /**
  * MOBI / PRC / AZW / AZW3 olvasó (PalmDB konténer).
@@ -22,16 +23,16 @@ object MobiParser {
 
     fun parse(file: File): List<String> {
         val data = file.readBytes()
-        if (data.size < 80) throw ExtractException("Sérült vagy túl rövid MOBI fájl.")
+        if (data.size < 80) throw ExtractException(R.string.err_mobi_broken)
 
         val type = String(data, 60, 8, Charsets.US_ASCII)
         if (type != "BOOKMOBI" && type != "TEXtREAd") {
-            throw ExtractException("Nem támogatott PalmDB típus: $type")
+            throw ExtractException(R.string.err_mobi_broken)
         }
 
         val numRecords = u16(data, 76)
         if (numRecords < 2 || 78 + numRecords * 8 > data.size) {
-            throw ExtractException("Sérült MOBI fejléc.")
+            throw ExtractException(R.string.err_mobi_broken)
         }
         val offsets = IntArray(numRecords)
         for (i in 0 until numRecords) {
@@ -46,7 +47,7 @@ object MobiParser {
         }
 
         val r0 = record(0)
-        if (r0.size < 16) throw ExtractException("Sérült MOBI rekord.")
+        if (r0.size < 16) throw ExtractException(R.string.err_mobi_broken)
 
         val compression = u16(r0, 0)
         val textLength = u32(r0, 4)
@@ -54,7 +55,7 @@ object MobiParser {
         val encryption = u16(r0, 12)
 
         if (encryption != 0) {
-            throw ExtractException("Ez a könyv DRM-védett (Mobipocket titkosítás), nem olvasható fel. Konvertáld pl. Calibre-vel.")
+            throw ExtractException(R.string.err_drm)
         }
 
         var charset: Charset = Charset.forName("windows-1252")
@@ -75,8 +76,8 @@ object MobiParser {
         when (compression) {
             1 -> {} // tömörítetlen
             2 -> {} // PalmDOC LZ77
-            17480 -> throw ExtractException("HUFF/CDIC tömörítésű MOBI — konvertáld EPUB-ra pl. Calibre-vel, azt már fel tudom olvasni.")
-            else -> throw ExtractException("Ismeretlen MOBI tömörítés: $compression")
+            17480 -> throw ExtractException(R.string.err_huff)
+            else -> throw ExtractException(R.string.err_mobi_compression, compression)
         }
 
         val out = ByteArrayOutputStream(maxOf(1024, textLength.toInt()))
@@ -96,11 +97,11 @@ object MobiParser {
         if (textLength in 1 until bytes.size) {
             bytes = bytes.copyOfRange(0, textLength.toInt())
         }
-        if (bytes.isEmpty()) throw ExtractException("A MOBI fájlból nem sikerült szöveget kinyerni.")
+        if (bytes.isEmpty()) throw ExtractException(R.string.err_mobi_no_text)
 
         val html = String(bytes, charset)
         val paras = HtmlText.toParagraphs(html)
-        if (paras.isEmpty()) throw ExtractException("A MOBI fájl szövege üres.")
+        if (paras.isEmpty()) throw ExtractException(R.string.err_mobi_no_text)
         return paras
     }
 

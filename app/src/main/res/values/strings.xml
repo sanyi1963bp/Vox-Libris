@@ -1,6 +1,286 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default (English) strings. Every other language lives in values-xx/strings.xml.
+  Adding a language: copy this file to values-<code>/ and translate the values.
+-->
 <resources>
-    <string name="app_name">Könyvtár TTS</string>
-    <string name="tts_channel_name">Felolvasás</string>
-    <string name="tts_channel_desc">Könyv felolvasása a háttérben</string>
+    <string name="app_name">Vox Libris</string>
+
+    <!-- notification channel -->
+    <string name="tts_channel_name">Narration</string>
+    <string name="tts_channel_desc">Reading a book aloud in the background</string>
+
+    <!-- common -->
+    <string name="common_close">Close</string>
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_abort">Abort</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_back">Back</string>
+    <string name="common_up">Up</string>
+    <string name="common_error">Error</string>
+    <string name="common_settings">Settings</string>
+    <string name="common_play">Play</string>
+    <string name="common_pause">Pause</string>
+
+    <!-- permission screen -->
+    <string name="perm_title">File access required</string>
+    <string name="perm_text">The app reads the book files and the catalogue database on your phone, so it needs the “All files access” permission.\n\nTurn it on in the next screen, then come back.</string>
+    <string name="perm_button">Grant permission</string>
+
+    <!-- browser -->
+    <string name="explorer_scan">Scan</string>
+    <string name="explorer_stats">Reading list</string>
+    <string name="explorer_search_hint">Search (name, title, author)…</string>
+    <string name="explorer_clear">Clear</string>
+    <string name="explorer_subfolders">Subfolders too</string>
+    <string name="explorer_deep_hits">Searching subfolders too — %1$d hits</string>
+    <string name="explorer_storage_switch">Switch storage</string>
+    <string name="explorer_no_other_storage">No other storage (SD card) is mounted</string>
+    <string name="explorer_books_count">%1$d books</string>
+    <string name="explorer_no_db">no database</string>
+    <string name="explorer_scanning">Scanning: %1$d files, %2$d matched</string>
+    <string name="explorer_empty">No book files in this folder.</string>
+    <string name="explorer_preparing"> • preparing…</string>
+    <string name="col_name">Name</string>
+    <string name="col_author">Author</string>
+    <string name="col_size">Size</string>
+    <string name="col_date">Date</string>
+    <string name="row_done">done</string>
+    <string name="row_info">Book details</string>
+
+    <!-- book details -->
+    <string name="info_title">Title</string>
+    <string name="info_author">Author</string>
+    <string name="info_publisher">Publisher</string>
+    <string name="info_year">Year</string>
+    <string name="info_isbn">ISBN</string>
+    <string name="info_series">Series</string>
+    <string name="info_tags">Tags</string>
+    <string name="info_file">File</string>
+    <string name="info_size">Size</string>
+    <string name="info_modified">Modified</string>
+    <string name="info_paragraphs">Paragraphs</string>
+    <string name="info_chapters">Chapters</string>
+    <string name="info_description">Description</string>
+    <string name="info_from_file">Data read from the file itself</string>
+    <string name="info_none">No further data for this file — neither in the catalogue nor inside the file.</string>
+    <string name="info_progress">You are here: %1$s%%</string>
+    <string name="info_finished">Finished</string>
+
+    <!-- reader -->
+    <string name="reader_load_error">Could not load the text.</string>
+    <string name="reader_bookmark_added">Bookmark: paragraph %1$d</string>
+    <string name="reader_search_in_text">Search in the text</string>
+    <string name="reader_search_hint">Search in the text…</string>
+    <string name="reader_more_actions">More actions</string>
+    <string name="reader_bookmark_here">Bookmark here</string>
+    <string name="reader_bookmarks_n">Bookmarks (%1$d)</string>
+    <string name="reader_stop_narration">Stop narration</string>
+    <string name="reader_prev_hit">Previous hit</string>
+    <string name="reader_next_hit">Next hit</string>
+    <string name="reader_follow">Follow narration</string>
+    <string name="reader_font_and_voice">Font size and voice</string>
+    <string name="reader_font">Font</string>
+    <string name="reader_smaller_font">Smaller text</string>
+    <string name="reader_larger_font">Larger text</string>
+    <string name="reader_speed">Speed</string>
+    <string name="reader_pitch">Pitch</string>
+    <string name="reader_loading">Loading text…</string>
+    <string name="reader_bookmarks_title">Bookmarks</string>
+    <string name="reader_no_bookmarks">No bookmarks yet.\nLong-press a paragraph to add one.</string>
+    <string name="reader_bookmark_line">Paragraph %1$d • %2$s</string>
+    <string name="reader_status_para">Par. %1$d/%2$d</string>
+    <string name="reader_status_chapter">  •  Ch. %1$d/%2$d</string>
+    <string name="reader_status_progress">  •  %1$s%%  •  %2$s</string>
+
+    <!-- navigation buttons -->
+    <string name="nav_chapter">chapter</string>
+    <string name="nav_paragraph">paragr.</string>
+    <string name="nav_sentence">sentence</string>
+    <string name="nav_prev_chapter">Previous chapter</string>
+    <string name="nav_next_chapter">Next chapter</string>
+    <string name="nav_prev_paragraph">Previous paragraph</string>
+    <string name="nav_next_paragraph">Next paragraph</string>
+    <string name="nav_prev_sentence">Previous sentence</string>
+    <string name="nav_next_sentence">Next sentence</string>
+
+    <!-- reading list -->
+    <string name="stats_title">Reading list</string>
+    <string name="stats_export_save">Save into Downloads</string>
+    <string name="stats_export_share">Send to computer</string>
+    <string name="stats_started">Started</string>
+    <string name="stats_finished">Finished</string>
+    <string name="stats_inprogress">In progress</string>
+    <string name="stats_listening">Listening</string>
+    <string name="stats_empty">No book started yet.\nDouble-tap a file in the browser to start narration — or tap it to read on screen.</string>
+    <string name="stats_section_progress">📖 In progress (%1$d)</string>
+    <string name="stats_section_finished">✔ Finished (%1$d)</string>
+    <string name="stats_row_line">%1$s%% • %2$s • last: %3$s</string>
+    <string name="stats_continue">Continue narration</string>
+    <string name="stats_read_screen">Read on screen</string>
+    <string name="stats_remove">Remove from the list</string>
+    <string name="stats_file_missing">The file is no longer there: %1$s</string>
+    <string name="export_done_title">Export complete</string>
+    <string name="export_done_text">%1$d books (%2$d finished) and %3$d bookmarks saved to:</string>
+    <string name="export_usb_hint">Connect the phone over USB and you will find them on the PC in the Downloads folder.</string>
+    <string name="export_failed">The export failed.</string>
+    <string name="share_failed">Sharing failed: %1$s</string>
+    <string name="share_subject">Vox Libris — reading record</string>
+    <string name="share_chooser">Send to computer</string>
+    <string name="share_text_chooser">Send the text to a TTS app</string>
+
+    <!-- export column headers -->
+    <string name="csv_status">Status</string>
+    <string name="csv_title">Title</string>
+    <string name="csv_author">Author</string>
+    <string name="csv_percent">Completion %</string>
+    <string name="csv_paragraph">Paragraph</string>
+    <string name="csv_total_paragraphs">Total paragraphs</string>
+    <string name="csv_minutes">Minutes listened</string>
+    <string name="csv_last">Last opened</string>
+    <string name="csv_file">File</string>
+    <string name="csv_book_id">Book ID</string>
+    <string name="csv_snippet">Snippet</string>
+    <string name="csv_created">Created</string>
+    <string name="status_finished">Finished</string>
+    <string name="status_in_progress">In progress</string>
+
+    <!-- file picker -->
+    <string name="picker_db_title">Select database</string>
+    <string name="picker_root_title">Select root folder</string>
+    <string name="picker_choose_this">Choose this folder</string>
+    <string name="picker_no_subfolder">No subfolders.</string>
+    <string name="picker_no_files">No matching file in this folder.</string>
+    <string name="storage_internal">Internal storage</string>
+    <string name="storage_sd">SD card</string>
+
+    <!-- settings: catalogue -->
+    <string name="settings_title">Settings</string>
+    <string name="set_db_title">Catalogue database</string>
+    <string name="set_db_none">Not selected (copy a catalogue .db file to the phone)</string>
+    <string name="set_db_opened">Opened — %1$d books</string>
+    <string name="set_db_closed">Not opened</string>
+    <string name="set_db_pick">Select database file…</string>
+    <string name="set_db_opened_toast">Database opened: %1$d books</string>
+    <string name="set_db_failed_toast">Could not open the database. Is it really a catalogue file?</string>
+    <string name="set_root_title">Books root folder</string>
+    <string name="set_root_pick">Select root folder…</string>
+
+    <!-- settings: catalogue builder -->
+    <string name="set_build_title">Build a catalogue from your books</string>
+    <string name="set_build_desc">With no ready-made catalogue, the app builds one from the books\' own metadata (title, author, synopsis) — without internet. Re-running leaves existing entries untouched and only adds new books.</string>
+    <string name="set_build_source">Source: %1$s</string>
+    <string name="set_build_target">Target: %1$s</string>
+    <string name="set_build_stats">Currently: %1$d books, %2$d files (%3$d with real metadata)</string>
+    <string name="set_build_pdf">  PDF metadata too (slower)</string>
+    <string name="set_build_progress">%1$d files • %2$d new entries • %3$d skipped</string>
+    <string name="set_build_start">Build catalogue</string>
+    <string name="set_build_update">Update with new books</string>
+    <string name="build_done_title">Catalogue ready</string>
+    <string name="build_cancelled_title">Cancelled</string>
+    <string name="build_result">%1$d files examined\n%2$d new files recorded\n%3$d new books in the catalogue\n%4$d earlier entries left untouched</string>
+    <string name="build_use_it">Use it now</string>
+    <string name="build_error_open">Could not open the database: %1$s</string>
+    <string name="build_error_generic">Unknown error while building the catalogue</string>
+
+    <!-- settings: caches -->
+    <string name="set_cache_title">Caches</string>
+    <string name="set_cache_scanned">Scanned files: %1$d (%2$d matched)</string>
+    <string name="set_cache_text">Extracted text: %1$s</string>
+    <string name="set_cache_clear_scan">Clear scan cache</string>
+    <string name="set_cache_clear_text">Clear text cache</string>
+    <string name="set_cache_scan_cleared">Scan cache cleared.</string>
+    <string name="set_cache_text_cleared">Text cache cleared.</string>
+
+    <!-- settings: appearance -->
+    <string name="set_look_title">Appearance</string>
+    <string name="set_theme">Theme</string>
+    <string name="set_theme_system">Follow system</string>
+    <string name="set_theme_light">Light</string>
+    <string name="set_theme_dark">Dark</string>
+    <string name="set_color_scheme">Colour scheme</string>
+    <string name="set_ui_scale">Interface font size: %1$d%%</string>
+    <string name="set_ui_scale_hint">The book text size is adjusted separately in the reader, with the A− and A+ buttons.</string>
+    <string name="scheme_classic">Classic green</string>
+    <string name="scheme_ocean">Ocean blue</string>
+    <string name="scheme_sepia">Sepia (paper)</string>
+    <string name="scheme_sunset">Sunset</string>
+    <string name="scheme_night">Night (gentle)</string>
+    <string name="scheme_contrast">High contrast</string>
+
+    <!-- settings: interface language -->
+    <string name="set_ui_lang_title">Interface language</string>
+    <string name="set_ui_lang_system">Follow system</string>
+    <string name="set_ui_lang_pick">Choose language…</string>
+    <string name="set_ui_lang_hint">This only changes the app\'s own texts. The narration language is set separately below.</string>
+
+    <!-- settings: narration language -->
+    <string name="set_tts_lang_title">Narration language</string>
+    <string name="set_tts_lang_auto">Automatic (system language if available)</string>
+    <string name="set_tts_lang_loading">Querying the installed voices…</string>
+    <string name="set_tts_lang_count">%1$d languages are available with the installed TTS engine.</string>
+    <string name="set_tts_lang_pick">Choose language…</string>
+    <string name="set_tts_lang_download">Download voices</string>
+    <string name="set_tts_lang_none">Could not query any language. Install a text-to-speech engine (for example Google Text-to-Speech), then reopen this dialog.</string>
+    <string name="set_tts_download_failed">The voice installer is unavailable. Open the system TTS settings instead.</string>
+
+    <!-- settings: scanning -->
+    <string name="set_scan_title">Scan the library</string>
+    <string name="set_scan_desc">Walks the root folder and matches the files against the catalogue. It never starts on its own — you always ask for it.</string>
+    <string name="set_scan_stats">So far %1$d files (%2$d matched)</string>
+    <string name="set_scan_progress">%1$d files • %2$d matched</string>
+    <string name="set_scan_start">Start scanning</string>
+
+    <!-- settings: audio cues -->
+    <string name="set_cue_title">Audio cues</string>
+    <string name="set_cue_desc">A deeper double tone marks the start of every new chapter, so you know where you are even by ear.</string>
+    <string name="set_cue_chapter">  Deeper double tone before a chapter</string>
+    <string name="set_cue_volume">Volume</string>
+
+    <!-- settings: reading and controls -->
+    <string name="set_reading_title">Reading and controls</string>
+    <string name="set_reading_follow">  The text follows the narration</string>
+    <string name="set_reading_keep_screen">  Keep the screen on while reading</string>
+    <string name="set_reading_rewind">Headset double press: rewind %1$d seconds</string>
+
+    <!-- settings: TTS engine -->
+    <string name="set_tts_title">Text-to-speech engine</string>
+    <string name="set_tts_desc">The app uses the system TTS engine (for example Google Text-to-Speech). The engine and the voice are changed in the system settings.</string>
+    <string name="set_tts_open">System TTS settings…</string>
+    <string name="set_tts_open_failed">Could not open the TTS settings.</string>
+
+    <!-- extraction errors -->
+    <string name="err_file_not_found">File not found: %1$s</string>
+    <string name="err_no_text">No text could be extracted from this file.</string>
+    <string name="err_format_unsupported">This format (.%1$s) is not supported for narration.</string>
+    <string name="err_doc">The old binary .doc format is not supported — convert it to .docx or .txt (for example with Calibre).</string>
+    <string name="err_djvu">DjVu is an image format with no extractable text — after OCR the .txt can be read aloud.</string>
+    <string name="err_drm">This book is DRM protected (Mobipocket encryption) and cannot be read aloud. Convert it, for example with Calibre.</string>
+    <string name="err_huff">HUFF/CDIC compressed MOBI — convert it to EPUB (for example with Calibre) and it can be read aloud.</string>
+    <string name="err_mobi_broken">Damaged or truncated MOBI file.</string>
+    <string name="err_mobi_compression">Unknown MOBI compression: %1$d</string>
+    <string name="err_mobi_no_text">No text could be extracted from the MOBI file.</string>
+    <string name="err_epub_no_html">The EPUB contains no readable HTML chapter.</string>
+    <string name="err_epub_no_text">No text could be extracted from the EPUB chapters.</string>
+    <string name="err_fb2_no_text">No text could be extracted from the FB2 file.</string>
+    <string name="err_rtf_invalid">Not a valid RTF file.</string>
+    <string name="err_rtf_no_text">No text could be extracted from the RTF file.</string>
+    <string name="err_docx_invalid">Invalid DOCX: word/document.xml is missing.</string>
+    <string name="err_docx_no_text">No text could be extracted from the DOCX file.</string>
+    <string name="err_pdf_password">This PDF is password protected and cannot be read aloud.</string>
+    <string name="err_pdf_no_text">This PDF has no text layer (it is probably scanned). After OCR the .txt can be read aloud.</string>
+    <string name="err_pdf_failed">The PDF cannot be processed: %1$s</string>
+    <string name="err_pdf_no_extract">No text could be extracted from the PDF.</string>
+    <string name="err_extract_generic">Error while extracting the text: %1$s</string>
+    <string name="err_tts_init">The TTS engine did not start. Check the system text-to-speech settings.</string>
+    <string name="notif_preparing">Preparing…</string>
+    <string name="notif_status">%1$d/%2$d paragraphs • %3$s</string>
+    <string name="notif_prev">Previous</string>
+    <string name="notif_next">Next</string>
+    <string name="notif_stop">Stop</string>
+    <string name="duration_hm">%1$d h %2$d min</string>
+    <string name="duration_m">%1$d min</string>
+    <string name="scan_loading_catalogue">Loading the catalogue…</string>
+    <string name="scan_unknown_error">Unknown error while scanning</string>
 </resources>

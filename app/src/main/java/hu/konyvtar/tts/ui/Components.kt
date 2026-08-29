@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
+import hu.konyvtar.tts.R
 
 /**
  * Gyorsgörgető sáv nagy listákhoz: húzásra a lista arányosan ugrik.
@@ -118,9 +119,10 @@ fun fmtSize(bytes: Long): String {
     return String.format(Locale.getDefault(), "%.2f GB", gb)
 }
 
-fun fmtDuration(ms: Long): String {
+fun fmtDuration(context: android.content.Context, ms: Long): String {
     val totalMin = ms / 60000
     val h = totalMin / 60
     val m = totalMin % 60
-    return if (h > 0) "$h ó $m p" else "$m perc"
+    return if (h > 0) context.getString(R.string.duration_hm, h, m)
+    else context.getString(R.string.duration_m, m)
 }

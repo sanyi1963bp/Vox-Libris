@@ -4,6 +4,7 @@ import android.content.Context
 import hu.konyvtar.tts.model.FileRow
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
+import hu.konyvtar.tts.R
 
 /**
  * Rekurzív könyvtárszkennelés + párosítás a katalógussal.
@@ -44,7 +45,10 @@ object FileScanner {
 
         val catalog = CatalogHolder.get(context)
         val matcher: Matcher? = if (catalog != null) {
-            onProgress(ScanProgress(running = true, currentPath = "Katalógus betöltése…"))
+            onProgress(ScanProgress(
+                running = true,
+                currentPath = context.getString(R.string.scan_loading_catalogue)
+            ))
             val exact = CatalogHolder.nameIndex(context) ?: HashMap()
             val norm = CatalogHolder.normIndex(context) ?: HashMap()
             val briefs = catalog.loadAllBriefs()
@@ -157,7 +161,7 @@ object FileScanner {
                 running = false,
                 filesFound = found,
                 matched = matched,
-                error = e.message ?: "Ismeretlen hiba a szkennelés közben"
+                error = e.message ?: context.getString(R.string.scan_unknown_error)
             )
             onProgress(final)
             final

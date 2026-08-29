@@ -60,6 +60,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Locale
+import androidx.compose.ui.res.stringResource
+import hu.konyvtar.tts.R
 
 /**
  * Olvasási lista + statisztika: külön kategóriában az elolvasott
@@ -88,7 +90,7 @@ fun StatsScreen(
                 try {
                     Exporter.exportAll(context)
                 } catch (e: Exception) {
-                    exportError = e.message ?: "Az exportálás nem sikerült."
+                    exportError = e.message ?: context.getString(R.string.export_failed)
                     null
                 }
             }
@@ -108,12 +110,14 @@ fun StatsScreen(
                     val send = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
                         type = "text/csv"
                         putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
-                        putExtra(Intent.EXTRA_SUBJECT, "Könyvtár TTS — olvasási nyilvántartás")
+                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.share_subject))
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                    context.startActivity(Intent.createChooser(send, "Küldés a számítógépre"))
+                    context.startActivity(
+                        Intent.createChooser(send, context.getString(R.string.share_chooser))
+                    )
                 } catch (e: Exception) {
-                    exportError = "A megosztás nem sikerült: ${e.message ?: "ismeretlen hiba"}"
+                    exportError = context.getString(R.string.share_failed, e.message ?: "?")
                 }
             } else {
                 exportResult = result
@@ -132,11 +136,19 @@ fun StatsScreen(
     fun playRow(p: ProgressRow) {
         val f = File(p.path)
         if (!f.exists()) {
-            Toast.makeText(context, "A fájl már nem található: ${p.path}", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                context,
+                context.getString(R.string.stats_file_missing, p.path),
+                Toast.LENGTH_LONG
+            ).show()
             return
         }
         if (!TextExtractor.isSupported(f.extension)) {
-            Toast.makeText(context, TextExtractor.unsupportedHint(f.extension), Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                context,
+                TextExtractor.unsupportedHint(context, f.extension),
+                Toast.LENGTH_LONG
+            ).show()
             return
         }
         TtsService.playFile(
@@ -157,18 +169,32 @@ fun StatsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Olvasási lista", style = MaterialTheme.typography.titleMedium) },
+                title = {
+                    Text(
+                        stringResource(R.string.stats_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Vissza")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.common_back)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { doExport(share = false) }, enabled = !exporting) {
-                        Icon(Icons.Filled.Save, contentDescription = "Mentés a Letöltések mappába")
+                        Icon(
+                            Icons.Filled.Save,
+                            contentDescription = stringResource(R.string.stats_export_save)
+                        )
                     }
                     IconButton(onClick = { doExport(share = true) }, enabled = !exporting) {
-                        Icon(Icons.Filled.Share, contentDescription = "Küldés a számítógépre")
+                        Icon(
+                            Icons.Filled.Share,
+                            contentDescription = stringResource(R.string.stats_export_share)
+                        )
                     }
                 }
             )
@@ -187,17 +213,17 @@ fun StatsScreen(
                         .padding(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    StatCell("Elkezdett", rows.size.toString())
-                    StatCell("Elolvasott", finished.size.toString())
-                    StatCell("Folyamatban", inProgress.size.toString())
-                    StatCell("Hallgatás", fmtDuration(totalListened))
+                    StatCell(stringResource(R.string.stats_started), rows.size.toString())
+                    StatCell(stringResource(R.string.stats_finished), finished.size.toString())
+                    StatCell(stringResource(R.string.stats_inprogress), inProgress.size.toString())
+                    StatCell(stringResource(R.string.stats_listening), fmtDuration(context, totalListened))
                 }
             }
             Spacer(Modifier.height(8.dp))
 
             if (rows.isEmpty()) {
                 Text(
-                    text = "Még nincs elkezdett könyv.\nDupla koppintás egy fájlra a böngészőben, és indul a felolvasás — vagy hosszú nyomás az olvasáshoz!",
+                    text = stringResource(R.string.stats_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(16.dp)
@@ -207,7 +233,7 @@ fun StatsScreen(
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 if (inProgress.isNotEmpty()) {
                     item(key = "hdr_progress") {
-                        SectionHeader("📖 Folyamatban (${inProgress.size})")
+                        SectionHeader(stringResource(R.string.stats_section_progress, inProgress.size))
                     }
                     items(inProgress, key = { it.path }) { p ->
                         BookRow(
@@ -220,7 +246,7 @@ fun StatsScreen(
                 }
                 if (finished.isNotEmpty()) {
                     item(key = "hdr_finished") {
-                        SectionHeader("✔ Elolvasott (${finished.size})")
+                        SectionHeader(stringResource(R.string.stats_section_finished, finished.size))
                     }
                     items(finished, key = { it.path }) { p ->
                         BookRow(
@@ -239,12 +265,19 @@ fun StatsScreen(
     exportResult?.let { r ->
         AlertDialog(
             onDismissRequest = { exportResult = null },
-            title = { Text("Mentés kész", style = MaterialTheme.typography.titleMedium) },
+            title = {
+                Text(
+                    stringResource(R.string.export_done_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
             text = {
                 Column {
                     Text(
-                        text = "${r.bookCount} könyv (ebből ${r.finishedCount} elolvasott) és " +
-                            "${r.bookmarkCount} könyvjelző kimentve ide:",
+                        text = stringResource(
+                            R.string.export_done_text,
+                            r.bookCount, r.finishedCount, r.bookmarkCount
+                        ),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Spacer(Modifier.height(6.dp))
@@ -263,14 +296,16 @@ fun StatsScreen(
                     }
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "USB-kábellel csatlakoztatva a telefont a PC-n a Letöltések (Download) mappában találod meg.",
+                        text = stringResource(R.string.export_usb_hint),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
             confirmButton = {
-                TextButton(onClick = { exportResult = null }) { Text("Rendben") }
+                TextButton(onClick = { exportResult = null }) {
+                    Text(stringResource(R.string.common_ok))
+                }
             }
         )
     }
@@ -278,10 +313,14 @@ fun StatsScreen(
     exportError?.let { msg ->
         AlertDialog(
             onDismissRequest = { exportError = null },
-            title = { Text("Hiba", style = MaterialTheme.typography.titleMedium) },
+            title = {
+                Text(stringResource(R.string.common_error), style = MaterialTheme.typography.titleMedium)
+            },
             text = { Text(msg, style = MaterialTheme.typography.bodyMedium) },
             confirmButton = {
-                TextButton(onClick = { exportError = null }) { Text("Rendben") }
+                TextButton(onClick = { exportError = null }) {
+                    Text(stringResource(R.string.common_ok))
+                }
             }
         )
     }
@@ -340,11 +379,10 @@ private fun BookRow(
                         .padding(top = 3.dp, bottom = 2.dp)
                 )
                 Text(
-                    text = String.format(
-                        Locale.getDefault(),
-                        "%.1f%% • %s • utoljára: %s",
-                        pct,
-                        fmtDuration(p.listenedMs),
+                    text = stringResource(
+                        R.string.stats_row_line,
+                        String.format(Locale.getDefault(), "%.1f", pct),
+                        fmtDuration(LocalContext.current, p.listenedMs),
                         fmtDate(p.lastAccess)
                     ),
                     style = MaterialTheme.typography.labelSmall,
@@ -352,15 +390,21 @@ private fun BookRow(
                 )
             }
             IconButton(onClick = onPlay, modifier = Modifier.size(38.dp)) {
-                Icon(Icons.Filled.PlayArrow, contentDescription = "Felolvasás folytatása")
+                Icon(
+                    Icons.Filled.PlayArrow,
+                    contentDescription = stringResource(R.string.stats_continue)
+                )
             }
             IconButton(onClick = onRead, modifier = Modifier.size(38.dp)) {
-                Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = "Olvasás képernyőn")
+                Icon(
+                    Icons.AutoMirrored.Filled.MenuBook,
+                    contentDescription = stringResource(R.string.stats_read_screen)
+                )
             }
             IconButton(onClick = onDelete, modifier = Modifier.size(38.dp)) {
                 Icon(
                     Icons.Filled.Delete,
-                    contentDescription = "Törlés a listából",
+                    contentDescription = stringResource(R.string.stats_remove),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

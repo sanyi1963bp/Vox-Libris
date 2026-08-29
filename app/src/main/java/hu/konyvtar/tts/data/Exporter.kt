@@ -8,6 +8,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import hu.konyvtar.tts.R
 
 /**
  * Az olvasási nyilvántartás kimentése a telefon Letöltések mappájába,
@@ -58,7 +59,7 @@ object Exporter {
         AppDb.init(context)
         val dir = targetDir()
         if (!dir.exists() && !dir.mkdirs()) {
-            throw Exception("Nem sikerült létrehozni a mappát: ${dir.absolutePath}")
+            throw Exception(context.getString(R.string.build_error_open, dir.absolutePath))
         }
         val stamp = stampFmt.format(Date())
         val written = ArrayList<File>()
@@ -70,14 +71,22 @@ object Exporter {
             append('﻿') // BOM, hogy az Excel felismerje az UTF-8-at
             append(
                 row(
-                    "Státusz", "Cím", "Szerző", "Készültség %", "Bekezdés",
-                    "Összes bekezdés", "Hallgatott perc", "Utoljára", "Fájl", "Könyv ID"
+                    context.getString(R.string.csv_status),
+                    context.getString(R.string.csv_title),
+                    context.getString(R.string.csv_author),
+                    context.getString(R.string.csv_percent),
+                    context.getString(R.string.csv_paragraph),
+                    context.getString(R.string.csv_total_paragraphs),
+                    context.getString(R.string.csv_minutes),
+                    context.getString(R.string.csv_last),
+                    context.getString(R.string.csv_file),
+                    context.getString(R.string.csv_book_id)
                 )
             )
             for (p in progress) {
                 append(
                     row(
-                        p.statusText(),
+                        p.statusText(context),
                         p.title,
                         p.author,
                         String.format(Locale.US, "%.1f", p.displayPercent()),
@@ -99,7 +108,16 @@ object Exporter {
         val bmFile = File(dir, "konyvjelzok_$stamp.csv")
         StringBuilder().apply {
             append('﻿')
-            append(row("Cím", "Szerző", "Bekezdés", "Részlet", "Létrehozva", "Fájl"))
+            append(
+                row(
+                    context.getString(R.string.csv_title),
+                    context.getString(R.string.csv_author),
+                    context.getString(R.string.csv_paragraph),
+                    context.getString(R.string.csv_snippet),
+                    context.getString(R.string.csv_created),
+                    context.getString(R.string.csv_file)
+                )
+            )
             for (b in bookmarks) {
                 append(
                     row(
@@ -132,7 +150,7 @@ object Exporter {
             dir = dir.absolutePath,
             files = written,
             bookCount = progress.size,
-            finishedCount = progress.count { it.statusText() == "Elolvasott" },
+            finishedCount = progress.count { it.displayPercent() >= hu.konyvtar.tts.model.FINISHED_PERCENT },
             bookmarkCount = bookmarks.size
         )
     }

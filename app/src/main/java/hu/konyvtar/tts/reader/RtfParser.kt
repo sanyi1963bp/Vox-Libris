@@ -2,6 +2,7 @@ package hu.konyvtar.tts.reader
 
 import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
+import hu.konyvtar.tts.R
 
 /**
  * RTF -> sima szöveg. Kezeli a \ansicpgN kódlapot (magyarnál tipikusan 1250),
@@ -20,7 +21,7 @@ object RtfParser {
 
     fun parse(bytes: ByteArray): List<String> {
         if (bytes.size < 5 || String(bytes, 0, 5, Charsets.US_ASCII) != "{\\rtf") {
-            throw ExtractException("Nem érvényes RTF fájl.")
+            throw ExtractException(R.string.err_rtf_invalid)
         }
 
         var charset: Charset = Charset.forName("windows-1252")
@@ -184,7 +185,7 @@ object RtfParser {
         val paras = text.split('\n')
             .map { it.replace(Regex("\\s+"), " ").trim() }
             .filter { it.isNotEmpty() }
-        if (paras.isEmpty()) throw ExtractException("Az RTF fájlból nem sikerült szöveget kinyerni.")
+        if (paras.isEmpty()) throw ExtractException(R.string.err_rtf_no_text)
         return paras
     }
 }

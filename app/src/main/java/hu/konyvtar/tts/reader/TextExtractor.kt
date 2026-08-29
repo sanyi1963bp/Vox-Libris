@@ -3,9 +3,17 @@ package hu.konyvtar.tts.reader
 import android.content.Context
 import java.io.File
 import java.security.MessageDigest
+import hu.konyvtar.tts.R
 
-/** A felolvasáshoz nem támogatott vagy hibás fájlok jelzésére. */
-class ExtractException(message: String) : Exception(message)
+/**
+ * A felolvasáshoz nem támogatott vagy hibás fájlok jelzésére.
+ * Az üzenet nyelvfüggetlen: string-erőforrásként utazik, és csak a
+ * megjelenítéskor fordul le a felhasználó nyelvére.
+ */
+class ExtractException(val resId: Int, vararg val args: Any) : Exception() {
+    /** A hibaüzenet a felhasználó nyelvén. */
+    fun localized(context: Context): String = context.getString(resId, *args)
+}
 
 /** Egy könyv kinyert tartalma: bekezdések + fejezetkezdő bekezdés-indexek. */
 data class ExtractedBook(
@@ -31,11 +39,15 @@ object TextExtractor {
 
     fun isSupported(ext: String): Boolean = ext.lowercase() in SUPPORTED
 
-    fun unsupportedHint(ext: String): String = when (ext.lowercase()) {
-        "doc" -> "A régi bináris .doc formátum nem támogatott — konvertáld .docx-re vagy .txt-re (pl. Calibre/Word)."
-        "djvu" -> "A DjVu képalapú formátum, nincs benne kinyerhető szöveg — OCR után .txt-ként felolvasható."
-        else -> "Ez a formátum (.$ext) nem támogatott felolvasáshoz."
+    /** Melyik erőforrás magyarázza meg, miért nem megy ez a formátum. */
+    fun unsupportedRes(ext: String): Int = when (ext.lowercase()) {
+        "doc" -> R.string.err_doc
+        "djvu" -> R.string.err_djvu
+        else -> R.string.err_format_unsupported
     }
+
+    fun unsupportedHint(context: Context, ext: String): String =
+        context.getString(unsupportedRes(ext), ext)
 
     // ---------------------------------------------------------------- cache
 
@@ -70,9 +82,9 @@ object TextExtractor {
      * Hiba esetén [ExtractException]-t dob magyar üzenettel.
      */
     fun book(context: Context, file: File): ExtractedBook {
-        if (!file.exists()) throw ExtractException("A fájl nem található: ${file.absolutePath}")
+        if (!file.exists()) throw ExtractException(R.string.err_file_not_found, file.absolutePath)
         val ext = file.name.substringAfterLast('.', "").lowercase()
-        if (!isSupported(ext)) throw ExtractException(unsupportedHint(ext))
+        if (!isSupported(ext)) throw ExtractException(unsupportedRes(ext), ext)
 
         val key = cacheKey(file)
         val cacheFile = File(cacheDir(context), "$key.txt")
@@ -104,11 +116,11 @@ object TextExtractor {
             "pdf" -> PdfParser.parse(context, file)
             "docx" -> DocxParser.parse(file)
             "htm", "html" -> HtmlText.toParagraphs(TxtParser.decode(file.readBytes()))
-            else -> throw ExtractException(unsupportedHint(ext))
+            else -> throw ExtractException(unsupportedRes(ext), ext)
         }
 
         val chunked = chunk(raw)
-        if (chunked.isEmpty()) throw ExtractException("A fájlból nem sikerült szöveget kinyerni.")
+        if (chunked.isEmpty()) throw ExtractException(R.string.err_no_text)
 
         var chapters = ArrayList<Int>()
         val clean = ArrayList<String>(chunked.size)
@@ -194,7 +206,7 @@ object TextExtractor {
     private val numHeading = Regex("^\\d{1,3}\\.?$")
     private val romanHeading = Regex("^[IVXLCDM]{1,8}\\.?$")
     private val chapterWord = Regex(
-        "(?i)^(\\d{1,3}\\.?\\s+)?(fejezet|rész|könyv|prológus|epilógus|előszó|utószó|bevezetés|bevezető|első|második|harmadik|negyedik|ötödik)\\b.*"
+        "(?i)^(\\d{1,3}\\.?\\s+)?(fejezet|rész|könyv|prológus|epilógus|előszó|utószó|bevezetés|bevezető|chapter|part|book|prologue|epilogue|foreword|afterword|introduction|kapitel|teil|buch|prolog|epilog|vorwort|nachwort|einleitung|chapitre|partie|livre|préface|avant-propos|capítulo|parte|libro|prólogo|epílogo|prefacio|rozdział|część|księga|prolog|epilog|wstęp|kapitola|část|díl|úvod|předmluva|глава|часть|книга|пролог|эпилог|введение|предисловие|első|második|harmadik|negyedik|ötödik)\\b.*"
     )
 
     /**

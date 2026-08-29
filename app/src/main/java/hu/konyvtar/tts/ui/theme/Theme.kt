@@ -16,11 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import hu.konyvtar.tts.data.Prefs
+import hu.konyvtar.tts.R
 
 /** Egy választható színséma világos és sötét változata. */
 data class AppScheme(
     val id: String,
-    val name: String,
+    val nameRes: Int,
     val light: ColorScheme,
     val dark: ColorScheme
 )
@@ -81,7 +82,7 @@ private fun scheme(
 val APP_SCHEMES: List<AppScheme> = listOf(
     AppScheme(
         id = "klasszikus",
-        name = "Klasszikus zöld",
+        nameRes = R.string.scheme_classic,
         light = scheme(
             primary = Color(0xFF1B5E20), onPrimary = Color.White,
             container = Color(0xFFC8E6C9), onContainer = Color(0xFF00210A),
@@ -101,7 +102,7 @@ val APP_SCHEMES: List<AppScheme> = listOf(
     ),
     AppScheme(
         id = "tenger",
-        name = "Tenger kék",
+        nameRes = R.string.scheme_ocean,
         light = scheme(
             primary = Color(0xFF0D47A1), onPrimary = Color.White,
             container = Color(0xFFBBDEFB), onContainer = Color(0xFF001B3D),
@@ -121,7 +122,7 @@ val APP_SCHEMES: List<AppScheme> = listOf(
     ),
     AppScheme(
         id = "szepia",
-        name = "Szépia (papír)",
+        nameRes = R.string.scheme_sepia,
         light = scheme(
             primary = Color(0xFF7B4B1E), onPrimary = Color.White,
             container = Color(0xFFEBD9BF), onContainer = Color(0xFF2B1A08),
@@ -141,7 +142,7 @@ val APP_SCHEMES: List<AppScheme> = listOf(
     ),
     AppScheme(
         id = "naplemente",
-        name = "Naplemente",
+        nameRes = R.string.scheme_sunset,
         light = scheme(
             primary = Color(0xFFBF360C), onPrimary = Color.White,
             container = Color(0xFFFFCCBC), onContainer = Color(0xFF3E1000),
@@ -161,7 +162,7 @@ val APP_SCHEMES: List<AppScheme> = listOf(
     ),
     AppScheme(
         id = "ejszaka",
-        name = "Éjszakai (kímélő)",
+        nameRes = R.string.scheme_night,
         light = scheme(
             primary = Color(0xFF4E342E), onPrimary = Color.White,
             container = Color(0xFFD7CCC8), onContainer = Color(0xFF1B0F0C),
@@ -181,7 +182,7 @@ val APP_SCHEMES: List<AppScheme> = listOf(
     ),
     AppScheme(
         id = "kontraszt",
-        name = "Magas kontraszt",
+        nameRes = R.string.scheme_contrast,
         light = scheme(
             primary = Color(0xFF000000), onPrimary = Color.White,
             container = Color(0xFFFFE600), onContainer = Color(0xFF000000),

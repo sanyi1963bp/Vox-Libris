@@ -49,6 +49,10 @@ import java.util.Locale
  */
 class TtsService : Service(), TextToSpeech.OnInitListener {
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(hu.konyvtar.tts.data.LocaleHelper.wrap(newBase))
+    }
+
     data class PlayerState(
         val path: String? = null,
         val title: String = "",
@@ -329,7 +333,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             }
         } else {
             _state.value = _state.value.copy(
-                error = "A TTS motor nem indult el. Ellenőrizd a rendszer szövegfelolvasó beállításait."
+                error = getString(R.string.err_tts_init)
             )
         }
     }
@@ -443,9 +447,9 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                     val saved = if (restart) null else AppDb.progressFor(path)
                     Triple(book, saved, null as String?)
                 } catch (e: ExtractException) {
-                    Triple(null, null, e.message)
+                    Triple(null, null, e.localized(this@TtsService))
                 } catch (e: Exception) {
-                    Triple(null, null, "Hiba a szöveg kinyerésekor: ${e.message ?: "ismeretlen"}")
+                    Triple(null, null, getString(R.string.err_extract_generic, e.message ?: "?"))
                 }
             }
             val (book, saved, error) = result
@@ -453,7 +457,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             if (error != null || paras.isEmpty()) {
                 _state.value = _state.value.copy(
                     preparing = false,
-                    error = error ?: "A fájlból nem sikerült szöveget kinyerni."
+                    error = error ?: getString(R.string.err_no_text)
                 )
                 updateNotification()
                 return@launch
@@ -855,8 +859,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         )
         val pctText = String.format(Locale.getDefault(), "%.1f%%", s.percent)
         val sub = when {
-            s.preparing -> "Előkészítés…"
-            s.totalParas > 0 -> "${s.paraIndex + 1}/${s.totalParas} bekezdés • $pctText"
+            s.preparing -> getString(R.string.notif_preparing)
+            s.totalParas > 0 -> getString(
+                R.string.notif_status, s.paraIndex + 1, s.totalParas, pctText
+            )
             else -> ""
         }
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
@@ -866,14 +872,14 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             .setContentIntent(contentPi)
             .setOngoing(s.playing)
             .setOnlyAlertOnce(true)
-            .addAction(R.drawable.ic_prev, "Előző", servicePending(ACTION_PREV, 1))
+            .addAction(R.drawable.ic_prev, getString(R.string.notif_prev), servicePending(ACTION_PREV, 1))
             .addAction(
                 if (s.playing) R.drawable.ic_pause else R.drawable.ic_play,
-                if (s.playing) "Szünet" else "Lejátszás",
+                getString(if (s.playing) R.string.common_pause else R.string.common_play),
                 servicePending(ACTION_TOGGLE, 2)
             )
-            .addAction(R.drawable.ic_next, "Következő", servicePending(ACTION_NEXT, 3))
-            .addAction(R.drawable.ic_stop, "Leállítás", servicePending(ACTION_STOP, 4))
+            .addAction(R.drawable.ic_next, getString(R.string.notif_next), servicePending(ACTION_NEXT, 3))
+            .addAction(R.drawable.ic_stop, getString(R.string.notif_stop), servicePending(ACTION_STOP, 4))
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setMediaSession(mediaSession?.sessionToken)

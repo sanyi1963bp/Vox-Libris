@@ -7,6 +7,7 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import java.io.File
+import hu.konyvtar.tts.R
 
 /**
  * PDF szövegréteg kinyerése (PDFBox). Képalapú/szkennelt PDF-re érthető hibát ad
@@ -36,15 +37,15 @@ object PdfParser {
                 stripper.getText(doc)
             }
         } catch (e: InvalidPasswordException) {
-            throw ExtractException("Ez a PDF jelszóval védett, nem olvasható fel.")
+            throw ExtractException(R.string.err_pdf_password)
         } catch (e: ExtractException) {
             throw e
         } catch (e: Exception) {
-            throw ExtractException("A PDF nem dolgozható fel: ${e.message ?: "ismeretlen hiba"}")
+            throw ExtractException(R.string.err_pdf_failed, e.message ?: "?")
         }
 
         if (text.isBlank()) {
-            throw ExtractException("A PDF nem tartalmaz szövegréteget (valószínűleg szkennelt/képalapú). OCR után .txt-ként felolvasható.")
+            throw ExtractException(R.string.err_pdf_no_text)
         }
 
         // A PDF sortörései vizuálisak — mondatvégeknél tartunk bekezdéshatárt,
@@ -80,7 +81,7 @@ object PdfParser {
         if (sb.isNotEmpty()) out.add(sb.toString().trim())
 
         val paras = out.filter { it.isNotEmpty() }
-        if (paras.isEmpty()) throw ExtractException("A PDF-ből nem sikerült szöveget kinyerni.")
+        if (paras.isEmpty()) throw ExtractException(R.string.err_pdf_no_extract)
         return paras
     }
 }

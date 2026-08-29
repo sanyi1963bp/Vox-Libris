@@ -1,5 +1,7 @@
 package hu.konyvtar.tts.model
 
+import hu.konyvtar.tts.R
+
 /** Egy sor a fájlböngészőben: fájl vagy mappa + a hozzá párosított katalógus-metaadat. */
 data class FileRow(
     val path: String,
@@ -65,9 +67,11 @@ fun ProgressRow.displayPercent(): Double {
     return maxOf(percent, readPct)
 }
 
-/** "Elolvasott" vagy "Folyamatban". */
-fun ProgressRow.statusText(): String =
-    if (displayPercent() >= FINISHED_PERCENT) "Elolvasott" else "Folyamatban"
+/** Az olvasottsági állapot a felhasználó nyelvén. */
+fun ProgressRow.statusText(context: android.content.Context): String = context.getString(
+    if (displayPercent() >= FINISHED_PERCENT) R.string.status_finished
+    else R.string.status_in_progress
+)
 
 /** Könyvjelző egy adott bekezdésnél. */
 data class Bookmark(

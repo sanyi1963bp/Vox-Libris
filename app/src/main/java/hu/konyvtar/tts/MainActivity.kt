@@ -52,8 +52,13 @@ import hu.konyvtar.tts.ui.StatsScreen
 import hu.konyvtar.tts.ui.theme.KonyvtarTheme
 import hu.konyvtar.tts.ui.theme.ThemeState
 import hu.konyvtar.tts.vm.LibraryViewModel
+import androidx.compose.ui.res.stringResource
 
 class MainActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(hu.konyvtar.tts.data.LocaleHelper.wrap(newBase))
+    }
 
     private var openPlayerOnStart = false
 
@@ -183,7 +188,7 @@ fun AppRoot(startInPlayer: Boolean) {
         }
         composable("pick_db") {
             FilePickerScreen(
-                title = "Adatbázis kiválasztása",
+                title = stringResource(R.string.picker_db_title),
                 pickDirectory = false,
                 extensionFilter = setOf("db", "sqlite", "sqlite3"),
                 onPicked = { path ->
@@ -195,7 +200,7 @@ fun AppRoot(startInPlayer: Boolean) {
         }
         composable("pick_root") {
             FilePickerScreen(
-                title = "Gyökérmappa kiválasztása",
+                title = stringResource(R.string.picker_root_title),
                 pickDirectory = true,
                 onPicked = { path ->
                     vm.setRoot(path)
@@ -218,16 +223,14 @@ private fun PermissionScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Fájlhozzáférés szükséges",
+            text = stringResource(R.string.perm_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "Az app a telefonon lévő könyvfájlokat és a katalógus-adatbázist olvassa, " +
-                "ezért a „Minden fájl kezelése” engedélyre van szüksége.\n\n" +
-                "A következő képernyőn kapcsold be az engedélyt, majd lépj vissza.",
+            text = stringResource(R.string.perm_text),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )
@@ -245,7 +248,7 @@ private fun PermissionScreen() {
                 }
             }
         }) {
-            Text("Engedély megadása")
+            Text(stringResource(R.string.perm_button))
         }
     }
 }

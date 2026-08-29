@@ -5,6 +5,7 @@ import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import hu.konyvtar.tts.R
 
 /**
  * EPUB olvasó: container.xml -> OPF -> spine sorrendben a HTML fejezetek.
@@ -22,7 +23,7 @@ object EpubParser {
                 fallbackEntries(zip)
             }
             if (htmlEntries.isEmpty()) {
-                throw ExtractException("Az EPUB nem tartalmaz olvasható HTML fejezetet.")
+                throw ExtractException(R.string.err_epub_no_html)
             }
             val out = ArrayList<String>(1024)
             for (entry in htmlEntries) {
@@ -38,7 +39,7 @@ object EpubParser {
                 }
             }
             if (out.isEmpty()) {
-                throw ExtractException("Az EPUB fejezeteiből nem sikerült szöveget kinyerni.")
+                throw ExtractException(R.string.err_epub_no_text)
             }
             return out
         }

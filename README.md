@@ -4,6 +4,9 @@
 
 🇭🇺 Magyar (ez a lap) · 🇬🇧 [English](README.en.md)
 
+**A felület tíz nyelven**: magyar · angol · német · francia · spanyol ·
+portugál · lengyel · cseh · szlovák · orosz
+
 🔧 [Telepítés és függőségek](docs/TELEPITES.md) · 📖 [Használati útmutató](docs/HASZNALAT.md) · 📝 [Változásnapló](CHANGELOG.md)
 
 ---
@@ -68,6 +71,9 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
   közben letett jelző a felolvasott helyre kerül.
 - **Fülhallgató-gombok** (Bluetooth és vezetékes, MediaSession-en át):
   1 nyomás = Start/Stop, 2 nyomás = ~5 másodperc vissza.
+- **Tíz nyelv.** A teljes felület lefordítva, és **a felület nyelve külön
+  állítható a felolvasás nyelvétől**. Új nyelv hozzáadása egyetlen XML-fájl,
+  kódolás nélkül.
 - **Olvasási lista + statisztika.** Külön kategóriában az **elolvasott** és a
   **folyamatban lévő** könyvek, haladás-csíkkal, hallgatási idővel, utolsó
   dátummal.

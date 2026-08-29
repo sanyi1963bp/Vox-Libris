@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.os.Environment
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
+import hu.konyvtar.tts.R
 
 /**
  * Katalógus építése a telefonon lévő könyvfájlokból, internet nélkül:
@@ -139,7 +140,7 @@ object CatalogBuilder {
             dbFile.parentFile?.mkdirs()
             SQLiteDatabase.openOrCreateDatabase(dbFile, null)
         } catch (e: Exception) {
-            val p = Progress(error = "Nem sikerült megnyitni az adatbázist: ${e.message}")
+            val p = Progress(error = context.getString(R.string.build_error_open, e.message ?: "?"))
             onProgress(p)
             return p
         }
@@ -252,7 +253,7 @@ object CatalogBuilder {
         } catch (e: Exception) {
             val p = Progress(
                 scanned = scanned, added = added, skipped = skipped, newBooks = newBooks,
-                error = e.message ?: "Ismeretlen hiba a katalógus építése közben"
+                error = e.message ?: context.getString(R.string.build_error_generic)
             )
             onProgress(p)
             return p

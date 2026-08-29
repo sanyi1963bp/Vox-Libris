@@ -49,6 +49,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.mutableFloatStateOf
+import hu.konyvtar.tts.R
+import hu.konyvtar.tts.data.AppLanguages
 import hu.konyvtar.tts.data.CatalogBuilder
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.reader.TextExtractor
@@ -59,6 +61,7 @@ import hu.konyvtar.tts.vm.LibraryViewModel
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.res.stringResource
 
 /** Beállítások: adatbázis és gyökérmappa kiválasztása, cache kezelése, TTS beállítások. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,6 +86,8 @@ fun SettingsScreen(
     var ttsLangs by remember { mutableStateOf<List<Locale>>(emptyList()) }
     var ttsLangTag by remember { mutableStateOf(Prefs.ttsLanguage(context)) }
     var langDialogOpen by remember { mutableStateOf(false) }
+    var uiLangDialogOpen by remember { mutableStateOf(false) }
+    var uiLangTag by remember { mutableStateOf(Prefs.uiLanguage(context)) }
 
     // A rendszer TTS motorjatol lekerdezzuk, milyen nyelvek erhetok el
     DisposableEffect(Unit) {
@@ -120,10 +125,18 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Beállítások", style = MaterialTheme.typography.titleMedium) },
+                title = {
+                    Text(
+                        stringResource(R.string.settings_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Vissza")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.common_back)
+                        )
                     }
                 }
             )
@@ -140,26 +153,24 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Katalógus-adatbázis",
+                        stringResource(R.string.set_db_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = ui.db.path ?: "Nincs kiválasztva (másold a telefonra a ncore_konyvtar.db fájlt)",
+                        text = ui.db.path ?: stringResource(R.string.set_db_none),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = if (ui.db.opened)
-                            "Megnyitva — ${ui.db.bookCount} könyv"
-                        else
-                            "Nincs megnyitva",
+                        text = if (ui.db.opened) stringResource(R.string.set_db_opened, ui.db.bookCount)
+                        else stringResource(R.string.set_db_closed),
                         style = MaterialTheme.typography.bodySmall,
                         color = if (ui.db.opened) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.error
                     )
                     Spacer(Modifier.height(6.dp))
-                    Button(onClick = onPickDb) { Text("Adatbázisfájl kiválasztása…") }
+                    Button(onClick = onPickDb) { Text(stringResource(R.string.set_db_pick)) }
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -168,7 +179,7 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Könyvek gyökérmappája",
+                        stringResource(R.string.set_root_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -178,7 +189,7 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(6.dp))
-                    Button(onClick = onPickRoot) { Text("Gyökérmappa kiválasztása…") }
+                    Button(onClick = onPickRoot) { Text(stringResource(R.string.set_root_pick)) }
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -187,34 +198,34 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Katalógus építése a könyvekből",
+                        stringResource(R.string.set_build_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Ha nincs kész katalógusod, az app a könyvfájlok saját " +
-                            "metaadataiból (cím, szerző, fülszöveg) készít egyet — internet nélkül. " +
-                            "Újrafuttatva a meglévő bejegyzéseket békén hagyja, csak az új " +
-                            "könyveket veszi fel.",
+                        text = stringResource(R.string.set_build_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "Forrás: ${ui.currentDir}",
+                        text = stringResource(R.string.set_build_source, ui.currentDir),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1
                     )
                     Text(
-                        text = "Cél: ${CatalogBuilder.defaultDbFile().absolutePath}",
+                        text = stringResource(
+                            R.string.set_build_target,
+                            CatalogBuilder.defaultDbFile().absolutePath
+                        ),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2
                     )
                     builtStats?.let { (books, files, rich) ->
                         Text(
-                            text = "Jelenleg: $books könyv, $files fájl (ebből $rich valódi metaadattal)",
+                            text = stringResource(R.string.set_build_stats, books, files, rich),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -227,7 +238,7 @@ fun SettingsScreen(
                             enabled = !ui.build.running
                         )
                         Text(
-                            text = "  PDF-ek metaadata is (lassabb)",
+                            text = stringResource(R.string.set_build_pdf),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -236,8 +247,10 @@ fun SettingsScreen(
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "${ui.build.scanned} fájl • ${ui.build.added} új bejegyzés • " +
-                                "${ui.build.skipped} kihagyva",
+                            text = stringResource(
+                                R.string.set_build_progress,
+                                ui.build.scanned, ui.build.added, ui.build.skipped
+                            ),
                             style = MaterialTheme.typography.labelSmall
                         )
                         Text(
@@ -247,10 +260,17 @@ fun SettingsScreen(
                             maxLines = 1
                         )
                         Spacer(Modifier.height(4.dp))
-                        OutlinedButton(onClick = { vm.cancelBuild() }) { Text("Megszakítás") }
+                        OutlinedButton(onClick = { vm.cancelBuild() }) {
+                            Text(stringResource(R.string.common_abort))
+                        }
                     } else {
                         Button(onClick = { vm.buildCatalog(includePdf) }) {
-                            Text(if (builtStats == null) "Katalógus építése" else "Frissítés az új könyvekkel")
+                            Text(
+                                stringResource(
+                                    if (builtStats == null) R.string.set_build_start
+                                    else R.string.set_build_update
+                                )
+                            )
                         }
                     }
                 }
@@ -261,16 +281,16 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Gyorsítótárak",
+                        stringResource(R.string.set_cache_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Szkennelt fájlok: ${ui.cachedTotal} (${ui.cachedMatched} párosítva)",
+                        text = stringResource(R.string.set_cache_scanned, ui.cachedTotal, ui.cachedMatched),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        text = "Kinyert szövegek: ${fmtSize(cacheSize)}",
+                        text = stringResource(R.string.set_cache_text, fmtSize(cacheSize)),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Spacer(Modifier.height(6.dp))
@@ -279,9 +299,13 @@ fun SettingsScreen(
                             Thread {
                                 hu.konyvtar.tts.data.AppDb.clearScanCache()
                             }.start()
-                            Toast.makeText(context, "Szkennelési gyorsítótár törölve.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.set_cache_scan_cleared),
+                                Toast.LENGTH_SHORT
+                            ).show()
                             vm.refresh()
-                        }) { Text("Szkennelés törlése") }
+                        }) { Text(stringResource(R.string.set_cache_clear_scan)) }
                         Spacer(Modifier.height(0.dp))
                         Spacer(modifier = Modifier.padding(4.dp))
                         OutlinedButton(onClick = {
@@ -289,8 +313,12 @@ fun SettingsScreen(
                                 TextExtractor.clearCache(context)
                             }.start()
                             cacheReload++
-                            Toast.makeText(context, "Szöveg-gyorsítótár törölve.", Toast.LENGTH_SHORT).show()
-                        }) { Text("Szövegek törlése") }
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.set_cache_text_cleared),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }) { Text(stringResource(R.string.set_cache_clear_text)) }
                     }
                 }
             }
@@ -300,17 +328,17 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Megjelenés",
+                        stringResource(R.string.set_look_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(4.dp))
-                    Text("Téma", style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.set_theme), style = MaterialTheme.typography.labelSmall)
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf(
-                            "system" to "Rendszer szerint",
-                            "light" to "Világos",
-                            "dark" to "Sötét"
+                            "system" to stringResource(R.string.set_theme_system),
+                            "light" to stringResource(R.string.set_theme_light),
+                            "dark" to stringResource(R.string.set_theme_dark)
                         ).forEach { pair ->
                             FilterChip(
                                 selected = ThemeState.mode == pair.first,
@@ -325,7 +353,7 @@ fun SettingsScreen(
                         }
                     }
                     Spacer(Modifier.height(6.dp))
-                    Text("Színséma", style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.set_color_scheme), style = MaterialTheme.typography.labelSmall)
                     Row(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -338,14 +366,17 @@ fun SettingsScreen(
                                     Prefs.setColorScheme(context, sch.id)
                                 },
                                 label = {
-                                    Text(sch.name, style = MaterialTheme.typography.labelSmall)
+                                    Text(
+                                        stringResource(sch.nameRes),
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
                                 }
                             )
                         }
                     }
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        text = "A kezelőfelület betűmérete: " + (uiScale * 100).toInt() + "%",
+                        text = stringResource(R.string.set_ui_scale, (uiScale * 100).toInt()),
                         style = MaterialTheme.typography.labelSmall
                     )
                     Slider(
@@ -359,11 +390,37 @@ fun SettingsScreen(
                         steps = 15
                     )
                     Text(
-                        text = "A könyv szövegének betűmérete külön állítható az olvasóban, " +
-                            "a hangoló gomb alatti A- és A+ gombokkal.",
+                        text = stringResource(R.string.set_ui_scale_hint),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+
+            // A felulet nyelve
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        stringResource(R.string.set_ui_lang_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = if (uiLangTag.isBlank()) stringResource(R.string.set_ui_lang_system)
+                        else AppLanguages.nameOf(uiLangTag),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = stringResource(R.string.set_ui_lang_hint),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Button(onClick = { uiLangDialogOpen = true }) {
+                        Text(stringResource(R.string.set_ui_lang_pick))
+                    }
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -372,13 +429,13 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Felolvasás nyelve",
+                        stringResource(R.string.set_tts_lang_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = if (ttsLangTag.isBlank()) {
-                            "Automatikus (magyar, ha elérhető)"
+                            stringResource(R.string.set_tts_lang_auto)
                         } else {
                             val l = Locale.forLanguageTag(ttsLangTag)
                             l.getDisplayName(l)
@@ -387,17 +444,16 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = if (ttsLangs.isEmpty()) {
-                            "A telepített hangok lekérdezése…"
-                        } else {
-                            ttsLangs.size.toString() + " nyelv érhető el a telepített TTS motorral."
-                        },
+                        text = if (ttsLangs.isEmpty()) stringResource(R.string.set_tts_lang_loading)
+                        else stringResource(R.string.set_tts_lang_count, ttsLangs.size),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(6.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = { langDialogOpen = true }) { Text("Nyelv választása…") }
+                        Button(onClick = { langDialogOpen = true }) {
+                            Text(stringResource(R.string.set_tts_lang_pick))
+                        }
                         OutlinedButton(onClick = {
                             try {
                                 val i = Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
@@ -406,11 +462,11 @@ fun SettingsScreen(
                             } catch (e: Exception) {
                                 Toast.makeText(
                                     context,
-                                    "A hangletöltő nem érhető el. Nyisd meg a rendszer TTS beállításait.",
+                                    context.getString(R.string.set_tts_download_failed),
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
-                        }) { Text("Hangok letöltése") }
+                        }) { Text(stringResource(R.string.set_tts_lang_download)) }
                     }
                 }
             }
@@ -420,18 +476,17 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Könyvtár szkennelése",
+                        stringResource(R.string.set_scan_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Végigjárja a gyökérmappát, és párosítja a fájlokat a " +
-                            "katalógussal. Sosem indul magától — mindig te kéred.",
+                        text = stringResource(R.string.set_scan_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Eddig " + ui.cachedTotal + " fájl (" + ui.cachedMatched + " párosítva)",
+                        text = stringResource(R.string.set_scan_stats, ui.cachedTotal, ui.cachedMatched),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -440,13 +495,16 @@ fun SettingsScreen(
                         LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = ui.scan.filesFound.toString() + " fájl • " +
-                                ui.scan.matched + " párosítva",
+                            text = stringResource(
+                                R.string.set_scan_progress, ui.scan.filesFound, ui.scan.matched
+                            ),
                             style = MaterialTheme.typography.labelSmall
                         )
-                        OutlinedButton(onClick = { vm.cancelScan() }) { Text("Megszakítás") }
+                        OutlinedButton(onClick = { vm.cancelScan() }) {
+                            Text(stringResource(R.string.common_abort))
+                        }
                     } else {
-                        Button(onClick = { vm.startScan() }) { Text("Szkennelés indítása") }
+                        Button(onClick = { vm.startScan() }) { Text(stringResource(R.string.set_scan_start)) }
                     }
                 }
             }
@@ -456,13 +514,12 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Hangjelzések",
+                        stringResource(R.string.set_cue_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Mélyebb, kettős hang jelzi minden új fejezet kezdetét, hogy " +
-                            "hallás után is tudd, hol tartasz a könyvben.",
+                        text = stringResource(R.string.set_cue_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -471,10 +528,17 @@ fun SettingsScreen(
                         Switch(checked = cueChapter, onCheckedChange = {
                             cueChapter = it; Prefs.setCueChapter(context, it)
                         })
-                        Text("  Mélyebb, kettős jelzés fejezet előtt", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            stringResource(R.string.set_cue_chapter),
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Hangerő", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(74.dp))
+                        Text(
+                            stringResource(R.string.set_cue_volume),
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.width(74.dp)
+                        )
                         Slider(
                             value = cueVolume,
                             onValueChange = { cueVolume = it },
@@ -496,7 +560,7 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Olvasás és vezérlés",
+                        stringResource(R.string.set_reading_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -504,17 +568,23 @@ fun SettingsScreen(
                         Switch(checked = readerFollow, onCheckedChange = {
                             readerFollow = it; Prefs.setReaderFollow(context, it)
                         })
-                        Text("  A szöveg kövesse a felolvasást", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            stringResource(R.string.set_reading_follow),
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Switch(checked = keepScreen, onCheckedChange = {
                             keepScreen = it; Prefs.setKeepScreenOn(context, it)
                         })
-                        Text("  A képernyő maradjon ébren olvasás közben", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            stringResource(R.string.set_reading_keep_screen),
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "Fülhallgató dupla nyomás: ${rewindSec.toInt()} másodperc vissza",
+                        text = stringResource(R.string.set_reading_rewind, rewindSec.toInt()),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Slider(
@@ -532,12 +602,12 @@ fun SettingsScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        "Szövegfelolvasó (TTS)",
+                        stringResource(R.string.set_tts_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Az app a rendszer TTS motorját használja (pl. Google Szövegfelolvasó, magyar hanggal). A motort és a hangot a rendszerbeállításokban tudod cserélni.",
+                        text = stringResource(R.string.set_tts_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -550,22 +620,68 @@ fun SettingsScreen(
                         } catch (e: Exception) {
                             Toast.makeText(
                                 context,
-                                "Nem sikerült megnyitni a TTS beállításokat.",
+                                context.getString(R.string.set_tts_open_failed),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                    }) { Text("Rendszer TTS beállítások…") }
+                    }) { Text(stringResource(R.string.set_tts_open)) }
                 }
             }
             Spacer(Modifier.height(24.dp))
         }
     }
 
+    // ---------------------------------------------------------------- felulet nyelve
+    if (uiLangDialogOpen) {
+        val activity = context as? android.app.Activity
+        AlertDialog(
+            onDismissRequest = { uiLangDialogOpen = false },
+            title = {
+                Text(
+                    stringResource(R.string.set_ui_lang_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 440.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    TextButton(onClick = {
+                        uiLangTag = ""
+                        Prefs.setUiLanguage(context, "")
+                        uiLangDialogOpen = false
+                        activity?.recreate()
+                    }) { Text(stringResource(R.string.set_ui_lang_system)) }
+                    AppLanguages.ALL.forEach { lang ->
+                        TextButton(onClick = {
+                            uiLangTag = lang.tag
+                            Prefs.setUiLanguage(context, lang.tag)
+                            uiLangDialogOpen = false
+                            activity?.recreate()
+                        }) { Text(lang.name, style = MaterialTheme.typography.bodyMedium) }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { uiLangDialogOpen = false }) {
+                    Text(stringResource(R.string.common_close))
+                }
+            }
+        )
+    }
+
     // ---------------------------------------------------------------- nyelvvalaszto
     if (langDialogOpen) {
         AlertDialog(
             onDismissRequest = { langDialogOpen = false },
-            title = { Text("Felolvasás nyelve", style = MaterialTheme.typography.titleMedium) },
+            title = {
+                Text(
+                    stringResource(R.string.set_tts_lang_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
             text = {
                 Column(
                     modifier = Modifier
@@ -577,11 +693,10 @@ fun SettingsScreen(
                         Prefs.setTtsLanguage(context, "")
                         TtsService.send(context, TtsService.ACTION_SET_LANGUAGE)
                         langDialogOpen = false
-                    }) { Text("Automatikus (magyar, ha elérhető)") }
+                    }) { Text(stringResource(R.string.set_tts_lang_auto)) }
                     if (ttsLangs.isEmpty()) {
                         Text(
-                            "Nem sikerült nyelveket lekérdezni. Telepíts szövegfelolvasó motort " +
-                                "(pl. Google Szövegfelolvasó), majd nyisd meg újra ezt az ablakot.",
+                            stringResource(R.string.set_tts_lang_none),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -601,7 +716,9 @@ fun SettingsScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { langDialogOpen = false }) { Text("Bezárás") }
+                TextButton(onClick = { langDialogOpen = false }) {
+                    Text(stringResource(R.string.common_close))
+                }
             }
         )
     }
@@ -614,9 +731,9 @@ fun SettingsScreen(
             title = {
                 Text(
                     when {
-                        build.error != null -> "Hiba"
-                        build.cancelled -> "Megszakítva"
-                        else -> "Katalógus kész"
+                        build.error != null -> stringResource(R.string.common_error)
+                        build.cancelled -> stringResource(R.string.build_cancelled_title)
+                        else -> stringResource(R.string.build_done_title)
                     },
                     style = MaterialTheme.typography.titleMedium
                 )
@@ -627,10 +744,10 @@ fun SettingsScreen(
                         Text(build.error!!, style = MaterialTheme.typography.bodyMedium)
                     } else {
                         Text(
-                            text = "${build.scanned} fájl átnézve\n" +
-                                "${build.added} új fájl bejegyezve\n" +
-                                "${build.newBooks} új könyv a katalógusban\n" +
-                                "${build.skipped} korábbi bejegyzés érintetlenül hagyva",
+                            text = stringResource(
+                                R.string.build_result,
+                                build.scanned, build.added, build.newBooks, build.skipped
+                            ),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         build.dbPath?.let {
@@ -649,14 +766,18 @@ fun SettingsScreen(
                     TextButton(onClick = {
                         vm.openDb(build.dbPath!!)
                         vm.clearBuildResult()
-                    }) { Text("Használatba veszem") }
+                    }) { Text(stringResource(R.string.build_use_it)) }
                 } else {
-                    TextButton(onClick = { vm.clearBuildResult() }) { Text("Rendben") }
+                    TextButton(onClick = { vm.clearBuildResult() }) {
+                        Text(stringResource(R.string.common_ok))
+                    }
                 }
             },
             dismissButton = {
                 if (build.error == null && build.dbPath != null) {
-                    TextButton(onClick = { vm.clearBuildResult() }) { Text("Bezárás") }
+                    TextButton(onClick = { vm.clearBuildResult() }) {
+                        Text(stringResource(R.string.common_close))
+                    }
                 }
             }
         )

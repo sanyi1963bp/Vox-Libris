@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vox Libris</string>
+
+    <string name="tts_channel_name">Чтение вслух</string>
+    <string name="tts_channel_desc">Чтение книги в фоновом режиме</string>
+
+    <string name="common_close">Закрыть</string>
+    <string name="common_ok">ОК</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_abort">Прервать</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_back">Назад</string>
+    <string name="common_up">Вверх</string>
+    <string name="common_error">Ошибка</string>
+    <string name="common_settings">Настройки</string>
+    <string name="common_play">Воспроизвести</string>
+    <string name="common_pause">Пауза</string>
+
+    <string name="perm_title">Требуется доступ к файлам</string>
+    <string name="perm_text">Приложение читает файлы книг и базу каталога на вашем телефоне, поэтому ему нужно разрешение «Доступ ко всем файлам».\n\nВключите его на следующем экране и вернитесь сюда.</string>
+    <string name="perm_button">Предоставить разрешение</string>
+
+    <string name="explorer_scan">Сканировать</string>
+    <string name="explorer_stats">Список чтения</string>
+    <string name="explorer_search_hint">Поиск (имя, название, автор)…</string>
+    <string name="explorer_clear">Очистить</string>
+    <string name="explorer_subfolders">И вложенные папки</string>
+    <string name="explorer_deep_hits">Поиск и во вложенных папках — %1$d результатов</string>
+    <string name="explorer_storage_switch">Сменить хранилище</string>
+    <string name="explorer_no_other_storage">Другое хранилище (SD-карта) не подключено</string>
+    <string name="explorer_books_count">%1$d книг</string>
+    <string name="explorer_no_db">нет базы</string>
+    <string name="explorer_scanning">Сканирование: %1$d файлов, %2$d сопоставлено</string>
+    <string name="explorer_empty">В этой папке нет файлов книг.</string>
+    <string name="explorer_preparing"> • подготовка…</string>
+    <string name="col_name">Имя</string>
+    <string name="col_author">Автор</string>
+    <string name="col_size">Размер</string>
+    <string name="col_date">Дата</string>
+    <string name="row_done">готово</string>
+    <string name="row_info">Сведения о книге</string>
+
+    <string name="info_title">Название</string>
+    <string name="info_author">Автор</string>
+    <string name="info_publisher">Издательство</string>
+    <string name="info_year">Год</string>
+    <string name="info_isbn">ISBN</string>
+    <string name="info_series">Серия</string>
+    <string name="info_tags">Метки</string>
+    <string name="info_file">Файл</string>
+    <string name="info_size">Размер</string>
+    <string name="info_modified">Изменён</string>
+    <string name="info_paragraphs">Абзацы</string>
+    <string name="info_chapters">Главы</string>
+    <string name="info_description">Описание</string>
+    <string name="info_from_file">Данные, прочитанные из самого файла</string>
+    <string name="info_none">Больше данных об этом файле нет — ни в каталоге, ни в самом файле.</string>
+    <string name="info_progress">Вы здесь: %1$s%%</string>
+    <string name="info_finished">Прочитано</string>
+
+    <string name="reader_load_error">Не удалось загрузить текст.</string>
+    <string name="reader_bookmark_added">Закладка: абзац %1$d</string>
+    <string name="reader_search_in_text">Поиск в тексте</string>
+    <string name="reader_search_hint">Поиск в тексте…</string>
+    <string name="reader_more_actions">Другие действия</string>
+    <string name="reader_bookmark_here">Закладка здесь</string>
+    <string name="reader_bookmarks_n">Закладки (%1$d)</string>
+    <string name="reader_stop_narration">Остановить чтение</string>
+    <string name="reader_prev_hit">Предыдущее совпадение</string>
+    <string name="reader_next_hit">Следующее совпадение</string>
+    <string name="reader_follow">Следовать за чтением</string>
+    <string name="reader_font_and_voice">Размер шрифта и голос</string>
+    <string name="reader_font">Шрифт</string>
+    <string name="reader_smaller_font">Мельче шрифт</string>
+    <string name="reader_larger_font">Крупнее шрифт</string>
+    <string name="reader_speed">Скорость</string>
+    <string name="reader_pitch">Высота</string>
+    <string name="reader_loading">Загрузка текста…</string>
+    <string name="reader_bookmarks_title">Закладки</string>
+    <string name="reader_no_bookmarks">Закладок пока нет.\nУдерживайте абзац, чтобы добавить закладку.</string>
+    <string name="reader_bookmark_line">Абзац %1$d • %2$s</string>
+    <string name="reader_status_para">Абз. %1$d/%2$d</string>
+    <string name="reader_status_chapter">  •  Гл. %1$d/%2$d</string>
+    <string name="reader_status_progress">  •  %1$s%%  •  %2$s</string>
+
+    <string name="nav_chapter">глава</string>
+    <string name="nav_paragraph">абзац</string>
+    <string name="nav_sentence">фраза</string>
+    <string name="nav_prev_chapter">Предыдущая глава</string>
+    <string name="nav_next_chapter">Следующая глава</string>
+    <string name="nav_prev_paragraph">Предыдущий абзац</string>
+    <string name="nav_next_paragraph">Следующий абзац</string>
+    <string name="nav_prev_sentence">Предыдущее предложение</string>
+    <string name="nav_next_sentence">Следующее предложение</string>
+
+    <string name="stats_title">Список чтения</string>
+    <string name="stats_export_save">Сохранить в «Загрузки»</string>
+    <string name="stats_export_share">Отправить на компьютер</string>
+    <string name="stats_started">Начатых</string>
+    <string name="stats_finished">Прочитано</string>
+    <string name="stats_inprogress">В процессе</string>
+    <string name="stats_listening">Прослушано</string>
+    <string name="stats_empty">Вы ещё не начали ни одной книги.\nДважды коснитесь файла, чтобы начать чтение вслух — или один раз, чтобы читать с экрана.</string>
+    <string name="stats_section_progress">📖 В процессе (%1$d)</string>
+    <string name="stats_section_finished">✔ Прочитано (%1$d)</string>
+    <string name="stats_row_line">%1$s%% • %2$s • последний раз: %3$s</string>
+    <string name="stats_continue">Продолжить чтение вслух</string>
+    <string name="stats_read_screen">Читать с экрана</string>
+    <string name="stats_remove">Убрать из списка</string>
+    <string name="stats_file_missing">Файла больше нет: %1$s</string>
+    <string name="export_done_title">Экспорт завершён</string>
+    <string name="export_done_text">%1$d книг (из них %2$d прочитано) и %3$d закладок сохранено в:</string>
+    <string name="export_usb_hint">Подключите телефон по USB — на компьютере файлы будут в папке «Загрузки».</string>
+    <string name="export_failed">Экспорт не удался.</string>
+    <string name="share_failed">Не удалось поделиться: %1$s</string>
+    <string name="share_subject">Vox Libris — журнал чтения</string>
+    <string name="share_chooser">Отправить на компьютер</string>
+    <string name="share_text_chooser">Отправить текст в приложение синтеза речи</string>
+
+    <string name="csv_status">Статус</string>
+    <string name="csv_title">Название</string>
+    <string name="csv_author">Автор</string>
+    <string name="csv_percent">Прогресс %</string>
+    <string name="csv_paragraph">Абзац</string>
+    <string name="csv_total_paragraphs">Всего абзацев</string>
+    <string name="csv_minutes">Прослушано минут</string>
+    <string name="csv_last">Последнее открытие</string>
+    <string name="csv_file">Файл</string>
+    <string name="csv_book_id">ID книги</string>
+    <string name="csv_snippet">Фрагмент</string>
+    <string name="csv_created">Создано</string>
+    <string name="status_finished">Прочитано</string>
+    <string name="status_in_progress">В процессе</string>
+
+    <string name="picker_db_title">Выбрать базу данных</string>
+    <string name="picker_root_title">Выбрать корневую папку</string>
+    <string name="picker_choose_this">Выбрать эту папку</string>
+    <string name="picker_no_subfolder">Нет вложенных папок.</string>
+    <string name="picker_no_files">В этой папке нет подходящих файлов.</string>
+    <string name="storage_internal">Внутренняя память</string>
+    <string name="storage_sd">SD-карта</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="set_db_title">База каталога</string>
+    <string name="set_db_none">Не выбрана (скопируйте на телефон файл каталога .db)</string>
+    <string name="set_db_opened">Открыта — %1$d книг</string>
+    <string name="set_db_closed">Не открыта</string>
+    <string name="set_db_pick">Выбрать файл базы данных…</string>
+    <string name="set_db_opened_toast">База открыта: %1$d книг</string>
+    <string name="set_db_failed_toast">Не удалось открыть базу. Это точно файл каталога?</string>
+    <string name="set_root_title">Корневая папка книг</string>
+    <string name="set_root_pick">Выбрать корневую папку…</string>
+
+    <string name="set_build_title">Создать каталог из ваших книг</string>
+    <string name="set_build_desc">Если готового каталога нет, приложение создаст его из метаданных самих книг (название, автор, аннотация) — без интернета. При повторном запуске существующие записи остаются нетронутыми, добавляются только новые книги.</string>
+    <string name="set_build_source">Источник: %1$s</string>
+    <string name="set_build_target">Назначение: %1$s</string>
+    <string name="set_build_stats">Сейчас: %1$d книг, %2$d файлов (из них %3$d с настоящими метаданными)</string>
+    <string name="set_build_pdf">  Также метаданные PDF (медленнее)</string>
+    <string name="set_build_progress">%1$d файлов • %2$d новых записей • %3$d пропущено</string>
+    <string name="set_build_start">Создать каталог</string>
+    <string name="set_build_update">Дополнить новыми книгами</string>
+    <string name="build_done_title">Каталог готов</string>
+    <string name="build_cancelled_title">Прервано</string>
+    <string name="build_result">Просмотрено файлов: %1$d\nЗаписано новых файлов: %2$d\nНовых книг в каталоге: %3$d\nПрежних записей не тронуто: %4$d</string>
+    <string name="build_use_it">Использовать сейчас</string>
+    <string name="build_error_open">Не удалось открыть базу: %1$s</string>
+    <string name="build_error_generic">Неизвестная ошибка при создании каталога</string>
+
+    <string name="set_cache_title">Кэш</string>
+    <string name="set_cache_scanned">Просканировано файлов: %1$d (%2$d сопоставлено)</string>
+    <string name="set_cache_text">Извлечённый текст: %1$s</string>
+    <string name="set_cache_clear_scan">Очистить кэш сканирования</string>
+    <string name="set_cache_clear_text">Очистить кэш текста</string>
+    <string name="set_cache_scan_cleared">Кэш сканирования очищен.</string>
+    <string name="set_cache_text_cleared">Кэш текста очищен.</string>
+
+    <string name="set_look_title">Оформление</string>
+    <string name="set_theme">Тема</string>
+    <string name="set_theme_system">Как в системе</string>
+    <string name="set_theme_light">Светлая</string>
+    <string name="set_theme_dark">Тёмная</string>
+    <string name="set_color_scheme">Цветовая схема</string>
+    <string name="set_ui_scale">Размер шрифта интерфейса: %1$d%%</string>
+    <string name="set_ui_scale_hint">Размер текста книги настраивается отдельно в читалке, кнопками A− и A+.</string>
+    <string name="scheme_classic">Классический зелёный</string>
+    <string name="scheme_ocean">Морской синий</string>
+    <string name="scheme_sepia">Сепия (бумага)</string>
+    <string name="scheme_sunset">Закат</string>
+    <string name="scheme_night">Ночная (щадящая)</string>
+    <string name="scheme_contrast">Высокий контраст</string>
+
+    <string name="set_ui_lang_title">Язык интерфейса</string>
+    <string name="set_ui_lang_system">Как в системе</string>
+    <string name="set_ui_lang_pick">Выбрать язык…</string>
+    <string name="set_ui_lang_hint">Это меняет только тексты приложения. Язык чтения вслух настраивается отдельно ниже.</string>
+
+    <string name="set_tts_lang_title">Язык чтения вслух</string>
+    <string name="set_tts_lang_auto">Автоматически (язык системы, если доступен)</string>
+    <string name="set_tts_lang_loading">Запрос установленных голосов…</string>
+    <string name="set_tts_lang_count">С установленным синтезатором доступно языков: %1$d.</string>
+    <string name="set_tts_lang_pick">Выбрать язык…</string>
+    <string name="set_tts_lang_download">Загрузить голоса</string>
+    <string name="set_tts_lang_none">Не удалось получить список языков. Установите синтезатор речи (например, Google Text-to-Speech) и откройте это окно снова.</string>
+    <string name="set_tts_download_failed">Установщик голосов недоступен. Откройте системные настройки синтеза речи.</string>
+
+    <string name="set_scan_title">Сканирование библиотеки</string>
+    <string name="set_scan_desc">Обходит корневую папку и сопоставляет файлы с каталогом. Никогда не запускается сам — вы всегда запускаете его вручную.</string>
+    <string name="set_scan_stats">Пока %1$d файлов (%2$d сопоставлено)</string>
+    <string name="set_scan_progress">%1$d файлов • %2$d сопоставлено</string>
+    <string name="set_scan_start">Начать сканирование</string>
+
+    <string name="set_cue_title">Звуковые сигналы</string>
+    <string name="set_cue_desc">Более низкий двойной сигнал отмечает начало каждой новой главы, чтобы вы понимали, где находитесь, даже на слух.</string>
+    <string name="set_cue_chapter">  Низкий двойной сигнал перед главой</string>
+    <string name="set_cue_volume">Громкость</string>
+
+    <string name="set_reading_title">Чтение и управление</string>
+    <string name="set_reading_follow">  Текст следует за чтением</string>
+    <string name="set_reading_keep_screen">  Не гасить экран во время чтения</string>
+    <string name="set_reading_rewind">Двойное нажатие на гарнитуре: %1$d секунд назад</string>
+
+    <string name="set_tts_title">Синтез речи (TTS)</string>
+    <string name="set_tts_desc">Приложение использует системный синтезатор речи (например, Google Text-to-Speech). Движок и голос меняются в настройках системы.</string>
+    <string name="set_tts_open">Системные настройки речи…</string>
+    <string name="set_tts_open_failed">Не удалось открыть настройки синтеза речи.</string>
+
+    <string name="err_file_not_found">Файл не найден: %1$s</string>
+    <string name="err_no_text">Из этого файла не удалось извлечь текст.</string>
+    <string name="err_format_unsupported">Этот формат (.%1$s) не поддерживается для чтения вслух.</string>
+    <string name="err_doc">Старый двоичный формат .doc не поддерживается — преобразуйте его в .docx или .txt (например, в Calibre).</string>
+    <string name="err_djvu">DjVu — графический формат без извлекаемого текста; после OCR файл .txt можно читать вслух.</string>
+    <string name="err_drm">Эта книга защищена DRM (шифрование Mobipocket) и не может быть прочитана вслух. Преобразуйте её, например в Calibre.</string>
+    <string name="err_huff">MOBI со сжатием HUFF/CDIC — преобразуйте его в EPUB (например, в Calibre), и его можно будет прочитать.</string>
+    <string name="err_mobi_broken">Повреждённый или неполный файл MOBI.</string>
+    <string name="err_mobi_compression">Неизвестное сжатие MOBI: %1$d</string>
+    <string name="err_mobi_no_text">Из файла MOBI не удалось извлечь текст.</string>
+    <string name="err_epub_no_html">В EPUB нет читаемой HTML-главы.</string>
+    <string name="err_epub_no_text">Из глав EPUB не удалось извлечь текст.</string>
+    <string name="err_fb2_no_text">Из файла FB2 не удалось извлечь текст.</string>
+    <string name="err_rtf_invalid">Некорректный файл RTF.</string>
+    <string name="err_rtf_no_text">Из файла RTF не удалось извлечь текст.</string>
+    <string name="err_docx_invalid">Некорректный DOCX: отсутствует word/document.xml.</string>
+    <string name="err_docx_no_text">Из файла DOCX не удалось извлечь текст.</string>
+    <string name="err_pdf_password">Этот PDF защищён паролем и не может быть прочитан вслух.</string>
+    <string name="err_pdf_no_text">В этом PDF нет текстового слоя (вероятно, это скан). После OCR файл .txt можно читать вслух.</string>
+    <string name="err_pdf_failed">PDF не удалось обработать: %1$s</string>
+    <string name="err_pdf_no_extract">Из PDF не удалось извлечь текст.</string>
+    <string name="err_extract_generic">Ошибка при извлечении текста: %1$s</string>
+    <string name="err_tts_init">Синтезатор речи не запустился. Проверьте системные настройки синтеза речи.</string>
+
+    <string name="notif_preparing">Подготовка…</string>
+    <string name="notif_status">%1$d/%2$d абзацев • %3$s</string>
+    <string name="notif_prev">Назад</string>
+    <string name="notif_next">Вперёд</string>
+    <string name="notif_stop">Стоп</string>
+
+    <string name="duration_hm">%1$d ч %2$d мин</string>
+    <string name="duration_m">%1$d мин</string>
+    <string name="scan_loading_catalogue">Загрузка каталога…</string>
+    <string name="scan_unknown_error">Неизвестная ошибка при сканировании</string>
+</resources>

@@ -4,6 +4,7 @@ import android.util.Xml
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.io.FileInputStream
+import hu.konyvtar.tts.R
 
 /** FB2 (FictionBook 2) olvasó: a <body> bekezdéseit gyűjti, <binary> blokkokat kihagyja. */
 object Fb2Parser {
@@ -68,7 +69,7 @@ object Fb2Parser {
             }
         }
         if (out.isEmpty()) {
-            throw ExtractException("Az FB2 fájlból nem sikerült szöveget kinyerni.")
+            throw ExtractException(R.string.err_fb2_no_text)
         }
         return out
     }

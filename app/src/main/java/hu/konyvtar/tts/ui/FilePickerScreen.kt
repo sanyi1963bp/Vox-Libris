@@ -45,6 +45,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import java.io.File
+import androidx.compose.ui.res.stringResource
+import hu.konyvtar.tts.R
 
 /**
  * Egyszerű beépített fájl/mappa-választó.
@@ -67,13 +69,15 @@ fun FilePickerScreen(
     val listState = rememberLazyListState()
     val context = LocalContext.current
     var storageMenuOpen by remember { mutableStateOf(false) }
+    val internalLabel = stringResource(R.string.storage_internal)
+    val sdLabel = stringResource(R.string.storage_sd)
     val volumes = remember {
         try {
             val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
             sm.storageVolumes.mapNotNull { v ->
                 val dir = v.directory ?: return@mapNotNull null
-                val label = if (v.isPrimary) "Belső tároló"
-                else (v.getDescription(context) ?: "SD-kártya")
+                val label = if (v.isPrimary) internalLabel
+                else (v.getDescription(context) ?: sdLabel)
                 Pair(label, dir.absolutePath)
             }
         } catch (e: Exception) {
@@ -108,7 +112,10 @@ fun FilePickerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Vissza")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.common_back)
+                        )
                     }
                     Text(
                         text = title,
@@ -118,7 +125,10 @@ fun FilePickerScreen(
                     )
                     Box {
                         IconButton(onClick = { storageMenuOpen = true }) {
-                            Icon(Icons.Filled.SdStorage, contentDescription = "Tároló váltása")
+                            Icon(
+                                Icons.Filled.SdStorage,
+                                contentDescription = stringResource(R.string.explorer_storage_switch)
+                            )
                         }
                         DropdownMenu(
                             expanded = storageMenuOpen,
@@ -146,7 +156,7 @@ fun FilePickerScreen(
                                 DropdownMenuItem(
                                     text = {
                                         Text(
-                                            "Nincs másik tároló (SD-kártya) csatolva",
+                                            stringResource(R.string.explorer_no_other_storage),
                                             style = MaterialTheme.typography.labelMedium
                                         )
                                     },
@@ -161,7 +171,10 @@ fun FilePickerScreen(
                             currentDir = parent.absolutePath
                         }
                     }) {
-                        Icon(Icons.Filled.ArrowUpward, contentDescription = "Fel")
+                        Icon(
+                            Icons.Filled.ArrowUpward,
+                            contentDescription = stringResource(R.string.common_up)
+                        )
                     }
                 }
                 Text(
@@ -183,7 +196,7 @@ fun FilePickerScreen(
                             .fillMaxWidth()
                             .padding(12.dp)
                     ) {
-                        Text("Ezt a mappát választom")
+                        Text(stringResource(R.string.picker_choose_this))
                     }
                 }
             }
@@ -196,7 +209,8 @@ fun FilePickerScreen(
         ) {
             if (entries.isEmpty()) {
                 Text(
-                    text = if (pickDirectory) "Nincs almappa." else "Nincs ide illő fájl ebben a mappában.",
+                    text = if (pickDirectory) stringResource(R.string.picker_no_subfolder)
+                    else stringResource(R.string.picker_no_files),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier

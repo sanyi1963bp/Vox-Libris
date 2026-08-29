@@ -4,6 +4,7 @@ import android.util.Xml
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.util.zip.ZipFile
+import hu.konyvtar.tts.R
 
 /** DOCX olvasó: word/document.xml bekezdései. (A régi bináris .doc nem támogatott.) */
 object DocxParser {
@@ -11,7 +12,7 @@ object DocxParser {
     fun parse(file: File): List<String> {
         ZipFile(file).use { zip ->
             val entry = zip.getEntry("word/document.xml")
-                ?: throw ExtractException("Érvénytelen DOCX: hiányzik a word/document.xml.")
+                ?: throw ExtractException(R.string.err_docx_invalid)
             val out = ArrayList<String>(512)
             val sb = StringBuilder()
             zip.getInputStream(entry).use { input ->
@@ -43,7 +44,7 @@ object DocxParser {
                 }
             }
             if (sb.isNotBlank()) out.add(sb.toString().trim())
-            if (out.isEmpty()) throw ExtractException("A DOCX fájlból nem sikerült szöveget kinyerni.")
+            if (out.isEmpty()) throw ExtractException(R.string.err_docx_no_text)
             return out
         }
     }
