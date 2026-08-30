@@ -13,14 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -32,7 +30,6 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.SdStorage
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,19 +60,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import hu.konyvtar.tts.data.Catalog
-import hu.konyvtar.tts.data.MetadataExtractor
-import hu.konyvtar.tts.data.Normalizer
-import hu.konyvtar.tts.model.CatalogBook
 import hu.konyvtar.tts.model.FINISHED_PERCENT
 import hu.konyvtar.tts.model.FileRow
 import hu.konyvtar.tts.model.SortKey
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
 import hu.konyvtar.tts.vm.LibraryViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 import java.util.Locale
 import androidx.compose.ui.res.stringResource
 import hu.konyvtar.tts.R
@@ -99,34 +89,6 @@ fun ExplorerScreen(
     val listState = rememberLazyListState()
     var storageMenuOpen by remember { mutableStateOf(false) }
     var infoRow by remember { mutableStateOf<FileRow?>(null) }
-    var infoBook by remember { mutableStateOf<CatalogBook?>(null) }
-    var infoMeta by remember { mutableStateOf<String?>(null) }
-
-    // Az info gombra: előbb a katalógusból, ha nincs találat, a fájl saját metaadatából
-    LaunchedEffect(infoRow) {
-        infoBook = null
-        infoMeta = null
-        val r = infoRow ?: return@LaunchedEffect
-        withContext(Dispatchers.IO) {
-            val id = r.konyvId
-            if (id != null) {
-                infoBook = Catalog.bookById(id)
-            }
-            if (infoBook == null) {
-                val m = MetadataExtractor.extract(context, File(r.path), true)
-                fun line(res: Int, v: String?) = v?.let { context.getString(res) + ": " + it }
-                infoMeta = listOfNotNull(
-                    line(R.string.info_title, m.title),
-                    line(R.string.info_author, m.author),
-                    line(R.string.info_publisher, m.publisher),
-                    line(R.string.info_year, m.year),
-                    line(R.string.info_series, m.series),
-                    line(R.string.info_tags, m.tags),
-                    m.description
-                ).joinToString("\n")
-            }
-        }
-    }
 
     // Üzenetek (pl. adatbázis megnyitva) toastként
     LaunchedEffect(ui.message) {
@@ -455,125 +417,19 @@ fun ExplorerScreen(
     }
 
     infoRow?.let { r ->
-        BookInfoDialog(
-            row = r,
-            book = infoBook,
-            fallback = infoMeta,
-            percent = ui.progress[r.path],
+        BookDetailsDialog(
+            book = BookRef(
+                path = r.path,
+                title = r.cim ?: r.name.substringBeforeLast('.'),
+                author = r.szerzo ?: "",
+                bookId = r.konyvId
+            ),
+            onOpen = {
+                infoRow = null
+                playRow(r)
+            },
             onDismiss = { infoRow = null }
         )
-    }
-}
-
-@Composable
-private fun BookInfoDialog(
-    row: FileRow,
-    book: CatalogBook?,
-    fallback: String?,
-    percent: Double?,
-    onDismiss: () -> Unit
-) {
-    val f = File(row.path)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = book?.cim ?: row.cim ?: row.name.substringBeforeLast('.'),
-                style = MaterialTheme.typography.titleMedium
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .heightIn(max = 460.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                val author = book?.szerzo ?: row.szerzo
-                if (!author.isNullOrBlank()) {
-                    Text(
-                        text = Normalizer.stripInvisible(author),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                if (percent != null && percent > 0.05) {
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        text = if (percent >= 98.0) stringResource(R.string.info_finished)
-                        else stringResource(
-                            R.string.info_progress,
-                            String.format(Locale.getDefault(), "%.1f", percent)
-                        ),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    LinearProgressIndicator(
-                        progress = { (percent / 100.0).toFloat().coerceIn(0f, 1f) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(5.dp)
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-                if (book != null) {
-                    InfoRow(stringResource(R.string.info_publisher), book.kiado)
-                    InfoRow(stringResource(R.string.info_year), book.kiadasEve)
-                    InfoRow(stringResource(R.string.info_isbn), book.isbn)
-                    InfoRow(
-                        stringResource(R.string.info_series),
-                        listOfNotNull(
-                            book.sorozat?.takeIf { it.isNotBlank() && it != "N/A" },
-                            book.sorozatSzama?.takeIf { it.isNotBlank() && it != "N/A" }
-                        ).joinToString(" #").ifBlank { null }
-                    )
-                    InfoRow(stringResource(R.string.info_tags), book.cimkek)
-                }
-                InfoRow(stringResource(R.string.info_file), f.name)
-                InfoRow(stringResource(R.string.info_size), fmtSize(f.length()))
-                InfoRow(stringResource(R.string.info_modified), fmtDate(row.mtime))
-
-                val desc = book?.leiras?.let { Normalizer.stripInvisible(it).trim() }
-                if (!desc.isNullOrBlank()) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.info_description),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(text = desc, style = MaterialTheme.typography.bodySmall)
-                } else if (!fallback.isNullOrBlank()) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.info_from_file),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(text = fallback, style = MaterialTheme.typography.bodySmall)
-                } else {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.info_none),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_close)) } }
-    )
-}
-
-@Composable
-private fun InfoRow(label: String, value: String?) {
-    val v = value?.trim()
-    if (v.isNullOrBlank() || v == "N/A") return
-    Row(modifier = Modifier.padding(vertical = 1.dp)) {
-        Text(
-            text = label + ": ",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(text = Normalizer.stripInvisible(v), style = MaterialTheme.typography.bodySmall)
     }
 }
 

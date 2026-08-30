@@ -13,8 +13,7 @@ data class FileRow(
     val mtime: Long,
     val konyvId: Long? = null,
     val cim: String? = null,
-    val szerzo: String? = null,
-    val matchMode: String? = null
+    val szerzo: String? = null
 )
 
 /** Teljes könyvrekord a ncore_konyvtar.db `konyvek` táblájából. */
@@ -91,13 +90,6 @@ fun ShelfBook.toFileRow(): FileRow {
     )
 }
 
-/** Rövidített könyvadat a párosításhoz (memóriatakarékos). */
-data class BookBrief(
-    val id: Long,
-    val szerzo: String,
-    val cim: String
-)
-
 /** Olvasási/hallgatási állapot egy fájlhoz. */
 data class ProgressRow(
     val path: String,
@@ -139,12 +131,6 @@ data class Bookmark(
     val title: String,
     val author: String,
     val created: Long
-)
-
-/** Párosítási találat. */
-data class MatchResult(
-    val konyvId: Long,
-    val mode: String
 )
 
 enum class SortKey { NAME, SIZE, DATE, TITLE, AUTHOR, FORMAT }

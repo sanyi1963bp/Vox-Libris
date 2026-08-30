@@ -145,9 +145,8 @@ fun ShelfScreen(
     }
 
     infoBook?.let { b ->
-        BookSheet(
-            book = b,
-            percent = ui.progress[b.path],
+        BookDetailsDialog(
+            book = BookRef(b.path, b.title, b.author, b.id),
             onOpen = {
                 infoBook = null
                 onOpenBook(b.toFileRow())

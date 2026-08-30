@@ -5,9 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import hu.konyvtar.tts.model.Bookmark
-import hu.konyvtar.tts.model.FileRow
 import hu.konyvtar.tts.model.ProgressRow
-import hu.konyvtar.tts.model.SortKey
 
 /**
  * Az app saját, kicsi adatbázisa: szkennelési gyorsítótár + olvasási pozíciók.

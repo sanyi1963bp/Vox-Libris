@@ -6,7 +6,6 @@ import com.tom_roush.pdfbox.io.MemoryUsageSetting
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import hu.konyvtar.tts.reader.EpubParser
 import hu.konyvtar.tts.reader.HtmlText
-import hu.konyvtar.tts.reader.TxtParser
 import hu.konyvtar.tts.reader.XmlReader
 import org.xmlpull.v1.XmlPullParser
 import java.io.File

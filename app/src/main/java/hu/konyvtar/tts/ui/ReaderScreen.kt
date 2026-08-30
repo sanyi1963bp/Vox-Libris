@@ -2,7 +2,6 @@ package hu.konyvtar.tts.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,8 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BookmarkAdd
@@ -92,12 +89,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.konyvtar.tts.data.AppDb
-import hu.konyvtar.tts.data.Catalog
 import hu.konyvtar.tts.data.Normalizer
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.model.Bookmark
-import hu.konyvtar.tts.model.CatalogBook
-import hu.konyvtar.tts.model.displayPercent
 import hu.konyvtar.tts.reader.Sentences
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
@@ -158,8 +152,6 @@ fun ReaderScreen(
     var bookmarksOpen by remember { mutableStateOf(false) }
 
     var infoOpen by remember { mutableStateOf(false) }
-    var readProgress by remember(path) { mutableStateOf<Double?>(null) }
-    var bookInfo by remember(path) { mutableStateOf<CatalogBook?>(null) }
 
     var sliderDrag by remember { mutableStateOf<Float?>(null) }
     var speed by remember { mutableFloatStateOf(Prefs.speed(context)) }
@@ -880,85 +872,15 @@ fun ReaderScreen(
 
     // ---------------------------------------------------------------- könyv adatai
     if (infoOpen) {
-        LaunchedEffect(Unit) {
-            if (bookInfo == null) {
-                bookInfo = withContext(Dispatchers.IO) { Catalog.bookForPath(path) }
-            }
-        }
-        LaunchedEffect(infoOpen) {
-            readProgress = withContext(Dispatchers.IO) {
-                AppDb.progressFor(path)?.displayPercent()
-            }
-        }
-        val f = File(path)
-        AlertDialog(
-            onDismissRequest = { infoOpen = false },
-            title = {
-                Text(stringResource(R.string.row_info), style = MaterialTheme.typography.titleMedium)
-            },
-            text = {
-                Column(
-                    modifier = Modifier
-                        .heightIn(max = 460.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    val b = bookInfo
-                    // Hol tartasz ebben a könyvben
-                    val prog = readProgress
-                    if (prog != null && prog > 0.05) {
-                        val done = prog >= hu.konyvtar.tts.model.FINISHED_PERCENT
-                        Text(
-                            text = if (done) stringResource(R.string.info_finished)
-                            else stringResource(
-                                R.string.info_progress,
-                                String.format(Locale.getDefault(), "%.1f", prog)
-                            ),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        androidx.compose.material3.LinearProgressIndicator(
-                            progress = { (prog / 100.0).toFloat().coerceIn(0f, 1f) },
-                            color = progressBarColor(done),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(5.dp)
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
-                    InfoLine(stringResource(R.string.info_title), b?.cim ?: title)
-                    InfoLine(stringResource(R.string.info_author), b?.szerzo ?: author)
-                    InfoLine(stringResource(R.string.info_publisher), b?.kiado)
-                    InfoLine(stringResource(R.string.info_year), b?.kiadasEve)
-                    InfoLine(stringResource(R.string.info_isbn), b?.isbn)
-                    InfoLine(
-                        stringResource(R.string.info_series),
-                        listOfNotNull(
-                            b?.sorozat?.takeIf { it.isNotBlank() && it != "N/A" },
-                            b?.sorozatSzama?.takeIf { it.isNotBlank() && it != "N/A" }
-                        ).joinToString(" #").ifBlank { null }
-                    )
-                    InfoLine(stringResource(R.string.info_tags), b?.cimkek)
-                    InfoLine(stringResource(R.string.info_file), f.name)
-                    InfoLine(stringResource(R.string.info_size), fmtSize(f.length()))
-                    InfoLine(stringResource(R.string.info_paragraphs), paragraphs?.size?.toString())
-                    InfoLine(
-                        stringResource(R.string.info_chapters),
-                        if (chapters.isEmpty()) null else chapters.size.toString()
-                    )
-                    val desc = b?.leiras?.let { Normalizer.stripInvisible(it).trim() }
-                    if (!desc.isNullOrBlank()) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            stringResource(R.string.info_description),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(text = desc, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { infoOpen = false }) { Text(stringResource(R.string.common_close)) }
-            }
+        BookDetailsDialog(
+            book = BookRef(path, title, author),
+            onDismiss = { infoOpen = false },
+            // Csak az olvasó tudja, hány bekezdésre és fejezetre bomlott a könyv
+            extraLines = listOf(
+                stringResource(R.string.info_paragraphs) to paragraphs?.size?.toString(),
+                stringResource(R.string.info_chapters) to
+                    chapters.size.takeIf { it > 0 }?.toString()
+            )
         )
     }
 }
@@ -1018,21 +940,6 @@ private fun SliderRow(
             modifier = Modifier.width(44.dp),
             textAlign = TextAlign.Right
         )
-    }
-}
-
-@Composable
-private fun InfoLine(label: String, value: String?) {
-    val v = value?.trim()
-    if (v.isNullOrBlank() || v == "N/A") return
-    Row(modifier = Modifier.padding(vertical = 1.dp)) {
-        Text(
-            text = "$label: ",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(text = Normalizer.stripInvisible(v), style = MaterialTheme.typography.bodySmall)
     }
 }
 

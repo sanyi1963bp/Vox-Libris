@@ -4,16 +4,13 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,9 +19,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Check
@@ -34,7 +29,6 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ViewCarousel
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -76,9 +70,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.konyvtar.tts.R
-import hu.konyvtar.tts.data.Catalog
 import hu.konyvtar.tts.data.Prefs
-import hu.konyvtar.tts.model.CatalogBook
 import hu.konyvtar.tts.model.FINISHED_PERCENT
 import hu.konyvtar.tts.model.FileRow
 import hu.konyvtar.tts.model.ShelfBook
@@ -87,9 +79,6 @@ import hu.konyvtar.tts.model.toFileRow
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
 import hu.konyvtar.tts.vm.LibraryViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 import java.util.Locale
 
 /**
@@ -514,9 +503,8 @@ fun LibraryScreen(
     }
 
     infoBook?.let { b ->
-        BookSheet(
-            book = b,
-            percent = ui.progress[b.path],
+        BookDetailsDialog(
+            book = BookRef(b.path, b.title, b.author, b.id),
             onOpen = {
                 infoBook = null
                 openAndPlay(b)
@@ -651,152 +639,6 @@ fun formatNoteRes(ext: String): Int = when (ext.lowercase()) {
     "txt", "rtf" -> R.string.fmt_note_plain
     "pdf" -> R.string.fmt_note_pdf
     else -> R.string.fmt_note_none
-}
-
-// ---------------------------------------------------------------- adatlap
-
-/**
- * A könyv adatlapja, legfelül a borítóval. Hosszú nyomásra nyílik — a
- * listából és a polcról egyaránt, hogy mindenhol ugyanazt lásd.
- */
-@Composable
-fun BookSheet(
-    book: ShelfBook,
-    percent: Double?,
-    onOpen: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    val context = LocalContext.current
-    var full by remember(book.id) { mutableStateOf<CatalogBook?>(null) }
-    LaunchedEffect(book.id) {
-        full = withContext(Dispatchers.IO) { Catalog.bookById(book.id) }
-    }
-    val f = File(book.path)
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                BookCover(
-                    title = book.title,
-                    author = book.author,
-                    modifier = Modifier
-                        .width(104.dp)
-                        .aspectRatio(2f / 3f)
-                )
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    text = book.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-                if (book.author.isNotBlank()) {
-                    Text(
-                        text = book.author,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .heightIn(max = 300.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                // Formátum és ami belőle következik
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    FormatBadge(book.ext)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(formatNoteRes(book.ext)),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-
-                if (percent != null && percent > 0.05) {
-                    val done = percent >= FINISHED_PERCENT
-                    Text(
-                        text = if (done) stringResource(R.string.info_finished)
-                        else stringResource(
-                            R.string.info_progress,
-                            String.format(Locale.getDefault(), "%.1f", percent)
-                        ),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    LinearProgressIndicator(
-                        progress = { (percent / 100.0).toFloat().coerceIn(0f, 1f) },
-                        color = progressBarColor(done),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(5.dp)
-                    )
-                    Spacer(Modifier.height(8.dp))
-                }
-
-                SheetLine(stringResource(R.string.info_publisher), full?.kiado)
-                SheetLine(stringResource(R.string.info_year), full?.kiadasEve)
-                SheetLine(stringResource(R.string.info_isbn), full?.isbn)
-                SheetLine(
-                    stringResource(R.string.info_series),
-                    listOfNotNull(
-                        full?.sorozat?.takeIf { it.isNotBlank() && it != "N/A" },
-                        full?.sorozatSzama?.takeIf { it.isNotBlank() && it != "N/A" }
-                    ).joinToString(" #").ifBlank { null }
-                )
-                SheetLine(stringResource(R.string.info_tags), full?.cimkek)
-                SheetLine(stringResource(R.string.info_file), book.fileName)
-                SheetLine(stringResource(R.string.info_size), fmtSize(f.length()))
-                SheetLine(stringResource(R.string.info_modified), fmtDate(f.lastModified()))
-                SheetLine(
-                    stringResource(R.string.info_folder),
-                    book.path.substringBeforeLast('/')
-                )
-
-                val desc = full?.leiras?.trim()
-                if (!desc.isNullOrBlank()) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        stringResource(R.string.info_description),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(desc, style = MaterialTheme.typography.bodySmall)
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onOpen) {
-                Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
-                Text("  " + stringResource(R.string.stats_read_screen))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_close)) }
-        }
-    )
-}
-
-@Composable
-private fun SheetLine(label: String, value: String?) {
-    val v = value?.trim()
-    if (v.isNullOrBlank() || v == "N/A") return
-    Row(modifier = Modifier.padding(vertical = 1.dp)) {
-        Text(
-            text = "$label: ",
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(text = v, style = MaterialTheme.typography.bodySmall)
-    }
 }
 
 // ---------------------------------------------------------------- apró elemek
