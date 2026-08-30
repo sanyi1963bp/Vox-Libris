@@ -325,15 +325,20 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setRoot(path: String) {
         Prefs.setRootPath(getApplication(), path)
+        val offerScan = _ui.value.catalogBooks == 0
         _ui.value = _ui.value.copy(
             currentDir = path,
-            setup = if (_ui.value.catalogBooks == 0) Setup.OFFER_SCAN else Setup.NONE
+            setup = if (offerScan) Setup.OFFER_SCAN else Setup.NONE
         )
+        // Van már katalógus (pl. korábbi telepítésből): mutassuk is meg
+        if (!offerScan && _ui.value.books.isEmpty()) loadLibrary()
         refresh()
     }
 
+    /** A varázsló elhalasztása — a meglévő katalógus ilyenkor is jelenjen meg. */
     fun dismissSetup() {
         _ui.value = _ui.value.copy(setup = Setup.NONE)
+        if (_ui.value.books.isEmpty() && _ui.value.catalogBooks > 0) loadLibrary()
     }
 
     fun refresh() {
