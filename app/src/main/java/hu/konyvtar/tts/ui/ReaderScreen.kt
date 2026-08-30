@@ -1,66 +1,18 @@
 package hu.konyvtar.tts.ui
 
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.BookmarkAdd
-import androidx.compose.material.icons.filled.Bookmarks
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.FirstPage
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.automirrored.filled.LastPage
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.TextDecrease
-import androidx.compose.material.icons.filled.TextIncrease
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -74,45 +26,33 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import hu.konyvtar.tts.R
 import hu.konyvtar.tts.data.AppDb
 import hu.konyvtar.tts.data.Normalizer
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.model.Bookmark
-import hu.konyvtar.tts.reader.Sentences
+import hu.konyvtar.tts.reader.ExtractException
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
-import hu.konyvtar.tts.ui.theme.ChapterBandColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.Locale
 import kotlin.math.roundToInt
-import androidx.compose.ui.res.stringResource
-import hu.konyvtar.tts.R
-import hu.konyvtar.tts.reader.ExtractException
 
 /**
  * A könyv EGYETLEN képernyője: itt látszik a szöveg, és itt van minden
  * vezérlő is. Nincs külön lejátszó- és részletező-ablak.
  *
- * Felül: vissza, cím, keresés, beállítások, továbbiak menü.
- * Alul: fejezet / bekezdés / mondat léptetés mindkét irányba + lejátszás.
+ * Ez a fájl az állapotot és a huzalozást tartja: mit töltünk be, hol
+ * tartunk, mi történjen egy gombra. A megjelenítés négy külön fájlban van:
+ * [ReaderTopBar], [ReaderControls], [ReaderText] és [BookmarksDialog].
  *
  * Gesztusok a szövegen:
  *  - dupla koppintás: felolvasás pontosan a megérintett mondattól
@@ -139,8 +79,6 @@ fun ReaderScreen(
 
     var fontSp by remember { mutableFloatStateOf(Prefs.readerFont(context)) }
     var follow by remember { mutableStateOf(Prefs.readerFollow(context)) }
-    var toolsOpen by remember { mutableStateOf(false) }
-    var menuOpen by remember { mutableStateOf(false) }
 
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -150,7 +88,6 @@ fun ReaderScreen(
 
     var bookmarks by remember(path) { mutableStateOf<List<Bookmark>>(emptyList()) }
     var bookmarksOpen by remember { mutableStateOf(false) }
-
     var infoOpen by remember { mutableStateOf(false) }
 
     var sliderDrag by remember { mutableStateOf<Float?>(null) }
@@ -281,25 +218,27 @@ fun ReaderScreen(
         }
     }
 
+    /** Felolvasás indítása ettől a ponttól — ide fut be a dupla koppintás is. */
+    fun playFrom(paraIndex: Int, startChar: Int) {
+        TtsService.playFile(
+            context = context, path = path, title = title, author = author,
+            konyvId = null, startIndex = paraIndex, startChar = startChar
+        )
+    }
+
     /** Felolvasás indítása/szüneteltetése; ha még nem ez a könyv szól, innen indul. */
     fun playPause() {
         if (sameBook) {
             TtsService.send(context, TtsService.ACTION_TOGGLE)
         } else {
-            TtsService.playFile(
-                context = context, path = path, title = title, author = author,
-                konyvId = null, startIndex = listState.firstVisibleItemIndex, startChar = 0
-            )
+            playFrom(listState.firstVisibleItemIndex, 0)
         }
     }
 
     /** Léptetőgomb: ha nem ez a könyv szól, előbb ide töltjük be. */
     fun nav(action: String) {
         if (!sameBook) {
-            TtsService.playFile(
-                context = context, path = path, title = title, author = author,
-                konyvId = null, startIndex = listState.firstVisibleItemIndex, startChar = 0
-            )
+            playFrom(listState.firstVisibleItemIndex, 0)
             return
         }
         TtsService.send(context, action)
@@ -307,382 +246,106 @@ fun ReaderScreen(
 
     val bookmarkedIdx = remember(bookmarks) { bookmarks.map { it.paraIndex }.toHashSet() }
     val chapterSet = remember(chapters) { chapters.toHashSet() }
-    val searchColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.45f)
-    val sentenceColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-    val paraColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f)
 
     Scaffold(
         topBar = {
-            Column {
-                TopAppBar(
-                    title = {
-                        Column {
-                            Text(
-                                text = title,
-                                style = MaterialTheme.typography.titleSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            if (author.isNotEmpty()) {
-                                Text(
-                                    text = author,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.common_back)
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = {
-                            searchOpen = !searchOpen
-                            if (!searchOpen) query = ""
-                        }) {
-                            Icon(
-                                if (searchOpen) Icons.Filled.Close else Icons.Filled.Search,
-                                contentDescription = stringResource(R.string.reader_search_in_text)
-                            )
-                        }
-                        IconButton(onClick = onOpenSettings) {
-                            Icon(
-                                Icons.Filled.Settings,
-                                contentDescription = stringResource(R.string.common_settings)
-                            )
-                        }
-                        Box {
-                            IconButton(onClick = { menuOpen = true }) {
-                                Icon(
-                                    Icons.Filled.MoreVert,
-                                    contentDescription = stringResource(R.string.reader_more_actions)
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = menuOpen,
-                                onDismissRequest = { menuOpen = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.reader_bookmark_here)) },
-                                    leadingIcon = { Icon(Icons.Filled.BookmarkAdd, null) },
-                                    onClick = {
-                                        menuOpen = false
-                                        val idx = if (sameBook && tts.totalParas > 0) tts.paraIndex
-                                        else listState.firstVisibleItemIndex
-                                        addBookmarkAt(idx)
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.reader_bookmarks_n, bookmarks.size)) },
-                                    leadingIcon = { Icon(Icons.Filled.Bookmarks, null) },
-                                    onClick = { menuOpen = false; bookmarksOpen = true }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.row_info)) },
-                                    leadingIcon = { Icon(Icons.Filled.Info, null) },
-                                    onClick = { menuOpen = false; infoOpen = true }
-                                )
-                                if (sameBook) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.reader_stop_narration)) },
-                                        leadingIcon = { Icon(Icons.Filled.Stop, null) },
-                                        onClick = {
-                                            menuOpen = false
-                                            TtsService.send(context, TtsService.ACTION_STOP)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                )
-                if (searchOpen) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = query,
-                            onValueChange = { query = it },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true,
-                            textStyle = MaterialTheme.typography.bodyMedium,
-                            placeholder = {
-                                Text(
-                                    stringResource(R.string.reader_search_hint),
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                        )
-                        Text(
-                            text = when {
-                                searching -> "…"
-                                matches.isEmpty() && query.trim().length >= 2 -> "0"
-                                matches.isNotEmpty() -> "${matchPos + 1}/${matches.size}"
-                                else -> ""
-                            },
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(horizontal = 6.dp)
-                        )
-                        IconButton(onClick = { jumpMatch(-1) }, modifier = Modifier.size(36.dp)) {
-                            Icon(
-                                Icons.Filled.KeyboardArrowUp,
-                                contentDescription = stringResource(R.string.reader_prev_hit)
-                            )
-                        }
-                        IconButton(onClick = { jumpMatch(1) }, modifier = Modifier.size(36.dp)) {
-                            Icon(
-                                Icons.Filled.KeyboardArrowDown,
-                                contentDescription = stringResource(R.string.reader_next_hit)
-                            )
-                        }
-                    }
-                }
-            }
+            ReaderTopBar(
+                title = title,
+                author = author,
+                bookmarkCount = bookmarks.size,
+                narrating = sameBook,
+                search = ReaderSearch(
+                    open = searchOpen,
+                    query = query,
+                    running = searching,
+                    hitCount = matches.size,
+                    hitPos = matchPos
+                ),
+                onBack = onBack,
+                onToggleSearch = {
+                    searchOpen = !searchOpen
+                    if (!searchOpen) query = ""
+                },
+                onQueryChange = { query = it },
+                onJumpMatch = { jumpMatch(it) },
+                onOpenSettings = onOpenSettings,
+                onBookmarkHere = {
+                    val idx = if (sameBook && tts.totalParas > 0) tts.paraIndex
+                    else listState.firstVisibleItemIndex
+                    addBookmarkAt(idx)
+                },
+                onOpenBookmarks = { bookmarksOpen = true },
+                onOpenInfo = { infoOpen = true },
+                onStopNarration = { TtsService.send(context, TtsService.ACTION_STOP) }
+            )
         },
         bottomBar = {
             val paras = paragraphs
-            Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 6.dp)
-                ) {
-                    // ---- állapotsor
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val paraStatus = if (paras != null) stringResource(
-                            R.string.reader_status_para,
-                            listState.firstVisibleItemIndex + 1, paras.size
-                        ) else ""
-                        val chapStatus = if (sameBook && tts.totalChapters > 0) stringResource(
-                            R.string.reader_status_chapter,
-                            tts.chapterIndex + 1, tts.totalChapters
-                        ) else ""
-                        val progStatus = if (sameBook && tts.totalParas > 0) stringResource(
-                            R.string.reader_status_progress,
-                            String.format(Locale.getDefault(), "%.1f", tts.percent),
-                            fmtDuration(context, tts.listenedMs)
-                        ) else ""
-                        Text(
-                            text = paraStatus + chapStatus + progStatus,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(
-                            onClick = {
-                                follow = !follow
-                                Prefs.setReaderFollow(context, follow)
-                                if (follow && sameBook && tts.totalParas > 0) {
-                                    scope.launch { listState.animateScrollToItem(tts.paraIndex) }
-                                }
-                            },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.MyLocation,
-                                contentDescription = stringResource(R.string.reader_follow),
-                                modifier = Modifier.size(18.dp),
-                                tint = if (follow) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+            ReaderControls(
+                status = ReaderStatus(
+                    paraIndex = listState.firstVisibleItemIndex,
+                    paraCount = paras?.size ?: 0,
+                    chapterIndex = tts.chapterIndex,
+                    chapterCount = tts.totalChapters,
+                    percent = tts.percent,
+                    listenedMs = tts.listenedMs,
+                    narrating = sameBook && tts.totalParas > 0
+                ),
+                playing = playingHere,
+                follow = follow,
+                onToggleFollow = {
+                    follow = !follow
+                    Prefs.setReaderFollow(context, follow)
+                    if (follow && sameBook && tts.totalParas > 0) {
+                        scope.launch { listState.animateScrollToItem(tts.paraIndex) }
+                    }
+                },
+                fontSp = fontSp,
+                onFontChange = {
+                    fontSp = it
+                    Prefs.setReaderFont(context, it)
+                },
+                speed = speed,
+                onSpeedChange = { speed = it },
+                onSpeedDone = {
+                    if (sameBook) {
+                        TtsService.send(context, TtsService.ACTION_SET_SPEED) {
+                            putExtra(TtsService.EXTRA_VALUE, speed)
                         }
-                        IconButton(
-                            onClick = { toolsOpen = !toolsOpen },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.Tune,
-                                contentDescription = stringResource(R.string.reader_font_and_voice),
-                                modifier = Modifier.size(18.dp),
-                                tint = if (toolsOpen) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        Prefs.setSpeed(context, speed)
+                    }
+                },
+                pitch = pitch,
+                onPitchChange = { pitch = it },
+                onPitchDone = {
+                    if (sameBook) {
+                        TtsService.send(context, TtsService.ACTION_SET_PITCH) {
+                            putExtra(TtsService.EXTRA_VALUE, pitch)
+                        }
+                    } else {
+                        Prefs.setPitch(context, pitch)
+                    }
+                },
+                sliderFraction = if (paras != null && paras.size > 1) {
+                    sliderDrag ?: (listState.firstVisibleItemIndex.toFloat() / (paras.size - 1))
+                } else null,
+                onSeekDrag = { sliderDrag = it },
+                onSeekDone = {
+                    val f = sliderDrag
+                    val size = paras?.size ?: 0
+                    if (f != null && size > 1) {
+                        scope.launch {
+                            listState.scrollToItem(
+                                (f * (size - 1)).roundToInt().coerceIn(0, size - 1)
                             )
+                            sliderDrag = null
                         }
                     }
-
-                    // ---- eszközök
-                    if (toolsOpen) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                stringResource(R.string.reader_font),
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.width(64.dp)
-                            )
-                            IconButton(
-                                onClick = {
-                                    fontSp = (fontSp - 1f).coerceAtLeast(12f)
-                                    Prefs.setReaderFont(context, fontSp)
-                                },
-                                modifier = Modifier.size(34.dp)
-                            ) {
-                                Icon(
-                                    Icons.Filled.TextDecrease,
-                                    contentDescription = stringResource(R.string.reader_smaller_font)
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    fontSp = (fontSp + 1f).coerceAtMost(30f)
-                                    Prefs.setReaderFont(context, fontSp)
-                                },
-                                modifier = Modifier.size(34.dp)
-                            ) {
-                                Icon(
-                                    Icons.Filled.TextIncrease,
-                                    contentDescription = stringResource(R.string.reader_larger_font)
-                                )
-                            }
-                            Text(
-                                text = "${fontSp.roundToInt()} sp",
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                        SliderRow(
-                            label = stringResource(R.string.reader_speed),
-                            value = speed,
-                            range = 0.5f..3.0f,
-                            format = "%.2fx",
-                            onChange = { speed = it },
-                            onDone = {
-                                if (sameBook) {
-                                    TtsService.send(context, TtsService.ACTION_SET_SPEED) {
-                                        putExtra(TtsService.EXTRA_VALUE, speed)
-                                    }
-                                } else {
-                                    Prefs.setSpeed(context, speed)
-                                }
-                            }
-                        )
-                        SliderRow(
-                            label = stringResource(R.string.reader_pitch),
-                            value = pitch,
-                            range = 0.5f..2.0f,
-                            format = "%.2f",
-                            onChange = { pitch = it },
-                            onDone = {
-                                if (sameBook) {
-                                    TtsService.send(context, TtsService.ACTION_SET_PITCH) {
-                                        putExtra(TtsService.EXTRA_VALUE, pitch)
-                                    }
-                                } else {
-                                    Prefs.setPitch(context, pitch)
-                                }
-                            }
-                        )
-                    }
-
-                    // ---- pozíció csúszka
-                    if (paras != null && paras.size > 1) {
-                        val fraction = sliderDrag
-                            ?: (listState.firstVisibleItemIndex.toFloat() / (paras.size - 1))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Slider(
-                                value = fraction.coerceIn(0f, 1f),
-                                onValueChange = { sliderDrag = it },
-                                onValueChangeFinished = {
-                                    val f = sliderDrag ?: return@Slider
-                                    scope.launch {
-                                        listState.scrollToItem(
-                                            (f * (paras.size - 1)).roundToInt()
-                                                .coerceIn(0, paras.size - 1)
-                                        )
-                                        sliderDrag = null
-                                    }
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = String.format(Locale.getDefault(), "%.0f%%", fraction * 100f),
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.width(38.dp),
-                                textAlign = TextAlign.Right
-                            )
-                        }
-                    }
-
-                    // ---- vezérlőgombok
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        NavButton(
-                            Icons.Filled.FirstPage,
-                            stringResource(R.string.nav_chapter),
-                            stringResource(R.string.nav_prev_chapter)
-                        ) {
-                            nav(TtsService.ACTION_PREV_CHAPTER)
-                        }
-                        NavButton(
-                            Icons.Filled.SkipPrevious,
-                            stringResource(R.string.nav_paragraph),
-                            stringResource(R.string.nav_prev_paragraph)
-                        ) {
-                            nav(TtsService.ACTION_PREV_PARA)
-                        }
-                        NavButton(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            stringResource(R.string.nav_sentence),
-                            stringResource(R.string.nav_prev_sentence)
-                        ) {
-                            nav(TtsService.ACTION_PREV)
-                        }
-                        FilledIconButton(
-                            onClick = { playPause() },
-                            modifier = Modifier.size(50.dp)
-                        ) {
-                            Icon(
-                                if (playingHere) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                contentDescription = stringResource(
-                                    if (playingHere) R.string.common_pause else R.string.common_play
-                                ),
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-                        NavButton(
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            stringResource(R.string.nav_sentence),
-                            stringResource(R.string.nav_next_sentence)
-                        ) {
-                            nav(TtsService.ACTION_NEXT)
-                        }
-                        NavButton(
-                            Icons.Filled.SkipNext,
-                            stringResource(R.string.nav_paragraph),
-                            stringResource(R.string.nav_next_paragraph)
-                        ) {
-                            nav(TtsService.ACTION_NEXT_PARA)
-                        }
-                        NavButton(
-                            Icons.AutoMirrored.Filled.LastPage,
-                            stringResource(R.string.nav_chapter),
-                            stringResource(R.string.nav_next_chapter)
-                        ) {
-                            nav(TtsService.ACTION_NEXT_CHAPTER)
-                        }
-                    }
-                }
-            }
+                },
+                onPlayPause = { playPause() },
+                onNav = { nav(it) }
+            )
         }
     ) { padding ->
         Box(
@@ -707,170 +370,46 @@ fun ReaderScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     CircularProgressIndicator(modifier = Modifier.size(22.dp))
-                    Text(stringResource(R.string.reader_loading), style = MaterialTheme.typography.bodyMedium)
-                }
-                else -> {
-                    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                        itemsIndexed(paras) { idx, text ->
-                            val isTtsHere = sameBook && tts.paraIndex == idx && tts.totalParas > 0
-                            val isMatch = matchPos >= 0 && matches.getOrNull(matchPos) == idx
-                            val isChapter = idx in chapterSet
-                            val isBm = idx in bookmarkedIdx
-                            var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
-                            val prefixLen = if (isBm) BOOKMARK_PREFIX.length else 0
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        when {
-                                            isTtsHere -> paraColor
-                                            isMatch -> MaterialTheme.colorScheme.tertiaryContainer
-                                                .copy(alpha = 0.45f)
-                                            else -> Color.Transparent
-                                        }
-                                    )
-                            ) {
-                                if (isChapter) {
-                                    // Feltűnő, vérvörös sáv a fejezetek között
-                                    Spacer(Modifier.height(10.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(7.dp)
-                                            .background(ChapterBandColor)
-                                    )
-                                    Spacer(Modifier.height(6.dp))
-                                }
-                                Text(
-                                    text = paraText(
-                                        text = text,
-                                        query = query.trim(),
-                                        bookmarked = isBm,
-                                        searchColor = searchColor,
-                                        ttsStart = if (isTtsHere) tts.sentStart else -1,
-                                        ttsEnd = if (isTtsHere) tts.sentEnd else -1,
-                                        ttsColor = sentenceColor
-                                    ),
-                                    fontSize = fontSp.sp,
-                                    lineHeight = (fontSp * 1.45f).sp,
-                                    fontWeight = if (isChapter) FontWeight.Bold else FontWeight.Normal,
-                                    onTextLayout = { layout = it },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 14.dp, vertical = 4.dp)
-                                        .pointerInput(idx) {
-                                            detectTapGestures(
-                                                onDoubleTap = { pos ->
-                                                    val raw = layout?.getOffsetForPosition(pos) ?: 0
-                                                    val inText = (raw - prefixLen)
-                                                        .coerceIn(0, text.length)
-                                                    TtsService.playFile(
-                                                        context = context, path = path,
-                                                        title = title, author = author,
-                                                        konyvId = null, startIndex = idx,
-                                                        startChar = Sentences.startAt(text, inText)
-                                                    )
-                                                },
-                                                onLongPress = { addBookmarkAt(idx) }
-                                            )
-                                        }
-                                )
-                            }
-                        }
-                    }
-                    FastScrollbar(
-                        listState = listState,
-                        itemCount = paras.size,
-                        modifier = Modifier.align(Alignment.TopEnd)
+                    Text(
+                        stringResource(R.string.reader_loading),
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
+                else -> ReaderText(
+                    paragraphs = paras,
+                    listState = listState,
+                    chapters = chapterSet,
+                    bookmarked = bookmarkedIdx,
+                    fontSp = fontSp,
+                    query = query.trim(),
+                    currentMatch = matches.getOrNull(matchPos) ?: -1,
+                    narrated = if (sameBook && tts.totalParas > 0) {
+                        NarratedSentence(tts.paraIndex, tts.sentStart, tts.sentEnd)
+                    } else NarratedSentence.NONE,
+                    onPlayFrom = { idx, char -> playFrom(idx, char) },
+                    onBookmark = { addBookmarkAt(it) }
+                )
             }
         }
     }
 
-    // ---------------------------------------------------------------- könyvjelzők
     if (bookmarksOpen) {
-        AlertDialog(
-            onDismissRequest = { bookmarksOpen = false },
-            title = {
-                Text(
-                    stringResource(R.string.reader_bookmarks_title),
-                    style = MaterialTheme.typography.titleMedium
-                )
+        BookmarksDialog(
+            bookmarks = bookmarks,
+            onGoTo = { idx ->
+                bookmarksOpen = false
+                scope.launch { listState.scrollToItem(idx) }
             },
-            text = {
-                if (bookmarks.isEmpty()) {
-                    Text(
-                        stringResource(R.string.reader_no_bookmarks),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                } else {
-                    LazyColumn(modifier = Modifier.heightIn(max = 420.dp)) {
-                        items(bookmarks, key = { it.id }) { bm ->
-                            Column {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .pointerInput(bm.id) {
-                                            detectTapGestures(onTap = {
-                                                bookmarksOpen = false
-                                                scope.launch { listState.scrollToItem(bm.paraIndex) }
-                                            })
-                                        }
-                                        .padding(vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = stringResource(
-                                                R.string.reader_bookmark_line,
-                                                bm.paraIndex + 1, fmtDate(bm.created)
-                                            ),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        Text(
-                                            text = bm.snippet,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = {
-                                            scope.launch {
-                                                withContext(Dispatchers.IO) { AppDb.deleteBookmark(bm.id) }
-                                                bookmarks = withContext(Dispatchers.IO) {
-                                                    AppDb.bookmarksFor(path)
-                                                }
-                                            }
-                                        },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Delete,
-                                            contentDescription = stringResource(R.string.common_delete),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                                HorizontalDivider()
-                            }
-                        }
-                    }
+            onDelete = { id ->
+                scope.launch {
+                    withContext(Dispatchers.IO) { AppDb.deleteBookmark(id) }
+                    bookmarks = withContext(Dispatchers.IO) { AppDb.bookmarksFor(path) }
                 }
             },
-            confirmButton = {
-                TextButton(onClick = { bookmarksOpen = false }) {
-                    Text(stringResource(R.string.common_close))
-                }
-            }
+            onDismiss = { bookmarksOpen = false }
         )
     }
 
-    // ---------------------------------------------------------------- könyv adatai
     if (infoOpen) {
         BookDetailsDialog(
             book = BookRef(path, title, author),
@@ -882,106 +421,5 @@ fun ReaderScreen(
                     chapters.size.takeIf { it > 0 }?.toString()
             )
         )
-    }
-}
-
-// ---------------------------------------------------------------- kis elemek
-
-@Composable
-private fun NavButton(
-    icon: ImageVector,
-    label: String,
-    description: String,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(44.dp)
-            .pointerInput(description) { detectTapGestures(onTap = { onClick() }) }
-            .padding(vertical = 2.dp)
-    ) {
-        Icon(
-            icon,
-            contentDescription = description,
-            modifier = Modifier.size(26.dp),
-            tint = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            text = label,
-            fontSize = 8.5.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1
-        )
-    }
-}
-
-@Composable
-private fun SliderRow(
-    label: String,
-    value: Float,
-    range: ClosedFloatingPointRange<Float>,
-    format: String,
-    onChange: (Float) -> Unit,
-    onDone: () -> Unit
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(64.dp))
-        Slider(
-            value = value,
-            onValueChange = onChange,
-            onValueChangeFinished = onDone,
-            valueRange = range,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = String.format(Locale.getDefault(), format, value),
-            style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.width(44.dp),
-            textAlign = TextAlign.Right
-        )
-    }
-}
-
-private const val BOOKMARK_PREFIX = "🔖 "
-
-/** Bekezdés szövege: könyvjelző-jel, keresési találat, felolvasott mondat. */
-private fun paraText(
-    text: String,
-    query: String,
-    bookmarked: Boolean,
-    searchColor: Color,
-    ttsStart: Int = -1,
-    ttsEnd: Int = -1,
-    ttsColor: Color = Color.Transparent
-): AnnotatedString {
-    val prefix = if (bookmarked) BOOKMARK_PREFIX else ""
-    return buildAnnotatedString {
-        append(prefix)
-        append(text)
-        if (ttsStart in 0 until ttsEnd) {
-            val s0 = ttsStart.coerceIn(0, text.length)
-            val e0 = ttsEnd.coerceIn(s0, text.length)
-            if (e0 > s0) {
-                addStyle(
-                    SpanStyle(background = ttsColor, fontWeight = FontWeight.Medium),
-                    prefix.length + s0,
-                    prefix.length + e0
-                )
-            }
-        }
-        if (query.length >= 2) {
-            val ft = Normalizer.foldHu(text)
-            val fq = Normalizer.foldHu(query)
-            var i = ft.indexOf(fq)
-            while (i >= 0) {
-                addStyle(
-                    SpanStyle(background = searchColor, fontWeight = FontWeight.Bold),
-                    prefix.length + i,
-                    prefix.length + i + fq.length
-                )
-                i = ft.indexOf(fq, i + fq.length)
-            }
-        }
     }
 }
