@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import hu.konyvtar.tts.model.Bookmark
 import hu.konyvtar.tts.model.ProgressRow
+import hu.konyvtar.tts.model.displayPercent
 
 /**
  * Az app saját, kicsi adatbázisa: szkennelési gyorsítótár + olvasási pozíciók.
@@ -152,6 +153,16 @@ object AppDb {
             """.trimIndent(),
             arrayOf<Any?>(path, totalParas, System.currentTimeMillis(), title, author, readPara)
         )
+    }
+
+    /**
+     * Útvonal -> olvasottság százalék. Mindkét képernyő-modell ezt használja,
+     * hogy a haladás-csík mindenhol ugyanazt mutassa.
+     */
+    fun progressByPath(): Map<String, Double> {
+        val out = HashMap<String, Double>()
+        for (p in allProgress()) out[p.path] = p.displayPercent()
+        return out
     }
 
     fun allProgress(): List<ProgressRow> {

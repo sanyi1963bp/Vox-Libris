@@ -65,6 +65,7 @@ import hu.konyvtar.tts.model.FileRow
 import hu.konyvtar.tts.model.SortKey
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
+import hu.konyvtar.tts.vm.BrowserViewModel
 import hu.konyvtar.tts.vm.LibraryViewModel
 import java.util.Locale
 import androidx.compose.ui.res.stringResource
@@ -78,12 +79,14 @@ import hu.konyvtar.tts.R
 @Composable
 fun ExplorerScreen(
     vm: LibraryViewModel,
+    browser: BrowserViewModel,
     onOpenPlayer: () -> Unit,
     onOpenStats: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenReader: (FileRow) -> Unit
 ) {
     val ui by vm.ui.collectAsState()
+    val br by browser.ui.collectAsState()
     val player by TtsService.state.collectAsState()
     val context = LocalContext.current
     val listState = rememberLazyListState()
@@ -91,15 +94,20 @@ fun ExplorerScreen(
     var infoRow by remember { mutableStateOf<FileRow?>(null) }
 
     // Üzenetek (pl. adatbázis megnyitva) toastként
-    LaunchedEffect(ui.message) {
-        ui.message?.let {
+    LaunchedEffect(br.message) {
+        br.message?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-            vm.clearMessage()
+            browser.clearMessage()
         }
     }
 
+    // A beolvasás után a katalógusból frissül a cím és a szerző a sorokban
+    LaunchedEffect(ui.scan.done) {
+        if (ui.scan.done) browser.refresh()
+    }
+
     // Lista tetejére ugrunk, ha mappát váltunk
-    LaunchedEffect(ui.currentDir) {
+    LaunchedEffect(br.currentDir) {
         listState.scrollToItem(0)
     }
 
@@ -173,8 +181,8 @@ fun ExplorerScreen(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     OutlinedTextField(
-                        value = ui.query,
-                        onValueChange = { vm.setQuery(it) },
+                        value = br.query,
+                        onValueChange = { browser.setQuery(it) },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         textStyle = MaterialTheme.typography.bodyMedium,
@@ -186,8 +194,8 @@ fun ExplorerScreen(
                         },
                         keyboardOptions = KeyboardOptions.Default,
                         trailingIcon = {
-                            if (ui.query.isNotEmpty()) {
-                                IconButton(onClick = { vm.setQuery("") }) {
+                            if (br.query.isNotEmpty()) {
+                                IconButton(onClick = { browser.setQuery("") }) {
                                     Icon(
                                         Icons.Filled.Close,
                                         contentDescription = stringResource(R.string.explorer_clear)
@@ -197,14 +205,14 @@ fun ExplorerScreen(
                         }
                     )
                     FilterChip(
-                        selected = ui.recursiveSearch,
-                        onClick = { vm.setRecursiveSearch(!ui.recursiveSearch) },
+                        selected = br.recursiveSearch,
+                        onClick = { browser.setRecursiveSearch(!br.recursiveSearch) },
                         label = { Text(stringResource(R.string.explorer_subfolders)) }
                     )
                 }
-                if (ui.searchingDeep) {
+                if (br.searchingDeep) {
                     Text(
-                        text = stringResource(R.string.explorer_deep_hits, ui.entries.size),
+                        text = stringResource(R.string.explorer_deep_hits, br.entries.size),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(horizontal = 10.dp)
@@ -232,7 +240,7 @@ fun ExplorerScreen(
                                 expanded = storageMenuOpen,
                                 onDismissRequest = { storageMenuOpen = false }
                             ) {
-                                ui.volumes.forEach { v ->
+                                br.volumes.forEach { v ->
                                     DropdownMenuItem(
                                         text = {
                                             Column {
@@ -246,11 +254,11 @@ fun ExplorerScreen(
                                         },
                                         onClick = {
                                             storageMenuOpen = false
-                                            vm.navigateTo(v.path)
+                                            browser.navigateTo(v.path)
                                         }
                                     )
                                 }
-                                if (ui.volumes.size < 2) {
+                                if (br.volumes.size < 2) {
                                     DropdownMenuItem(
                                         text = {
                                             Text(
@@ -263,14 +271,14 @@ fun ExplorerScreen(
                                 }
                             }
                         }
-                        IconButton(onClick = { vm.up() }, modifier = Modifier.width(34.dp)) {
+                        IconButton(onClick = { browser.up() }, modifier = Modifier.width(34.dp)) {
                             Icon(
                                 Icons.Filled.ArrowUpward,
                                 contentDescription = stringResource(R.string.common_up)
                             )
                         }
                         Text(
-                            text = ui.currentDir,
+                            text = br.currentDir,
                             style = MaterialTheme.typography.labelMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -305,7 +313,7 @@ fun ExplorerScreen(
                     }
                 }
                 // Oszlopfejléc (rendezés)
-                HeaderRow(sortKey = ui.sortKey, sortAsc = ui.sortAsc, onSort = { vm.setSort(it) })
+                HeaderRow(sortKey = br.sortKey, sortAsc = br.sortAsc, onSort = { browser.setSort(it) })
                 HorizontalDivider()
             }
         },
@@ -353,7 +361,7 @@ fun ExplorerScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (ui.entries.isEmpty() && !ui.loading) {
+            if (br.entries.isEmpty() && !br.loading) {
                 Text(
                     text = stringResource(R.string.explorer_empty),
                     style = MaterialTheme.typography.bodyMedium,
@@ -368,17 +376,17 @@ fun ExplorerScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 itemsIndexed(
-                    items = ui.entries,
+                    items = br.entries,
                     key = { _, row -> row.path }
                 ) { index, row ->
                     FileRowItem(
                         row = row,
                         stripe = index % 2 == 1,
-                        percent = ui.progress[row.path],
+                        percent = br.progress[row.path],
                         onInfo = { infoRow = row },
                         onSingleTap = {
                             if (row.isDir) {
-                                vm.navigateTo(row.path)
+                                browser.navigateTo(row.path)
                             } else if (TextExtractor.isSupported(row.ext)) {
                                 onOpenReader(row)
                             } else {
@@ -410,7 +418,7 @@ fun ExplorerScreen(
             }
             FastScrollbar(
                 listState = listState,
-                itemCount = ui.entries.size,
+                itemCount = br.entries.size,
                 modifier = Modifier.align(Alignment.TopEnd)
             )
         }

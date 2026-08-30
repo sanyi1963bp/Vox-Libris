@@ -53,6 +53,7 @@ import hu.konyvtar.tts.ui.SettingsScreen
 import hu.konyvtar.tts.ui.StatsScreen
 import hu.konyvtar.tts.ui.theme.KonyvtarTheme
 import hu.konyvtar.tts.ui.theme.ThemeState
+import hu.konyvtar.tts.vm.BrowserViewModel
 import hu.konyvtar.tts.vm.LibraryViewModel
 import androidx.compose.ui.res.stringResource
 
@@ -121,6 +122,7 @@ fun AppRoot(startInPlayer: Boolean) {
 
     val nav = rememberNavController()
     val vm: LibraryViewModel = viewModel()
+    val browser: BrowserViewModel = viewModel()
 
     fun openReaderFor(row: FileRow) {
         vm.readerTarget = LibraryViewModel.ReaderTarget(
@@ -169,6 +171,7 @@ fun AppRoot(startInPlayer: Boolean) {
         composable("explorer") {
             ExplorerScreen(
                 vm = vm,
+                browser = browser,
                 onOpenPlayer = { openNowPlayingReader() },
                 onOpenStats = { nav.navigate("stats") },
                 onOpenSettings = { nav.navigate("settings") },
@@ -211,6 +214,7 @@ fun AppRoot(startInPlayer: Boolean) {
                 pickDirectory = true,
                 onPicked = { path ->
                     vm.setRoot(path)
+                    browser.navigateTo(path)
                     nav.popBackStack()
                 },
                 onBack = { nav.popBackStack() }

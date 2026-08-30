@@ -146,7 +146,7 @@ fun SettingsScreen(
             // ---------------------------------------------------------- könyvmappa
             SettingsCard(stringResource(R.string.set_root_title)) {
                 Text(
-                    text = ui.currentDir,
+                    text = ui.rootPath,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
