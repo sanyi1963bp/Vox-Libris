@@ -1,13 +1,13 @@
 package hu.konyvtar.tts.data
 
 import android.content.Context
-import android.util.Xml
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.io.MemoryUsageSetting
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import hu.konyvtar.tts.reader.EpubParser
 import hu.konyvtar.tts.reader.HtmlText
 import hu.konyvtar.tts.reader.TxtParser
+import hu.konyvtar.tts.reader.XmlReader
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.nio.charset.Charset
@@ -145,7 +145,7 @@ object MetadataExtractor {
             val subjects = ArrayList<String>()
 
             zip.getInputStream(entry).use { input ->
-                val parser = Xml.newPullParser()
+                val parser = XmlReader.newParser()
                 parser.setInput(input, null)
                 var event = parser.eventType
                 var inMetadata = false
@@ -253,7 +253,7 @@ object MetadataExtractor {
         val authors = ArrayList<String>()
 
         file.inputStream().use { input ->
-            val parser = Xml.newPullParser()
+            val parser = XmlReader.newParser()
             parser.setInput(input, null)
             var event = parser.eventType
             var inDescription = false
@@ -428,7 +428,7 @@ object MetadataExtractor {
             val entry = zip.getEntry("docProps/core.xml") ?: return null
             val meta = BookMeta(source = "docx")
             zip.getInputStream(entry).use { input ->
-                val parser = Xml.newPullParser()
+                val parser = XmlReader.newParser()
                 parser.setInput(input, null)
                 var event = parser.eventType
                 var tag: String? = null

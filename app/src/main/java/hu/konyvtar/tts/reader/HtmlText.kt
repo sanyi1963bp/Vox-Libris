@@ -33,7 +33,13 @@ object HtmlText {
         "frac12" to "½", "frac14" to "¼", "eacute" to "é", "aacute" to "á",
         "iacute" to "í", "oacute" to "ó", "uacute" to "ú", "ouml" to "ö",
         "uuml" to "ü", "otilde" to "ő", "utilde" to "ű", "Eacute" to "É",
-        "Aacute" to "Á", "Ouml" to "Ö", "Uuml" to "Ü"
+        "Aacute" to "Á", "Ouml" to "Ö", "Uuml" to "Ü",
+        // A magyar ő/ű szabványos neve odblac/udblac; sok magyar e-könyv
+        // viszont otilde/utilde néven írja — mindkettőt elfogadjuk, nagybetűvel is.
+        "Otilde" to "Ő", "Utilde" to "Ű",
+        "odblac" to "ő", "udblac" to "ű",
+        "Odblac" to "Ő", "Udblac" to "Ű",
+        "Iacute" to "Í", "Oacute" to "Ó", "Uacute" to "Ú"
     )
 
     fun decodeEntities(s: String): String {

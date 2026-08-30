@@ -1,6 +1,5 @@
 package hu.konyvtar.tts.reader
 
-import android.util.Xml
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.util.zip.ZipEntry
@@ -50,7 +49,7 @@ object EpubParser {
         val container = zip.getEntry("META-INF/container.xml") ?: return null
         return try {
             zip.getInputStream(container).use { input ->
-                val parser = Xml.newPullParser()
+                val parser = XmlReader.newParser()
                 parser.setInput(input, null)
                 var event = parser.eventType
                 while (event != XmlPullParser.END_DOCUMENT) {
@@ -80,7 +79,7 @@ object EpubParser {
         val spine = ArrayList<String>()
         try {
             zip.getInputStream(opfEntry).use { input ->
-                val parser = Xml.newPullParser()
+                val parser = XmlReader.newParser()
                 parser.setInput(input, null)
                 var event = parser.eventType
                 while (event != XmlPullParser.END_DOCUMENT) {

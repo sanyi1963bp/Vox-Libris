@@ -1,6 +1,5 @@
 package hu.konyvtar.tts.reader
 
-import android.util.Xml
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
 import java.util.zip.ZipFile
@@ -16,7 +15,7 @@ object DocxParser {
             val out = ArrayList<String>(512)
             val sb = StringBuilder()
             zip.getInputStream(entry).use { input ->
-                val parser = Xml.newPullParser()
+                val parser = XmlReader.newParser()
                 parser.setInput(input, null)
                 var event = parser.eventType
                 var inText = false

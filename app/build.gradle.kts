@@ -70,4 +70,10 @@ dependencies {
 
     // PDF szövegkinyerés (nincs képfeldolgozás, csak text layer)
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+
+    // Egységtesztek: a parserek és a szövegkezelés Android nélkül futnak,
+    // ezért sima JUnit elég — nem kell emulátor. A kxml2 az XML-olvasó
+    // megvalósítása a JVM-en; Androidon a rendszer sajátja használódik.
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("net.sf.kxml:kxml2:2.3.0")
 }
