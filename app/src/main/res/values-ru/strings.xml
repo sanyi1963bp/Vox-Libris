@@ -29,8 +29,6 @@
     <string name="explorer_deep_hits">Поиск и во вложенных папках — %1$d результатов</string>
     <string name="explorer_storage_switch">Сменить хранилище</string>
     <string name="explorer_no_other_storage">Другое хранилище (SD-карта) не подключено</string>
-    <string name="explorer_books_count">%1$d книг</string>
-    <string name="explorer_no_db">нет базы</string>
     <string name="explorer_scanning">Сканирование: %1$d файлов, %2$d сопоставлено</string>
     <string name="explorer_empty">В этой папке нет файлов книг.</string>
     <string name="explorer_preparing"> • подготовка…</string>
@@ -133,7 +131,6 @@
     <string name="status_finished">Прочитано</string>
     <string name="status_in_progress">В процессе</string>
 
-    <string name="picker_db_title">Выбрать базу данных</string>
     <string name="picker_root_title">Выбрать корневую папку</string>
     <string name="picker_choose_this">Выбрать эту папку</string>
     <string name="picker_no_subfolder">Нет вложенных папок.</string>
@@ -142,38 +139,19 @@
     <string name="storage_sd">SD-карта</string>
 
     <string name="settings_title">Настройки</string>
-    <string name="set_db_title">База каталога</string>
-    <string name="set_db_none">Не выбрана (скопируйте на телефон файл каталога .db)</string>
-    <string name="set_db_opened">Открыта — %1$d книг</string>
-    <string name="set_db_closed">Не открыта</string>
-    <string name="set_db_pick">Выбрать файл базы данных…</string>
-    <string name="set_db_opened_toast">База открыта: %1$d книг</string>
-    <string name="set_db_failed_toast">Не удалось открыть базу. Это точно файл каталога?</string>
     <string name="set_root_title">Корневая папка книг</string>
     <string name="set_root_pick">Выбрать корневую папку…</string>
 
-    <string name="set_build_title">Создать каталог из ваших книг</string>
-    <string name="set_build_desc">Если готового каталога нет, приложение создаст его из метаданных самих книг (название, автор, аннотация) — без интернета. При повторном запуске существующие записи остаются нетронутыми, добавляются только новые книги.</string>
-    <string name="set_build_source">Источник: %1$s</string>
-    <string name="set_build_target">Назначение: %1$s</string>
-    <string name="set_build_stats">Сейчас: %1$d книг, %2$d файлов (из них %3$d с настоящими метаданными)</string>
     <string name="set_build_pdf">  Также метаданные PDF (медленнее)</string>
-    <string name="set_build_progress">%1$d файлов • %2$d новых записей • %3$d пропущено</string>
-    <string name="set_build_start">Создать каталог</string>
-    <string name="set_build_update">Дополнить новыми книгами</string>
     <string name="build_done_title">Каталог готов</string>
     <string name="build_cancelled_title">Прервано</string>
     <string name="build_result">Просмотрено файлов: %1$d\nЗаписано новых файлов: %2$d\nНовых книг в каталоге: %3$d\nПрежних записей не тронуто: %4$d</string>
-    <string name="build_use_it">Использовать сейчас</string>
     <string name="build_error_open">Не удалось открыть базу: %1$s</string>
     <string name="build_error_generic">Неизвестная ошибка при создании каталога</string>
 
     <string name="set_cache_title">Кэш</string>
-    <string name="set_cache_scanned">Просканировано файлов: %1$d (%2$d сопоставлено)</string>
     <string name="set_cache_text">Извлечённый текст: %1$s</string>
-    <string name="set_cache_clear_scan">Очистить кэш сканирования</string>
     <string name="set_cache_clear_text">Очистить кэш текста</string>
-    <string name="set_cache_scan_cleared">Кэш сканирования очищен.</string>
     <string name="set_cache_text_cleared">Кэш текста очищен.</string>
 
     <string name="set_look_title">Оформление</string>
@@ -260,4 +238,23 @@
     <string name="duration_m">%1$d мин</string>
     <string name="scan_loading_catalogue">Загрузка каталога…</string>
     <string name="scan_unknown_error">Неизвестная ошибка при сканировании</string>
+    <string name="shelf_title">Полка</string>
+    <string name="shelf_empty">В каталоге пока нет книг.</string>
+    <string name="shelf_files">Файлы</string>
+    <string name="shelf_position">%1$d / %2$d</string>
+    <string name="counter_finished">Прочитано: %1$d</string>
+    <string name="counter_inprogress">В процессе: %1$d</string>
+    <string name="setup_root_title">Где ваши книги?</string>
+    <string name="setup_root_text">Выберите папку с файлами книг. Вложенные папки тоже будут просмотрены.</string>
+    <string name="setup_root_button">Выбрать папку</string>
+    <string name="setup_scan_title">Прочитать ваши книги?</string>
+    <string name="setup_scan_text">Приложение обойдёт папку и соберёт название, автора и описание каждой книги. Потом будет добавлять только новые.</string>
+    <string name="setup_scan_button">Прочитать библиотеку</string>
+    <string name="setup_later">Позже</string>
+    <string name="catalog_stats">%1$d книг, %2$d файлов</string>
+    <string name="remove_missing">Убрать из каталога отсутствующие файлы</string>
+    <string name="remove_missing_done">Удалено записей: %1$d.</string>
+    <string name="catalog_title">Каталог</string>
+    <string name="catalog_file_hint">Каталог хранится как видимый файл, поэтому переживает переустановку приложения: %1$s</string>
+    <string name="set_build_progress">%1$d файлов • %2$d новых записей • %3$d пропущено</string>
 </resources>

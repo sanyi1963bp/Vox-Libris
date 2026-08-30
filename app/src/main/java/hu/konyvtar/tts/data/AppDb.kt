@@ -17,7 +17,7 @@ import hu.konyvtar.tts.model.SortKey
 object AppDb {
 
     private const val DB_NAME = "app_local.db"
-    private const val DB_VERSION = 3
+    private const val DB_VERSION = 4
 
     @Volatile
     private var helper: Helper? = null
@@ -36,24 +36,6 @@ object AppDb {
 
     private class Helper(context: Context) : SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
         override fun onCreate(db: SQLiteDatabase) {
-            db.execSQL(
-                """
-                CREATE TABLE scan_cache (
-                    path     TEXT PRIMARY KEY,
-                    dir      TEXT NOT NULL,
-                    name     TEXT NOT NULL,
-                    ext      TEXT NOT NULL,
-                    size     INTEGER NOT NULL,
-                    mtime    INTEGER NOT NULL,
-                    konyv_id INTEGER,
-                    cim      TEXT,
-                    szerzo   TEXT,
-                    mode     TEXT
-                )
-                """.trimIndent()
-            )
-            db.execSQL("CREATE INDEX idx_sc_dir ON scan_cache(dir)")
-            db.execSQL("CREATE INDEX idx_sc_name ON scan_cache(name COLLATE NOCASE)")
             db.execSQL(
                 """
                 CREATE TABLE progress (
@@ -82,6 +64,10 @@ object AppDb {
             if (oldVersion < 3) {
                 db.execSQL("ALTER TABLE progress ADD COLUMN para_char INTEGER NOT NULL DEFAULT 0")
             }
+            if (oldVersion < 4) {
+                // A szkennelési gyorsítótár megszűnt: a katalógus az egyetlen forrás
+                db.execSQL("DROP TABLE IF EXISTS scan_cache")
+            }
         }
 
         private fun createBookmarks(db: SQLiteDatabase) {
@@ -100,148 +86,6 @@ object AppDb {
             )
             db.execSQL("CREATE INDEX IF NOT EXISTS idx_bm_path ON bookmarks(path)")
         }
-    }
-
-    // ---------------------------------------------------------------- scan_cache
-
-    /** Egy mappa gyorsítótárazott sorai, útvonal szerint kulcsolva. */
-    fun cachedForDir(dir: String): HashMap<String, FileRow> {
-        val out = HashMap<String, FileRow>()
-        db().rawQuery(
-            "SELECT path, dir, name, ext, size, mtime, konyv_id, cim, szerzo, mode FROM scan_cache WHERE dir = ?",
-            arrayOf(dir)
-        ).use { c ->
-            while (c.moveToNext()) {
-                val row = FileRow(
-                    path = c.getString(0),
-                    name = c.getString(2),
-                    ext = c.getString(3),
-                    isDir = false,
-                    size = c.getLong(4),
-                    mtime = c.getLong(5),
-                    konyvId = if (c.isNull(6)) null else c.getLong(6),
-                    cim = c.getString(7),
-                    szerzo = c.getString(8),
-                    matchMode = c.getString(9)
-                )
-                out[row.path] = row
-            }
-        }
-        return out
-    }
-
-    /** Egyetlen fájl gyorsítótárazott sora. */
-    fun cachedForPath(path: String): FileRow? {
-        db().rawQuery(
-            "SELECT path, dir, name, ext, size, mtime, konyv_id, cim, szerzo, mode FROM scan_cache WHERE path = ?",
-            arrayOf(path)
-        ).use { c ->
-            if (c.moveToNext()) {
-                return FileRow(
-                    path = c.getString(0),
-                    name = c.getString(2),
-                    ext = c.getString(3),
-                    isDir = false,
-                    size = c.getLong(4),
-                    mtime = c.getLong(5),
-                    konyvId = if (c.isNull(6)) null else c.getLong(6),
-                    cim = c.getString(7),
-                    szerzo = c.getString(8),
-                    matchMode = c.getString(9)
-                )
-            }
-        }
-        return null
-    }
-
-    fun upsertScanRows(rows: List<FileRow>) {
-        if (rows.isEmpty()) return
-        val d = db()
-        d.beginTransaction()
-        try {
-            for (r in rows) {
-                val cv = ContentValues().apply {
-                    put("path", r.path)
-                    put("dir", r.path.substringBeforeLast('/', ""))
-                    put("name", r.name)
-                    put("ext", r.ext)
-                    put("size", r.size)
-                    put("mtime", r.mtime)
-                    if (r.konyvId != null) put("konyv_id", r.konyvId) else putNull("konyv_id")
-                    put("cim", r.cim)
-                    put("szerzo", r.szerzo)
-                    put("mode", r.matchMode)
-                }
-                d.insertWithOnConflict("scan_cache", null, cv, SQLiteDatabase.CONFLICT_REPLACE)
-            }
-            d.setTransactionSuccessful()
-        } finally {
-            d.endTransaction()
-        }
-    }
-
-    fun scanCacheCount(): Int {
-        db().rawQuery("SELECT COUNT(*) FROM scan_cache", null).use { c ->
-            return if (c.moveToNext()) c.getInt(0) else 0
-        }
-    }
-
-    fun scanCacheMatchedCount(): Int {
-        db().rawQuery("SELECT COUNT(*) FROM scan_cache WHERE konyv_id IS NOT NULL", null).use { c ->
-            return if (c.moveToNext()) c.getInt(0) else 0
-        }
-    }
-
-    fun clearScanCache() {
-        db().execSQL("DELETE FROM scan_cache")
-    }
-
-    /**
-     * A teljes szkennelt lista (lapos "Katalógus" nézet), szűréssel és rendezéssel.
-     * SQL-ben rendezünk/szűrünk — 50-70 ezer sornál is gyors.
-     */
-    fun allScanned(query: String, sortKey: SortKey, asc: Boolean, onlyMatched: Boolean): List<FileRow> {
-        val dir = if (asc) "ASC" else "DESC"
-        val order = when (sortKey) {
-            SortKey.NAME -> "name COLLATE NOCASE $dir"
-            SortKey.SIZE -> "size $dir"
-            SortKey.DATE -> "mtime $dir"
-            SortKey.TITLE -> "(cim IS NULL), cim COLLATE NOCASE $dir"
-            SortKey.AUTHOR -> "(szerzo IS NULL), szerzo COLLATE NOCASE $dir"
-        }
-        val where = StringBuilder("1=1")
-        val args = ArrayList<String>()
-        if (query.isNotBlank()) {
-            where.append(" AND (name LIKE ? OR cim LIKE ? OR szerzo LIKE ?)")
-            val q = "%${query.trim()}%"
-            args.add(q); args.add(q); args.add(q)
-        }
-        if (onlyMatched) {
-            where.append(" AND konyv_id IS NOT NULL")
-        }
-        val out = ArrayList<FileRow>()
-        db().rawQuery(
-            "SELECT path, dir, name, ext, size, mtime, konyv_id, cim, szerzo, mode FROM scan_cache WHERE $where ORDER BY $order",
-            args.toTypedArray()
-        ).use { c ->
-            while (c.moveToNext()) {
-                out.add(
-                    FileRow(
-                        path = c.getString(0),
-                        name = c.getString(2),
-                        ext = c.getString(3),
-                        isDir = false,
-                        size = c.getLong(4),
-                        mtime = c.getLong(5),
-                        konyvId = if (c.isNull(6)) null else c.getLong(6),
-                        cim = c.getString(7),
-                        szerzo = c.getString(8),
-                        matchMode = c.getString(9)
-                    )
-                )
-            }
-        }
-        return out
     }
 
     // ---------------------------------------------------------------- progress

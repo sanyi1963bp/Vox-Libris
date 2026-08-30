@@ -29,8 +29,6 @@
     <string name="explorer_deep_hits">Keresés az almappákban is — %1$d találat</string>
     <string name="explorer_storage_switch">Tároló váltása</string>
     <string name="explorer_no_other_storage">Nincs másik tároló (SD-kártya) csatolva</string>
-    <string name="explorer_books_count">%1$d könyv</string>
-    <string name="explorer_no_db">nincs DB</string>
     <string name="explorer_scanning">Szkennelés: %1$d fájl, %2$d párosítva</string>
     <string name="explorer_empty">Nincs könyvfájl ebben a mappában.</string>
     <string name="explorer_preparing"> • előkészítés…</string>
@@ -133,7 +131,6 @@
     <string name="status_finished">Elolvasott</string>
     <string name="status_in_progress">Folyamatban</string>
 
-    <string name="picker_db_title">Adatbázis kiválasztása</string>
     <string name="picker_root_title">Gyökérmappa kiválasztása</string>
     <string name="picker_choose_this">Ezt a mappát választom</string>
     <string name="picker_no_subfolder">Nincs almappa.</string>
@@ -142,38 +139,19 @@
     <string name="storage_sd">SD-kártya</string>
 
     <string name="settings_title">Beállítások</string>
-    <string name="set_db_title">Katalógus-adatbázis</string>
-    <string name="set_db_none">Nincs kiválasztva (másold a telefonra a katalógus .db fájlt)</string>
-    <string name="set_db_opened">Megnyitva — %1$d könyv</string>
-    <string name="set_db_closed">Nincs megnyitva</string>
-    <string name="set_db_pick">Adatbázisfájl kiválasztása…</string>
-    <string name="set_db_opened_toast">Adatbázis megnyitva: %1$d könyv</string>
-    <string name="set_db_failed_toast">Nem sikerült megnyitni az adatbázist. Biztosan katalógusfájl?</string>
     <string name="set_root_title">Könyvek gyökérmappája</string>
     <string name="set_root_pick">Gyökérmappa kiválasztása…</string>
 
-    <string name="set_build_title">Katalógus építése a könyvekből</string>
-    <string name="set_build_desc">Ha nincs kész katalógusod, az app a könyvfájlok saját metaadataiból (cím, szerző, fülszöveg) készít egyet — internet nélkül. Újrafuttatva a meglévő bejegyzéseket békén hagyja, csak az új könyveket veszi fel.</string>
-    <string name="set_build_source">Forrás: %1$s</string>
-    <string name="set_build_target">Cél: %1$s</string>
-    <string name="set_build_stats">Jelenleg: %1$d könyv, %2$d fájl (ebből %3$d valódi metaadattal)</string>
     <string name="set_build_pdf">  PDF-ek metaadata is (lassabb)</string>
-    <string name="set_build_progress">%1$d fájl • %2$d új bejegyzés • %3$d kihagyva</string>
-    <string name="set_build_start">Katalógus építése</string>
-    <string name="set_build_update">Frissítés az új könyvekkel</string>
     <string name="build_done_title">Katalógus kész</string>
     <string name="build_cancelled_title">Megszakítva</string>
     <string name="build_result">%1$d fájl átnézve\n%2$d új fájl bejegyezve\n%3$d új könyv a katalógusban\n%4$d korábbi bejegyzés érintetlenül hagyva</string>
-    <string name="build_use_it">Használatba veszem</string>
     <string name="build_error_open">Nem sikerült megnyitni az adatbázist: %1$s</string>
     <string name="build_error_generic">Ismeretlen hiba a katalógus építése közben</string>
 
     <string name="set_cache_title">Gyorsítótárak</string>
-    <string name="set_cache_scanned">Szkennelt fájlok: %1$d (%2$d párosítva)</string>
     <string name="set_cache_text">Kinyert szövegek: %1$s</string>
-    <string name="set_cache_clear_scan">Szkennelés törlése</string>
     <string name="set_cache_clear_text">Szövegek törlése</string>
-    <string name="set_cache_scan_cleared">Szkennelési gyorsítótár törölve.</string>
     <string name="set_cache_text_cleared">Szöveg-gyorsítótár törölve.</string>
 
     <string name="set_look_title">Megjelenés</string>
@@ -258,4 +236,23 @@
     <string name="duration_m">%1$d perc</string>
     <string name="scan_loading_catalogue">Katalógus betöltése…</string>
     <string name="scan_unknown_error">Ismeretlen hiba a szkennelés közben</string>
+    <string name="shelf_title">Polc</string>
+    <string name="shelf_empty">Még nincs könyv a katalógusban.</string>
+    <string name="shelf_files">Fájlok</string>
+    <string name="shelf_position">%1$d / %2$d</string>
+    <string name="counter_finished">Elolvasva: %1$d</string>
+    <string name="counter_inprogress">Folyamatban: %1$d</string>
+    <string name="setup_root_title">Hol vannak a könyveid?</string>
+    <string name="setup_root_text">Válaszd ki a mappát, amiben a könyvfájljaid vannak. Az almappákat is végignézi.</string>
+    <string name="setup_root_button">Mappa kiválasztása</string>
+    <string name="setup_scan_title">Beolvassam a könyveidet?</string>
+    <string name="setup_scan_text">Az app végigjárja a mappát, és összegyűjti minden könyv címét, szerzőjét és leírását. Később már csak az újakat veszi fel.</string>
+    <string name="setup_scan_button">Könyvtár beolvasása</string>
+    <string name="setup_later">Később</string>
+    <string name="catalog_stats">%1$d könyv, %2$d fájl</string>
+    <string name="remove_missing">Hiányzó fájlok eltávolítása a katalógusból</string>
+    <string name="remove_missing_done">%1$d bejegyzés eltávolítva.</string>
+    <string name="catalog_title">Katalógus</string>
+    <string name="catalog_file_hint">A katalógus látható fájlként marad, így túléli az app újratelepítését: %1$s</string>
+    <string name="set_build_progress">%1$d fájl • %2$d új bejegyzés • %3$d kihagyva</string>
 </resources>

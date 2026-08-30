@@ -9,6 +9,44 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [3.0.0] — 2026-08-30
+
+**Az app mostantól mindenkinek szól**
+
+- **A külső katalógus megszűnt.** Korábban be lehetett tölteni egy PC-n
+  készített adatbázist; ez egyetlen gyűjteményhez volt szabva. Mostantól az app
+  **maga építi a katalógust** a telefonon lévő könyvekből — bárki telepíti,
+  nála ugyanúgy működik.
+- **A szkennelés és a katalógusépítés összevonva**: egyetlen *Könyvtár
+  beolvasása* művelet, ami metaadatot nyer ki és katalógusba ír. Változatlanul
+  inkrementális: a meglévő bejegyzésekhez nem nyúl.
+- **A katalógus látható fájl marad** (`Download/KonyvtarTTS/sajat_katalogus.db`),
+  így túléli az app újratelepítését, és PC-n is megnyitható.
+
+**Polc mint nyitóképernyő**
+
+- Lapozható **borítónézet**: a könyveket úgy nézegetheted, mint a polc előtt
+  állva. A borító alatt **haladás-csík** mutatja, hol tartasz; ha el sem
+  kezdted a könyvet, nincs csík.
+- Ahol nincs kinyert borítókép, **tipográfiai borítót** rajzolunk a címből és a
+  szerzőből, a címből származtatott állandó színnel.
+- **Olvasási számlálók** a polc tetején (*Elolvasva* / *Folyamatban*),
+  koppintásra megnyílik a megfelelő lista.
+
+**Indulási varázsló**
+
+- Van mappa és katalógus → egyből a polc. Van mappa, de nincs katalógus →
+  felajánlja a beolvasást. Nincs semmi → előbb mappát kér, aztán beolvasást.
+  Üres képernyő, amiről nem tudni, mit kezdjünk vele, nincs többé.
+
+**Egyéb**
+
+- **Haladás-csík az olvasó könyvadat-ablakában** (korábban lemaradt).
+- **Hiányzó fájlok eltávolítása a katalógusból** — kézzel indítható gomb a
+  beállításokban; magától soha nem töröl semmit.
+- Új dokumentum: **[fejlesztési terv](docs/TERV.md)**, benne az elkészült és a
+  tervezett fázisok, döntésekkel és indoklással.
+
 ### [2.0.0] — 2026-08-30
 
 **Tíz nyelven beszél az app**
@@ -30,6 +68,45 @@ követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint meg
 **Új nyelv hozzáadása**: másold a `res/values/strings.xml` fájlt egy új
 `res/values-<kód>/` mappába, fordítsd le az értékeket, és vedd fel a nyelvet
 a `data/AppLanguages.kt` listájába. Kódolás nem kell hozzá.
+
+### [3.0.0] — 2026-08-30
+
+**The app is now for everyone**
+
+- **The external catalogue is gone.** It used to be possible to load a database
+  built on a PC, which was tailored to one collection. From now on the app
+  **builds the catalogue itself** from the books on the phone — it works the
+  same for anyone who installs it.
+- **Scanning and catalogue building merged** into a single *Read the library*
+  operation that extracts metadata and writes the catalogue. Still incremental:
+  existing entries are left untouched.
+- **The catalogue stays a visible file**
+  (`Download/KonyvtarTTS/sajat_katalogus.db`), so it survives reinstalling the
+  app and can be opened on a PC.
+
+**The shelf is the start screen**
+
+- A pageable **cover view**: browse your books like standing in front of a
+  shelf. Under each cover a **progress bar** shows where you are; no bar means
+  you have not started the book.
+- Where no cover image is available a **typographic cover** is drawn from the
+  title and author, in a colour derived from the title so it stays constant.
+- **Reading counters** on top of the shelf (*Finished* / *In progress*);
+  tapping one opens the matching list.
+
+**Startup wizard**
+
+- Folder and catalogue present → straight to the shelf. Folder but no catalogue
+  → it offers the scan. Nothing set up → it asks for the folder first, then the
+  scan. No more empty screen you cannot do anything with.
+
+**Other**
+
+- **Progress bar in the reader's book info dialog** (it was missing).
+- **Remove missing files from the catalogue** — a manual button in settings; it
+  never deletes anything on its own.
+- New document: the **[roadmap](docs/ROADMAP.en.md)**, listing finished and
+  planned phases with the reasoning behind each decision.
 
 ### [2.0.0] — 2026-08-30
 

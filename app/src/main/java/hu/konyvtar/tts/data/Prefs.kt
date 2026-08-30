@@ -9,22 +9,14 @@ object Prefs {
 
     private const val NAME = "konyvtar_tts_prefs"
 
-    private const val KEY_DB_PATH = "db_path"
     private const val KEY_ROOT_PATH = "root_path"
     private const val KEY_SPEED = "tts_speed"
     private const val KEY_PITCH = "tts_pitch"
     private const val KEY_SORT_KEY = "sort_key"
     private const val KEY_SORT_ASC = "sort_asc"
-    private const val KEY_FLAT_MODE = "flat_mode"
 
     private fun sp(context: Context): SharedPreferences =
         context.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
-
-    fun dbPath(context: Context): String? = sp(context).getString(KEY_DB_PATH, null)
-
-    fun setDbPath(context: Context, path: String?) {
-        sp(context).edit().putString(KEY_DB_PATH, path).apply()
-    }
 
     fun rootPath(context: Context): String {
         val def = Environment.getExternalStorageDirectory().absolutePath
@@ -33,7 +25,11 @@ object Prefs {
 
     fun setRootPath(context: Context, path: String) {
         sp(context).edit().putString(KEY_ROOT_PATH, path).apply()
+        sp(context).edit().putBoolean("root_chosen", true).apply()
     }
+
+    /** Választott-e már a felhasználó könyvmappát (az indulási varázslóhoz). */
+    fun rootChosen(context: Context): Boolean = sp(context).getBoolean("root_chosen", false)
 
     fun speed(context: Context): Float = sp(context).getFloat(KEY_SPEED, 1.0f)
 
@@ -65,12 +61,6 @@ object Prefs {
 
     fun setSearchRecursive(context: Context, value: Boolean) {
         sp(context).edit().putBoolean("search_recursive", value).apply()
-    }
-
-    fun flatMode(context: Context): Boolean = sp(context).getBoolean(KEY_FLAT_MODE, false)
-
-    fun setFlatMode(context: Context, value: Boolean) {
-        sp(context).edit().putBoolean(KEY_FLAT_MODE, value).apply()
     }
 
     fun readerFont(context: Context): Float = sp(context).getFloat("reader_font_sp", 17f)

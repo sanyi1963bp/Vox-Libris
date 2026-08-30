@@ -47,6 +47,7 @@ import hu.konyvtar.tts.tts.TtsService
 import hu.konyvtar.tts.ui.ExplorerScreen
 import hu.konyvtar.tts.ui.FilePickerScreen
 import hu.konyvtar.tts.ui.ReaderScreen
+import hu.konyvtar.tts.ui.ShelfScreen
 import hu.konyvtar.tts.ui.SettingsScreen
 import hu.konyvtar.tts.ui.StatsScreen
 import hu.konyvtar.tts.ui.theme.KonyvtarTheme
@@ -144,8 +145,18 @@ fun AppRoot(startInPlayer: Boolean) {
 
     NavHost(
         navController = nav,
-        startDestination = "explorer"
+        startDestination = "shelf"
     ) {
+        composable("shelf") {
+            ShelfScreen(
+                vm = vm,
+                onOpenBook = { row -> openReaderFor(row) },
+                onOpenFiles = { nav.navigate("explorer") },
+                onOpenStats = { nav.navigate("stats") },
+                onOpenSettings = { nav.navigate("settings") },
+                onPickRoot = { nav.navigate("pick_root") }
+            )
+        }
         composable("explorer") {
             ExplorerScreen(
                 vm = vm,
@@ -182,20 +193,7 @@ fun AppRoot(startInPlayer: Boolean) {
             SettingsScreen(
                 vm = vm,
                 onBack = { nav.popBackStack() },
-                onPickDb = { nav.navigate("pick_db") },
                 onPickRoot = { nav.navigate("pick_root") }
-            )
-        }
-        composable("pick_db") {
-            FilePickerScreen(
-                title = stringResource(R.string.picker_db_title),
-                pickDirectory = false,
-                extensionFilter = setOf("db", "sqlite", "sqlite3"),
-                onPicked = { path ->
-                    vm.openDb(path)
-                    nav.popBackStack()
-                },
-                onBack = { nav.popBackStack() }
             )
         }
         composable("pick_root") {

@@ -37,8 +37,6 @@
     <string name="explorer_deep_hits">Searching subfolders too — %1$d hits</string>
     <string name="explorer_storage_switch">Switch storage</string>
     <string name="explorer_no_other_storage">No other storage (SD card) is mounted</string>
-    <string name="explorer_books_count">%1$d books</string>
-    <string name="explorer_no_db">no database</string>
     <string name="explorer_scanning">Scanning: %1$d files, %2$d matched</string>
     <string name="explorer_empty">No book files in this folder.</string>
     <string name="explorer_preparing"> • preparing…</string>
@@ -147,7 +145,6 @@
     <string name="status_in_progress">In progress</string>
 
     <!-- file picker -->
-    <string name="picker_db_title">Select database</string>
     <string name="picker_root_title">Select root folder</string>
     <string name="picker_choose_this">Choose this folder</string>
     <string name="picker_no_subfolder">No subfolders.</string>
@@ -157,40 +154,21 @@
 
     <!-- settings: catalogue -->
     <string name="settings_title">Settings</string>
-    <string name="set_db_title">Catalogue database</string>
-    <string name="set_db_none">Not selected (copy a catalogue .db file to the phone)</string>
-    <string name="set_db_opened">Opened — %1$d books</string>
-    <string name="set_db_closed">Not opened</string>
-    <string name="set_db_pick">Select database file…</string>
-    <string name="set_db_opened_toast">Database opened: %1$d books</string>
-    <string name="set_db_failed_toast">Could not open the database. Is it really a catalogue file?</string>
     <string name="set_root_title">Books root folder</string>
     <string name="set_root_pick">Select root folder…</string>
 
     <!-- settings: catalogue builder -->
-    <string name="set_build_title">Build a catalogue from your books</string>
-    <string name="set_build_desc">With no ready-made catalogue, the app builds one from the books\' own metadata (title, author, synopsis) — without internet. Re-running leaves existing entries untouched and only adds new books.</string>
-    <string name="set_build_source">Source: %1$s</string>
-    <string name="set_build_target">Target: %1$s</string>
-    <string name="set_build_stats">Currently: %1$d books, %2$d files (%3$d with real metadata)</string>
     <string name="set_build_pdf">  PDF metadata too (slower)</string>
-    <string name="set_build_progress">%1$d files • %2$d new entries • %3$d skipped</string>
-    <string name="set_build_start">Build catalogue</string>
-    <string name="set_build_update">Update with new books</string>
     <string name="build_done_title">Catalogue ready</string>
     <string name="build_cancelled_title">Cancelled</string>
     <string name="build_result">%1$d files examined\n%2$d new files recorded\n%3$d new books in the catalogue\n%4$d earlier entries left untouched</string>
-    <string name="build_use_it">Use it now</string>
     <string name="build_error_open">Could not open the database: %1$s</string>
     <string name="build_error_generic">Unknown error while building the catalogue</string>
 
     <!-- settings: caches -->
     <string name="set_cache_title">Caches</string>
-    <string name="set_cache_scanned">Scanned files: %1$d (%2$d matched)</string>
     <string name="set_cache_text">Extracted text: %1$s</string>
-    <string name="set_cache_clear_scan">Clear scan cache</string>
     <string name="set_cache_clear_text">Clear text cache</string>
-    <string name="set_cache_scan_cleared">Scan cache cleared.</string>
     <string name="set_cache_text_cleared">Text cache cleared.</string>
 
     <!-- settings: appearance -->
@@ -283,4 +261,23 @@
     <string name="duration_m">%1$d min</string>
     <string name="scan_loading_catalogue">Loading the catalogue…</string>
     <string name="scan_unknown_error">Unknown error while scanning</string>
+    <string name="shelf_title">Shelf</string>
+    <string name="shelf_empty">There are no books in the catalogue yet.</string>
+    <string name="shelf_files">Files</string>
+    <string name="shelf_position">%1$d / %2$d</string>
+    <string name="counter_finished">Finished: %1$d</string>
+    <string name="counter_inprogress">In progress: %1$d</string>
+    <string name="setup_root_title">Where are your books?</string>
+    <string name="setup_root_text">Choose the folder that holds your book files. Subfolders are included.</string>
+    <string name="setup_root_button">Choose folder</string>
+    <string name="setup_scan_title">Shall I read your books?</string>
+    <string name="setup_scan_text">The app walks the folder and collects the title, author and description of every book. It only ever adds new books later.</string>
+    <string name="setup_scan_button">Read the library</string>
+    <string name="setup_later">Later</string>
+    <string name="catalog_stats">%1$d books, %2$d files</string>
+    <string name="remove_missing">Remove missing files from the catalogue</string>
+    <string name="remove_missing_done">%1$d entries removed.</string>
+    <string name="catalog_title">Catalogue</string>
+    <string name="catalog_file_hint">The catalogue is kept as a visible file, so it survives reinstalling the app: %1$s</string>
+    <string name="set_build_progress">%1$d files • %2$d new entries • %3$d skipped</string>
 </resources>

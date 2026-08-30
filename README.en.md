@@ -7,14 +7,18 @@
 **Interface in ten languages**: English · Hungarian · German · French ·
 Spanish · Portuguese · Polish · Czech · Slovak · Russian
 
-🔧 [Setup & dependencies](docs/SETUP.en.md) · 📖 [User guide](docs/USAGE.en.md) · 📝 [Changelog](CHANGELOG.md)
+🔧 [Setup](docs/SETUP.en.md) · 📖 [User guide](docs/USAGE.en.md) · 🗺 [Roadmap](docs/ROADMAP.en.md) · 📝 [Changelog](CHANGELOG.md)
 
 ---
 
-A native Android application (Kotlin + Jetpack Compose) that matches the book
-files on your device against a local SQLite catalogue (~68,000 book records),
-and reads them aloud with the system TTS engine — sentence by sentence, with
-automatic resume, bookmarks and headset button control.
+A native Android application (Kotlin + Jetpack Compose). It **builds its own
+catalogue** from the books on your phone — using the metadata stored inside
+the files, with no internet — and then reads them aloud with the system TTS
+engine: sentence by sentence, with automatic resume, bookmarks and headset
+button control.
+
+No account, no server, no prepared database: install it, show it where your
+books are, and that is all.
 
 Cover images are **deliberately never touched**: the app reads no image from
 external folders, nor from inside the book files. That is what keeps scrolling
@@ -37,15 +41,15 @@ The app appears on the phone as **Könyvtár TTS** ("Library TTS").
 
 ## Features
 
-- **Catalogue integration.** Metadata from the `konyvek` (books) table —
-  title, author, synopsis, publisher, tags — plus reuse of the file↔book
-  matching already done on the PC and stored in `fizikai_fajlok`
-  (physical files), so the phone barely has to work.
-- **Build a catalogue from scratch.** With no prepared database, the app can
-  create one **from the books' own embedded metadata** (EPUB/FB2/MOBI/DOCX
-  headers: title, author, synopsis, publisher, series, ISBN, tags) — with no
-  internet. Re-running it is **incremental**: existing entries are left
-  untouched, only newly copied books are added.
+- **Its own catalogue, without internet.** The app walks your books folder and
+  builds a catalogue **from the files' own embedded metadata** (EPUB/FB2/MOBI/
+  DOCX headers: title, author, synopsis, publisher, series, ISBN, tags).
+  Re-running it is **incremental**: existing entries are left untouched, only
+  newly copied books are added. The catalogue is a visible file, so it survives
+  reinstalling the app.
+- **The shelf is the start screen.** A pageable cover view: browse your books
+  like standing in front of a shelf. Under each cover a progress bar shows
+  where you are — no bar means you have not started it.
 - **Total Commander style browser.** Dense, icon-free file rows (name, size,
   date, matched author/title), folder navigation, recursive scanning, sort by
   tapping a column header, fast-scroll bar, storage switcher
@@ -99,40 +103,6 @@ The app appears on the phone as **Könyvtár TTS** ("Library TTS").
 Every format is handled by a **self-contained, dependency-free parser**; PDF
 is the only one using an external library (PDFBox-Android).
 
-## Expected database
-
-The app opens an arbitrary SQLite file **read-only**. The minimum it needs:
-
-```sql
-CREATE TABLE konyvek (            -- books
-    id           INTEGER PRIMARY KEY,
-    szerzo       TEXT,            -- author
-    cim          TEXT,            -- title
-    leiras       TEXT,            -- synopsis / blurb
-    kiado        TEXT,            -- publisher
-    kiadas_eve   TEXT,            -- year
-    isbn         TEXT,
-    sorozat      TEXT,            -- series
-    sorozat_szama TEXT,           -- series index
-    cimkek       TEXT,            -- tags
-    formatum     TEXT,            -- format
-    meret        TEXT,            -- size
-    ncore_id     TEXT,
-    feltoltve_datum TEXT          -- upload date
-);
-
--- Optional, but makes matching dramatically faster:
--- filename → book assignment already computed on the PC
-CREATE TABLE fizikai_fajlok (     -- physical files
-    fajl_nev  TEXT,               -- file name
-    konyv_id  INTEGER REFERENCES konyvek(id)
-);
-```
-
-If `fizikai_fajlok` is missing or empty, the app falls back to matching
-title + author parsed from the file name, using accent- and
-punctuation-insensitive normalisation.
-
 ## Building
 
 Prerequisites: Android Studio, or just the Android SDK + JDK 17.
@@ -152,21 +122,16 @@ AGP 8.11.1 · Kotlin 2.2.0 · Gradle 8.13 · Compose BOM 2025.01.00
 
 1. Copy `app-release.apk` to the phone and install it (you may need to allow
    "unknown sources").
-2. Copy the catalogue `.db` file to the phone — **the `.db` only**, not the
-   `-wal` and `-shm` files. Recommended location: the root of internal
-   storage or the `Download` folder (the app finds it there automatically
-   under the name `ncore_konyvtar.db`); from anywhere else pick it under
-   Settings → "Adatbázisfájl kiválasztása…" (select database file).
-   Keep it on internal storage rather than an SD card: SQLite performs many
-   small random reads, which are considerably faster there.
-3. Copy your book files to any folder (these are fine on an SD card).
-4. On first launch grant the **"All files access"** permission (the button
+2. Copy your book files to any folder (an SD card is fine).
+3. On first launch grant the **"All files access"** permission (the button
    takes you to system settings), and the notification permission on
    Android 13+.
-5. Navigate to your books folder and press the **radar icon** — this scans
-   everything recursively and matches it against the catalogue. Afterwards
-   the **"Katalógus"** (catalogue) tab shows every file found in one
-   searchable list.
+4. The app asks **where your books are** — pick the folder.
+5. Then it offers to **read them**. One button, and the catalogue is built; at
+   the end the shelf opens with your books.
+
+After copying in new books just run the scan again (Settings → Catalogue): it
+leaves existing entries untouched and only adds the new ones.
 
 **You also need a TTS engine** with a voice for your language. It is part of
 the system, not of this app — installing it, downloading voices and

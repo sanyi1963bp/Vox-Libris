@@ -29,8 +29,6 @@
     <string name="explorer_deep_hits">Buscando también en subcarpetas — %1$d resultados</string>
     <string name="explorer_storage_switch">Cambiar de almacenamiento</string>
     <string name="explorer_no_other_storage">No hay otro almacenamiento (tarjeta SD) montado</string>
-    <string name="explorer_books_count">%1$d libros</string>
-    <string name="explorer_no_db">sin base de datos</string>
     <string name="explorer_scanning">Escaneando: %1$d archivos, %2$d emparejados</string>
     <string name="explorer_empty">No hay archivos de libros en esta carpeta.</string>
     <string name="explorer_preparing"> • preparando…</string>
@@ -133,7 +131,6 @@
     <string name="status_finished">Leído</string>
     <string name="status_in_progress">En curso</string>
 
-    <string name="picker_db_title">Seleccionar base de datos</string>
     <string name="picker_root_title">Seleccionar carpeta raíz</string>
     <string name="picker_choose_this">Elegir esta carpeta</string>
     <string name="picker_no_subfolder">No hay subcarpetas.</string>
@@ -142,38 +139,19 @@
     <string name="storage_sd">Tarjeta SD</string>
 
     <string name="settings_title">Ajustes</string>
-    <string name="set_db_title">Base de datos del catálogo</string>
-    <string name="set_db_none">No seleccionada (copia un archivo .db de catálogo al teléfono)</string>
-    <string name="set_db_opened">Abierta — %1$d libros</string>
-    <string name="set_db_closed">No abierta</string>
-    <string name="set_db_pick">Seleccionar archivo de base de datos…</string>
-    <string name="set_db_opened_toast">Base de datos abierta: %1$d libros</string>
-    <string name="set_db_failed_toast">No se pudo abrir la base de datos. ¿Seguro que es un archivo de catálogo?</string>
     <string name="set_root_title">Carpeta raíz de los libros</string>
     <string name="set_root_pick">Seleccionar carpeta raíz…</string>
 
-    <string name="set_build_title">Crear un catálogo a partir de tus libros</string>
-    <string name="set_build_desc">Si no tienes un catálogo preparado, la aplicación crea uno con los metadatos de los propios libros (título, autor, sinopsis) — sin Internet. Al repetirlo, deja intactas las entradas existentes y solo añade los libros nuevos.</string>
-    <string name="set_build_source">Origen: %1$s</string>
-    <string name="set_build_target">Destino: %1$s</string>
-    <string name="set_build_stats">Actualmente: %1$d libros, %2$d archivos (%3$d con metadatos reales)</string>
     <string name="set_build_pdf">  También metadatos de PDF (más lento)</string>
-    <string name="set_build_progress">%1$d archivos • %2$d entradas nuevas • %3$d omitidos</string>
-    <string name="set_build_start">Crear catálogo</string>
-    <string name="set_build_update">Actualizar con los libros nuevos</string>
     <string name="build_done_title">Catálogo listo</string>
     <string name="build_cancelled_title">Interrumpido</string>
     <string name="build_result">%1$d archivos examinados\n%2$d archivos nuevos registrados\n%3$d libros nuevos en el catálogo\n%4$d entradas anteriores intactas</string>
-    <string name="build_use_it">Usarlo ahora</string>
     <string name="build_error_open">No se pudo abrir la base de datos: %1$s</string>
     <string name="build_error_generic">Error desconocido al crear el catálogo</string>
 
     <string name="set_cache_title">Cachés</string>
-    <string name="set_cache_scanned">Archivos escaneados: %1$d (%2$d emparejados)</string>
     <string name="set_cache_text">Texto extraído: %1$s</string>
-    <string name="set_cache_clear_scan">Vaciar caché de escaneo</string>
     <string name="set_cache_clear_text">Vaciar caché de texto</string>
-    <string name="set_cache_scan_cleared">Caché de escaneo vaciada.</string>
     <string name="set_cache_text_cleared">Caché de texto vaciada.</string>
 
     <string name="set_look_title">Apariencia</string>
@@ -260,4 +238,23 @@
     <string name="duration_m">%1$d min</string>
     <string name="scan_loading_catalogue">Cargando el catálogo…</string>
     <string name="scan_unknown_error">Error desconocido durante el escaneo</string>
+    <string name="shelf_title">Estantería</string>
+    <string name="shelf_empty">Todavía no hay libros en el catálogo.</string>
+    <string name="shelf_files">Archivos</string>
+    <string name="shelf_position">%1$d / %2$d</string>
+    <string name="counter_finished">Leídos: %1$d</string>
+    <string name="counter_inprogress">En curso: %1$d</string>
+    <string name="setup_root_title">¿Dónde están tus libros?</string>
+    <string name="setup_root_text">Elige la carpeta que contiene tus archivos de libros. Se incluyen las subcarpetas.</string>
+    <string name="setup_root_button">Elegir carpeta</string>
+    <string name="setup_scan_title">¿Leo tus libros?</string>
+    <string name="setup_scan_text">La aplicación recorre la carpeta y recoge el título, el autor y la descripción de cada libro. Después solo añadirá los nuevos.</string>
+    <string name="setup_scan_button">Leer la biblioteca</string>
+    <string name="setup_later">Más tarde</string>
+    <string name="catalog_stats">%1$d libros, %2$d archivos</string>
+    <string name="remove_missing">Quitar del catálogo los archivos que faltan</string>
+    <string name="remove_missing_done">%1$d entradas eliminadas.</string>
+    <string name="catalog_title">Catálogo</string>
+    <string name="catalog_file_hint">El catálogo se guarda como archivo visible, así sobrevive a la reinstalación de la aplicación: %1$s</string>
+    <string name="set_build_progress">%1$d archivos • %2$d entradas nuevas • %3$d omitidos</string>
 </resources>

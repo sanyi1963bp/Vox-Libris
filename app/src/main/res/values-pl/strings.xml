@@ -29,8 +29,6 @@
     <string name="explorer_deep_hits">Szukanie także w podfolderach — %1$d wyników</string>
     <string name="explorer_storage_switch">Zmień nośnik</string>
     <string name="explorer_no_other_storage">Brak innego nośnika (karty SD)</string>
-    <string name="explorer_books_count">%1$d książek</string>
-    <string name="explorer_no_db">brak bazy</string>
     <string name="explorer_scanning">Skanowanie: %1$d plików, %2$d dopasowanych</string>
     <string name="explorer_empty">Brak plików książek w tym folderze.</string>
     <string name="explorer_preparing"> • przygotowywanie…</string>
@@ -133,7 +131,6 @@
     <string name="status_finished">Przeczytane</string>
     <string name="status_in_progress">W trakcie</string>
 
-    <string name="picker_db_title">Wybierz bazę danych</string>
     <string name="picker_root_title">Wybierz folder główny</string>
     <string name="picker_choose_this">Wybierz ten folder</string>
     <string name="picker_no_subfolder">Brak podfolderów.</string>
@@ -142,38 +139,19 @@
     <string name="storage_sd">Karta SD</string>
 
     <string name="settings_title">Ustawienia</string>
-    <string name="set_db_title">Baza katalogu</string>
-    <string name="set_db_none">Nie wybrano (skopiuj plik .db katalogu do telefonu)</string>
-    <string name="set_db_opened">Otwarta — %1$d książek</string>
-    <string name="set_db_closed">Nieotwarta</string>
-    <string name="set_db_pick">Wybierz plik bazy danych…</string>
-    <string name="set_db_opened_toast">Baza otwarta: %1$d książek</string>
-    <string name="set_db_failed_toast">Nie udało się otworzyć bazy. Czy to na pewno plik katalogu?</string>
     <string name="set_root_title">Folder główny książek</string>
     <string name="set_root_pick">Wybierz folder główny…</string>
 
-    <string name="set_build_title">Zbuduj katalog ze swoich książek</string>
-    <string name="set_build_desc">Bez gotowego katalogu aplikacja tworzy go z metadanych samych książek (tytuł, autor, opis) — bez internetu. Ponowne uruchomienie pozostawia istniejące wpisy nietknięte i dodaje tylko nowe książki.</string>
-    <string name="set_build_source">Źródło: %1$s</string>
-    <string name="set_build_target">Cel: %1$s</string>
-    <string name="set_build_stats">Obecnie: %1$d książek, %2$d plików (w tym %3$d z prawdziwymi metadanymi)</string>
     <string name="set_build_pdf">  Także metadane PDF (wolniej)</string>
-    <string name="set_build_progress">%1$d plików • %2$d nowych wpisów • %3$d pominiętych</string>
-    <string name="set_build_start">Zbuduj katalog</string>
-    <string name="set_build_update">Zaktualizuj o nowe książki</string>
     <string name="build_done_title">Katalog gotowy</string>
     <string name="build_cancelled_title">Przerwano</string>
     <string name="build_result">Sprawdzono plików: %1$d\nZapisano nowych plików: %2$d\nNowych książek w katalogu: %3$d\nWcześniejszych wpisów nietkniętych: %4$d</string>
-    <string name="build_use_it">Użyj teraz</string>
     <string name="build_error_open">Nie udało się otworzyć bazy: %1$s</string>
     <string name="build_error_generic">Nieznany błąd podczas budowania katalogu</string>
 
     <string name="set_cache_title">Pamięci podręczne</string>
-    <string name="set_cache_scanned">Zeskanowane pliki: %1$d (%2$d dopasowanych)</string>
     <string name="set_cache_text">Wyodrębniony tekst: %1$s</string>
-    <string name="set_cache_clear_scan">Wyczyść pamięć skanowania</string>
     <string name="set_cache_clear_text">Wyczyść pamięć tekstu</string>
-    <string name="set_cache_scan_cleared">Pamięć skanowania wyczyszczona.</string>
     <string name="set_cache_text_cleared">Pamięć tekstu wyczyszczona.</string>
 
     <string name="set_look_title">Wygląd</string>
@@ -260,4 +238,23 @@
     <string name="duration_m">%1$d min</string>
     <string name="scan_loading_catalogue">Wczytywanie katalogu…</string>
     <string name="scan_unknown_error">Nieznany błąd podczas skanowania</string>
+    <string name="shelf_title">Półka</string>
+    <string name="shelf_empty">W katalogu nie ma jeszcze książek.</string>
+    <string name="shelf_files">Pliki</string>
+    <string name="shelf_position">%1$d / %2$d</string>
+    <string name="counter_finished">Przeczytane: %1$d</string>
+    <string name="counter_inprogress">W trakcie: %1$d</string>
+    <string name="setup_root_title">Gdzie są Twoje książki?</string>
+    <string name="setup_root_text">Wybierz folder z plikami książek. Podfoldery też zostaną uwzględnione.</string>
+    <string name="setup_root_button">Wybierz folder</string>
+    <string name="setup_scan_title">Wczytać Twoje książki?</string>
+    <string name="setup_scan_text">Aplikacja przejdzie przez folder i zbierze tytuł, autora i opis każdej książki. Później będzie dodawać tylko nowe.</string>
+    <string name="setup_scan_button">Wczytaj bibliotekę</string>
+    <string name="setup_later">Później</string>
+    <string name="catalog_stats">%1$d książek, %2$d plików</string>
+    <string name="remove_missing">Usuń z katalogu brakujące pliki</string>
+    <string name="remove_missing_done">Usunięto wpisów: %1$d.</string>
+    <string name="catalog_title">Katalog</string>
+    <string name="catalog_file_hint">Katalog pozostaje widocznym plikiem, więc przetrwa ponowną instalację aplikacji: %1$s</string>
+    <string name="set_build_progress">%1$d plików • %2$d nowych wpisów • %3$d pominiętych</string>
 </resources>

@@ -29,8 +29,6 @@
     <string name="explorer_deep_hits">A procurar também nas subpastas — %1$d resultados</string>
     <string name="explorer_storage_switch">Mudar de armazenamento</string>
     <string name="explorer_no_other_storage">Não há outro armazenamento (cartão SD) montado</string>
-    <string name="explorer_books_count">%1$d livros</string>
-    <string name="explorer_no_db">sem base de dados</string>
     <string name="explorer_scanning">A analisar: %1$d ficheiros, %2$d associados</string>
     <string name="explorer_empty">Não há ficheiros de livros nesta pasta.</string>
     <string name="explorer_preparing"> • a preparar…</string>
@@ -133,7 +131,6 @@
     <string name="status_finished">Lido</string>
     <string name="status_in_progress">Em curso</string>
 
-    <string name="picker_db_title">Selecionar base de dados</string>
     <string name="picker_root_title">Selecionar pasta raiz</string>
     <string name="picker_choose_this">Escolher esta pasta</string>
     <string name="picker_no_subfolder">Não há subpastas.</string>
@@ -142,38 +139,19 @@
     <string name="storage_sd">Cartão SD</string>
 
     <string name="settings_title">Definições</string>
-    <string name="set_db_title">Base de dados do catálogo</string>
-    <string name="set_db_none">Não selecionada (copie um ficheiro .db de catálogo para o telemóvel)</string>
-    <string name="set_db_opened">Aberta — %1$d livros</string>
-    <string name="set_db_closed">Não aberta</string>
-    <string name="set_db_pick">Selecionar ficheiro de base de dados…</string>
-    <string name="set_db_opened_toast">Base de dados aberta: %1$d livros</string>
-    <string name="set_db_failed_toast">Não foi possível abrir a base de dados. É mesmo um ficheiro de catálogo?</string>
     <string name="set_root_title">Pasta raiz dos livros</string>
     <string name="set_root_pick">Selecionar pasta raiz…</string>
 
-    <string name="set_build_title">Criar um catálogo a partir dos seus livros</string>
-    <string name="set_build_desc">Sem um catálogo pronto, a aplicação cria um a partir dos metadados dos próprios livros (título, autor, sinopse) — sem Internet. Ao repetir, deixa intactas as entradas existentes e acrescenta apenas os livros novos.</string>
-    <string name="set_build_source">Origem: %1$s</string>
-    <string name="set_build_target">Destino: %1$s</string>
-    <string name="set_build_stats">Atualmente: %1$d livros, %2$d ficheiros (%3$d com metadados reais)</string>
     <string name="set_build_pdf">  Também metadados de PDF (mais lento)</string>
-    <string name="set_build_progress">%1$d ficheiros • %2$d entradas novas • %3$d ignorados</string>
-    <string name="set_build_start">Criar catálogo</string>
-    <string name="set_build_update">Atualizar com os livros novos</string>
     <string name="build_done_title">Catálogo pronto</string>
     <string name="build_cancelled_title">Interrompido</string>
     <string name="build_result">%1$d ficheiros examinados\n%2$d ficheiros novos registados\n%3$d livros novos no catálogo\n%4$d entradas anteriores intactas</string>
-    <string name="build_use_it">Usar agora</string>
     <string name="build_error_open">Não foi possível abrir a base de dados: %1$s</string>
     <string name="build_error_generic">Erro desconhecido ao criar o catálogo</string>
 
     <string name="set_cache_title">Caches</string>
-    <string name="set_cache_scanned">Ficheiros analisados: %1$d (%2$d associados)</string>
     <string name="set_cache_text">Texto extraído: %1$s</string>
-    <string name="set_cache_clear_scan">Limpar cache de análise</string>
     <string name="set_cache_clear_text">Limpar cache de texto</string>
-    <string name="set_cache_scan_cleared">Cache de análise limpa.</string>
     <string name="set_cache_text_cleared">Cache de texto limpa.</string>
 
     <string name="set_look_title">Aspeto</string>
@@ -260,4 +238,23 @@
     <string name="duration_m">%1$d min</string>
     <string name="scan_loading_catalogue">A carregar o catálogo…</string>
     <string name="scan_unknown_error">Erro desconhecido durante a análise</string>
+    <string name="shelf_title">Estante</string>
+    <string name="shelf_empty">Ainda não há livros no catálogo.</string>
+    <string name="shelf_files">Ficheiros</string>
+    <string name="shelf_position">%1$d / %2$d</string>
+    <string name="counter_finished">Lidos: %1$d</string>
+    <string name="counter_inprogress">Em curso: %1$d</string>
+    <string name="setup_root_title">Onde estão os seus livros?</string>
+    <string name="setup_root_text">Escolha a pasta que contém os ficheiros dos livros. As subpastas são incluídas.</string>
+    <string name="setup_root_button">Escolher pasta</string>
+    <string name="setup_scan_title">Devo ler os seus livros?</string>
+    <string name="setup_scan_text">A aplicação percorre a pasta e recolhe o título, o autor e a descrição de cada livro. Depois só acrescenta os novos.</string>
+    <string name="setup_scan_button">Ler a biblioteca</string>
+    <string name="setup_later">Mais tarde</string>
+    <string name="catalog_stats">%1$d livros, %2$d ficheiros</string>
+    <string name="remove_missing">Remover do catálogo os ficheiros em falta</string>
+    <string name="remove_missing_done">%1$d entradas removidas.</string>
+    <string name="catalog_title">Catálogo</string>
+    <string name="catalog_file_hint">O catálogo fica como ficheiro visível, por isso sobrevive à reinstalação da aplicação: %1$s</string>
+    <string name="set_build_progress">%1$d ficheiros • %2$d entradas novas • %3$d ignorados</string>
 </resources>

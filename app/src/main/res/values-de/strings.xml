@@ -29,8 +29,6 @@
     <string name="explorer_deep_hits">Auch in Unterordnern — %1$d Treffer</string>
     <string name="explorer_storage_switch">Speicher wechseln</string>
     <string name="explorer_no_other_storage">Kein weiterer Speicher (SD-Karte) eingebunden</string>
-    <string name="explorer_books_count">%1$d Bücher</string>
-    <string name="explorer_no_db">keine Datenbank</string>
     <string name="explorer_scanning">Scannen: %1$d Dateien, %2$d zugeordnet</string>
     <string name="explorer_empty">Keine Buchdateien in diesem Ordner.</string>
     <string name="explorer_preparing"> • wird vorbereitet…</string>
@@ -133,7 +131,6 @@
     <string name="status_finished">Gelesen</string>
     <string name="status_in_progress">Laufend</string>
 
-    <string name="picker_db_title">Datenbank auswählen</string>
     <string name="picker_root_title">Stammordner auswählen</string>
     <string name="picker_choose_this">Diesen Ordner wählen</string>
     <string name="picker_no_subfolder">Keine Unterordner.</string>
@@ -142,38 +139,19 @@
     <string name="storage_sd">SD-Karte</string>
 
     <string name="settings_title">Einstellungen</string>
-    <string name="set_db_title">Katalogdatenbank</string>
-    <string name="set_db_none">Nicht ausgewählt (kopiere eine Katalog-.db auf das Telefon)</string>
-    <string name="set_db_opened">Geöffnet — %1$d Bücher</string>
-    <string name="set_db_closed">Nicht geöffnet</string>
-    <string name="set_db_pick">Datenbankdatei auswählen…</string>
-    <string name="set_db_opened_toast">Datenbank geöffnet: %1$d Bücher</string>
-    <string name="set_db_failed_toast">Die Datenbank konnte nicht geöffnet werden. Ist es wirklich eine Katalogdatei?</string>
     <string name="set_root_title">Stammordner der Bücher</string>
     <string name="set_root_pick">Stammordner auswählen…</string>
 
-    <string name="set_build_title">Katalog aus deinen Büchern erstellen</string>
-    <string name="set_build_desc">Ohne fertigen Katalog erstellt die App einen aus den Metadaten der Bücher selbst (Titel, Autor, Klappentext) — ohne Internet. Ein erneuter Lauf lässt vorhandene Einträge unberührt und fügt nur neue Bücher hinzu.</string>
-    <string name="set_build_source">Quelle: %1$s</string>
-    <string name="set_build_target">Ziel: %1$s</string>
-    <string name="set_build_stats">Derzeit: %1$d Bücher, %2$d Dateien (davon %3$d mit echten Metadaten)</string>
     <string name="set_build_pdf">  Auch PDF-Metadaten (langsamer)</string>
-    <string name="set_build_progress">%1$d Dateien • %2$d neue Einträge • %3$d übersprungen</string>
-    <string name="set_build_start">Katalog erstellen</string>
-    <string name="set_build_update">Mit neuen Büchern aktualisieren</string>
     <string name="build_done_title">Katalog fertig</string>
     <string name="build_cancelled_title">Abgebrochen</string>
     <string name="build_result">%1$d Dateien geprüft\n%2$d neue Dateien erfasst\n%3$d neue Bücher im Katalog\n%4$d frühere Einträge unberührt gelassen</string>
-    <string name="build_use_it">Jetzt verwenden</string>
     <string name="build_error_open">Die Datenbank konnte nicht geöffnet werden: %1$s</string>
     <string name="build_error_generic">Unbekannter Fehler beim Erstellen des Katalogs</string>
 
     <string name="set_cache_title">Zwischenspeicher</string>
-    <string name="set_cache_scanned">Gescannte Dateien: %1$d (%2$d zugeordnet)</string>
     <string name="set_cache_text">Extrahierter Text: %1$s</string>
-    <string name="set_cache_clear_scan">Scan-Cache leeren</string>
     <string name="set_cache_clear_text">Text-Cache leeren</string>
-    <string name="set_cache_scan_cleared">Scan-Cache geleert.</string>
     <string name="set_cache_text_cleared">Text-Cache geleert.</string>
 
     <string name="set_look_title">Darstellung</string>
@@ -260,4 +238,23 @@
     <string name="duration_m">%1$d Min</string>
     <string name="scan_loading_catalogue">Katalog wird geladen…</string>
     <string name="scan_unknown_error">Unbekannter Fehler beim Scannen</string>
+    <string name="shelf_title">Regal</string>
+    <string name="shelf_empty">Es sind noch keine Bücher im Katalog.</string>
+    <string name="shelf_files">Dateien</string>
+    <string name="shelf_position">%1$d / %2$d</string>
+    <string name="counter_finished">Gelesen: %1$d</string>
+    <string name="counter_inprogress">Laufend: %1$d</string>
+    <string name="setup_root_title">Wo sind deine Bücher?</string>
+    <string name="setup_root_text">Wähle den Ordner mit deinen Buchdateien. Unterordner werden mit einbezogen.</string>
+    <string name="setup_root_button">Ordner wählen</string>
+    <string name="setup_scan_title">Soll ich deine Bücher einlesen?</string>
+    <string name="setup_scan_text">Die App durchläuft den Ordner und sammelt Titel, Autor und Beschreibung jedes Buches. Später kommen nur noch neue Bücher hinzu.</string>
+    <string name="setup_scan_button">Bibliothek einlesen</string>
+    <string name="setup_later">Später</string>
+    <string name="catalog_stats">%1$d Bücher, %2$d Dateien</string>
+    <string name="remove_missing">Fehlende Dateien aus dem Katalog entfernen</string>
+    <string name="remove_missing_done">%1$d Einträge entfernt.</string>
+    <string name="catalog_title">Katalog</string>
+    <string name="catalog_file_hint">Der Katalog bleibt eine sichtbare Datei und übersteht so eine Neuinstallation der App: %1$s</string>
+    <string name="set_build_progress">%1$d Dateien • %2$d neue Einträge • %3$d übersprungen</string>
 </resources>

@@ -7,15 +7,18 @@
 **A felület tíz nyelven**: magyar · angol · német · francia · spanyol ·
 portugál · lengyel · cseh · szlovák · orosz
 
-🔧 [Telepítés és függőségek](docs/TELEPITES.md) · 📖 [Használati útmutató](docs/HASZNALAT.md) · 📝 [Változásnapló](CHANGELOG.md)
+🔧 [Telepítés](docs/TELEPITES.md) · 📖 [Használat](docs/HASZNALAT.md) · 🗺 [Fejlesztési terv](docs/TERV.md) · 📝 [Változásnapló](CHANGELOG.md)
 
 ---
 
-Natív Android alkalmazás (Kotlin + Jetpack Compose), amely egy helyi SQLite
-katalógushoz (~68 000 könyv metaadata) párosítja a telefonon lévő
-könyvfájlokat, és a rendszer szövegfelolvasójával (TTS) hangoskönyvként
-olvassa fel őket — mondatról mondatra, automatikus folytatással,
+Natív Android alkalmazás (Kotlin + Jetpack Compose). A telefonodon lévő
+könyvekből **maga építi a katalógusát** — a fájlokban tárolt metaadatokból,
+internet nélkül —, majd a rendszer szövegfelolvasójával (TTS) hangoskönyvként
+olvassa fel őket: mondatról mondatra, automatikus folytatással,
 könyvjelzőkkel és fülhallgató-gombos vezérléssel.
+
+Nem kell hozzá se fiók, se szerver, se előre elkészített adatbázis: telepíted,
+megmutatod, hol vannak a könyveid, és kész.
 
 Borítóképekkel **szándékosan nem foglalkozik**: se külső mappából, se a
 könyvfájlok belsejéből nem olvas be képet. Ettől marad villámgyors a
@@ -33,15 +36,15 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
 
 ## Fő funkciók
 
-- **Katalógus-integráció.** A `konyvek` tábla metaadatai (cím, szerző,
-  leírás, kiadó, címkék…), és a `fizikai_fajlok` táblában a PC-n már
-  elvégzett fájl↔könyv párosítás újrafelhasználása — így a telefonnak alig
-  kell dolgoznia.
-- **Katalógus építése a semmiből.** Ha nincs kész adatbázisod, az app maga
-  készít egyet **a könyvfájlok saját metaadataiból** (EPUB/FB2/MOBI/DOCX
-  fejlécekből: cím, szerző, fülszöveg, kiadó, sorozat, ISBN, címkék) —
-  internet nélkül. Újrafuttatva **inkrementális**: a meglévő bejegyzéseket
-  érintetlenül hagyja, csak az újonnan bemásolt könyveket veszi fel.
+- **Saját katalógus, internet nélkül.** Az app végigjárja a könyvmappádat, és
+  **a fájlok saját metaadataiból** épít katalógust (EPUB/FB2/MOBI/DOCX
+  fejlécekből: cím, szerző, fülszöveg, kiadó, sorozat, ISBN, címkék).
+  Újrafuttatva **inkrementális**: a meglévő bejegyzéseket érintetlenül hagyja,
+  csak az újonnan bemásolt könyveket veszi fel. A katalógus látható fájl, így
+  túléli az app újratelepítését is.
+- **Polc mint nyitóképernyő.** Lapozható borítónézet: úgy nézegetheted a
+  könyveket, mint a polc előtt állva. A borító alatt haladás-csík mutatja, hol
+  tartasz — ha el sem kezdted, nincs csík.
 - **Total Commander-stílusú böngésző.** Sűrű, ikonmentes fájllista (név,
   méret, dátum, párosított szerző/cím), mappánkénti navigáció, rekurzív
   szkennelés, oszlopfejlécre koppintva rendezés, gyorsgörgető sáv,
@@ -97,41 +100,6 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
 Minden formátumot **saját, függőségmentes olvasó** dolgoz fel (egyedül a PDF
 használ külső könyvtárat, a PDFBox-Androidot).
 
-## Az adatbázis, amit vár
-
-Az app egy tetszőleges SQLite fájlt nyit meg **csak olvasásra**. A minimum,
-amire szüksége van:
-
-```sql
-CREATE TABLE konyvek (
-    id           INTEGER PRIMARY KEY,
-    szerzo       TEXT,
-    cim          TEXT,
-    leiras       TEXT,      -- fülszöveg / szinopszis
-    kiado        TEXT,
-    kiadas_eve   TEXT,
-    isbn         TEXT,
-    sorozat      TEXT,
-    sorozat_szama TEXT,
-    cimkek       TEXT,
-    formatum     TEXT,
-    meret        TEXT,
-    ncore_id     TEXT,
-    feltoltve_datum TEXT
-);
-
--- Opcionális, de nagyon gyorsítja a párosítást:
--- a PC-n már elvégzett fájlnév → könyv hozzárendelés
-CREATE TABLE fizikai_fajlok (
-    fajl_nev  TEXT,
-    konyv_id  INTEGER REFERENCES konyvek(id)
-);
-```
-
-Ha a `fizikai_fajlok` tábla hiányzik vagy üres, az app a fájlnevekből
-próbál cím + szerző alapján párosítani (ékezet- és írásjel-független
-normalizálással).
-
 ## Építés
 
 Előfeltétel: Android Studio, vagy csak Android SDK + JDK 17.
@@ -151,19 +119,16 @@ AGP 8.11.1 · Kotlin 2.2.0 · Gradle 8.13 · Compose BOM 2025.01.00
 
 1. Másold a telefonra az `app-release.apk`-t és telepítsd (az „ismeretlen
    forrás” engedélyezése kellhet).
-2. Másold a telefonra a katalógus `.db` fájlt — **csak magát a `.db`-t**, a
-   `-wal` és `-shm` fájlokat ne. Javasolt hely: a belső tároló gyökere vagy a
-   `Download` mappa (itt az app magától megtalálja `ncore_konyvtar.db` néven);
-   máshonnan a Beállítások → „Adatbázisfájl kiválasztása…” alatt tallózható.
-   Belső tárolóra tedd, ne SD-kártyára: az SQLite sok apró olvasást végez,
-   és ez a belső tárolón lényegesen gyorsabb.
-3. Másold fel a könyvfájlokat egy tetszőleges mappába (ezek mehetnek
-   SD-kártyára is).
-4. Első indításkor add meg a **„Minden fájl kezelése”** engedélyt (a gomb a
+2. Másold fel a könyvfájlokat egy tetszőleges mappába (mehetnek SD-kártyára is).
+3. Első indításkor add meg a **„Minden fájl kezelése”** engedélyt (a gomb a
    rendszerbeállításokba visz), Android 13+ esetén az értesítési engedélyt is.
-5. Navigálj a könyves mappádba, és nyomd meg a **radar ikont** — ez rekurzívan
-   végigszkennel mindent és párosít. Utána a **„Katalógus”** nézetben az
-   összes talált fájl egyben, kereshetően látszik.
+4. Az app megkérdezi, **hol vannak a könyveid** — válaszd ki a mappát.
+5. Utána felajánlja, hogy **beolvassa őket**. Egy gomb, és elkészül a
+   katalógus; a végén megnyílik a polc a könyveiddel.
+
+Új könyvek bemásolása után elég újra elindítani a beolvasást
+(Beállítások → Katalógus): a meglévő bejegyzésekhez nem nyúl, csak az újakat
+veszi fel.
 
 **Kell egy szövegfelolvasó motor is** (magyar hanggal), ez nem az app része,
 hanem a rendszeré — a telepítése, a hangok letöltése és a Bluetooth-os

@@ -29,8 +29,6 @@
     <string name="explorer_deep_hits">Hledání i v podsložkách — %1$d výsledků</string>
     <string name="explorer_storage_switch">Změnit úložiště</string>
     <string name="explorer_no_other_storage">Žádné další úložiště (SD karta) není připojeno</string>
-    <string name="explorer_books_count">%1$d knih</string>
-    <string name="explorer_no_db">bez databáze</string>
     <string name="explorer_scanning">Prohledávání: %1$d souborů, %2$d spárováno</string>
     <string name="explorer_empty">V této složce nejsou žádné soubory knih.</string>
     <string name="explorer_preparing"> • příprava…</string>
@@ -133,7 +131,6 @@
     <string name="status_finished">Přečteno</string>
     <string name="status_in_progress">Probíhá</string>
 
-    <string name="picker_db_title">Vybrat databázi</string>
     <string name="picker_root_title">Vybrat kořenovou složku</string>
     <string name="picker_choose_this">Vybrat tuto složku</string>
     <string name="picker_no_subfolder">Žádné podsložky.</string>
@@ -142,38 +139,19 @@
     <string name="storage_sd">SD karta</string>
 
     <string name="settings_title">Nastavení</string>
-    <string name="set_db_title">Databáze katalogu</string>
-    <string name="set_db_none">Nevybráno (zkopírujte do telefonu soubor .db s katalogem)</string>
-    <string name="set_db_opened">Otevřeno — %1$d knih</string>
-    <string name="set_db_closed">Neotevřeno</string>
-    <string name="set_db_pick">Vybrat soubor databáze…</string>
-    <string name="set_db_opened_toast">Databáze otevřena: %1$d knih</string>
-    <string name="set_db_failed_toast">Databázi se nepodařilo otevřít. Je to opravdu soubor katalogu?</string>
     <string name="set_root_title">Kořenová složka knih</string>
     <string name="set_root_pick">Vybrat kořenovou složku…</string>
 
-    <string name="set_build_title">Vytvořit katalog z vašich knih</string>
-    <string name="set_build_desc">Bez hotového katalogu si aplikace vytvoří vlastní z metadat samotných knih (titul, autor, anotace) — bez internetu. Při dalším spuštění nechá stávající záznamy beze změny a přidá jen nové knihy.</string>
-    <string name="set_build_source">Zdroj: %1$s</string>
-    <string name="set_build_target">Cíl: %1$s</string>
-    <string name="set_build_stats">Nyní: %1$d knih, %2$d souborů (z toho %3$d se skutečnými metadaty)</string>
     <string name="set_build_pdf">  I metadata PDF (pomalejší)</string>
-    <string name="set_build_progress">%1$d souborů • %2$d nových záznamů • %3$d přeskočeno</string>
-    <string name="set_build_start">Vytvořit katalog</string>
-    <string name="set_build_update">Aktualizovat o nové knihy</string>
     <string name="build_done_title">Katalog hotov</string>
     <string name="build_cancelled_title">Přerušeno</string>
     <string name="build_result">Zkontrolováno souborů: %1$d\nNově zapsáno souborů: %2$d\nNových knih v katalogu: %3$d\nDřívějších záznamů beze změny: %4$d</string>
-    <string name="build_use_it">Použít nyní</string>
     <string name="build_error_open">Databázi se nepodařilo otevřít: %1$s</string>
     <string name="build_error_generic">Neznámá chyba při vytváření katalogu</string>
 
     <string name="set_cache_title">Mezipaměti</string>
-    <string name="set_cache_scanned">Prohledané soubory: %1$d (%2$d spárováno)</string>
     <string name="set_cache_text">Získaný text: %1$s</string>
-    <string name="set_cache_clear_scan">Vymazat mezipaměť prohledávání</string>
     <string name="set_cache_clear_text">Vymazat mezipaměť textu</string>
-    <string name="set_cache_scan_cleared">Mezipaměť prohledávání vymazána.</string>
     <string name="set_cache_text_cleared">Mezipaměť textu vymazána.</string>
 
     <string name="set_look_title">Vzhled</string>
@@ -260,4 +238,23 @@
     <string name="duration_m">%1$d min</string>
     <string name="scan_loading_catalogue">Načítání katalogu…</string>
     <string name="scan_unknown_error">Neznámá chyba při prohledávání</string>
+    <string name="shelf_title">Police</string>
+    <string name="shelf_empty">V katalogu zatím nejsou žádné knihy.</string>
+    <string name="shelf_files">Soubory</string>
+    <string name="shelf_position">%1$d / %2$d</string>
+    <string name="counter_finished">Přečteno: %1$d</string>
+    <string name="counter_inprogress">Probíhá: %1$d</string>
+    <string name="setup_root_title">Kde máte knihy?</string>
+    <string name="setup_root_text">Vyberte složku se soubory knih. Podsložky se zahrnou také.</string>
+    <string name="setup_root_button">Vybrat složku</string>
+    <string name="setup_scan_title">Mám vaše knihy načíst?</string>
+    <string name="setup_scan_text">Aplikace projde složku a sesbírá název, autora a popis každé knihy. Později už bude přidávat jen nové.</string>
+    <string name="setup_scan_button">Načíst knihovnu</string>
+    <string name="setup_later">Později</string>
+    <string name="catalog_stats">%1$d knih, %2$d souborů</string>
+    <string name="remove_missing">Odebrat z katalogu chybějící soubory</string>
+    <string name="remove_missing_done">Odebráno záznamů: %1$d.</string>
+    <string name="catalog_title">Katalog</string>
+    <string name="catalog_file_hint">Katalog zůstává viditelným souborem, takže přežije i přeinstalaci aplikace: %1$s</string>
+    <string name="set_build_progress">%1$d souborů • %2$d nových záznamů • %3$d přeskočeno</string>
 </resources>

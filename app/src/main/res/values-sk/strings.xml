@@ -29,8 +29,6 @@
     <string name="explorer_deep_hits">Hľadanie aj v podpriečinkoch — %1$d výsledkov</string>
     <string name="explorer_storage_switch">Zmeniť úložisko</string>
     <string name="explorer_no_other_storage">Žiadne ďalšie úložisko (SD karta) nie je pripojené</string>
-    <string name="explorer_books_count">%1$d kníh</string>
-    <string name="explorer_no_db">bez databázy</string>
     <string name="explorer_scanning">Prehľadávanie: %1$d súborov, %2$d spárovaných</string>
     <string name="explorer_empty">V tomto priečinku nie sú žiadne súbory kníh.</string>
     <string name="explorer_preparing"> • príprava…</string>
@@ -133,7 +131,6 @@
     <string name="status_finished">Prečítané</string>
     <string name="status_in_progress">Prebieha</string>
 
-    <string name="picker_db_title">Vybrať databázu</string>
     <string name="picker_root_title">Vybrať koreňový priečinok</string>
     <string name="picker_choose_this">Vybrať tento priečinok</string>
     <string name="picker_no_subfolder">Žiadne podpriečinky.</string>
@@ -142,38 +139,19 @@
     <string name="storage_sd">SD karta</string>
 
     <string name="settings_title">Nastavenia</string>
-    <string name="set_db_title">Databáza katalógu</string>
-    <string name="set_db_none">Nevybraté (skopírujte do telefónu súbor .db s katalógom)</string>
-    <string name="set_db_opened">Otvorené — %1$d kníh</string>
-    <string name="set_db_closed">Neotvorené</string>
-    <string name="set_db_pick">Vybrať súbor databázy…</string>
-    <string name="set_db_opened_toast">Databáza otvorená: %1$d kníh</string>
-    <string name="set_db_failed_toast">Databázu sa nepodarilo otvoriť. Je to naozaj súbor katalógu?</string>
     <string name="set_root_title">Koreňový priečinok kníh</string>
     <string name="set_root_pick">Vybrať koreňový priečinok…</string>
 
-    <string name="set_build_title">Vytvoriť katalóg z vašich kníh</string>
-    <string name="set_build_desc">Bez hotového katalógu si aplikácia vytvorí vlastný z metadát samotných kníh (titul, autor, anotácia) — bez internetu. Pri ďalšom spustení nechá existujúce záznamy nedotknuté a pridá len nové knihy.</string>
-    <string name="set_build_source">Zdroj: %1$s</string>
-    <string name="set_build_target">Cieľ: %1$s</string>
-    <string name="set_build_stats">Teraz: %1$d kníh, %2$d súborov (z toho %3$d so skutočnými metadátami)</string>
     <string name="set_build_pdf">  Aj metadáta PDF (pomalšie)</string>
-    <string name="set_build_progress">%1$d súborov • %2$d nových záznamov • %3$d preskočených</string>
-    <string name="set_build_start">Vytvoriť katalóg</string>
-    <string name="set_build_update">Aktualizovať o nové knihy</string>
     <string name="build_done_title">Katalóg hotový</string>
     <string name="build_cancelled_title">Prerušené</string>
     <string name="build_result">Skontrolovaných súborov: %1$d\nNovo zapísaných súborov: %2$d\nNových kníh v katalógu: %3$d\nSkorších záznamov nedotknutých: %4$d</string>
-    <string name="build_use_it">Použiť teraz</string>
     <string name="build_error_open">Databázu sa nepodarilo otvoriť: %1$s</string>
     <string name="build_error_generic">Neznáma chyba pri vytváraní katalógu</string>
 
     <string name="set_cache_title">Vyrovnávacie pamäte</string>
-    <string name="set_cache_scanned">Prehľadané súbory: %1$d (%2$d spárovaných)</string>
     <string name="set_cache_text">Získaný text: %1$s</string>
-    <string name="set_cache_clear_scan">Vymazať pamäť prehľadávania</string>
     <string name="set_cache_clear_text">Vymazať pamäť textu</string>
-    <string name="set_cache_scan_cleared">Pamäť prehľadávania vymazaná.</string>
     <string name="set_cache_text_cleared">Pamäť textu vymazaná.</string>
 
     <string name="set_look_title">Vzhľad</string>
@@ -260,4 +238,23 @@
     <string name="duration_m">%1$d min</string>
     <string name="scan_loading_catalogue">Načítavanie katalógu…</string>
     <string name="scan_unknown_error">Neznáma chyba pri prehľadávaní</string>
+    <string name="shelf_title">Polica</string>
+    <string name="shelf_empty">V katalógu zatiaľ nie sú žiadne knihy.</string>
+    <string name="shelf_files">Súbory</string>
+    <string name="shelf_position">%1$d / %2$d</string>
+    <string name="counter_finished">Prečítané: %1$d</string>
+    <string name="counter_inprogress">Prebieha: %1$d</string>
+    <string name="setup_root_title">Kde máte knihy?</string>
+    <string name="setup_root_text">Vyberte priečinok so súbormi kníh. Podpriečinky sa zahrnú tiež.</string>
+    <string name="setup_root_button">Vybrať priečinok</string>
+    <string name="setup_scan_title">Mám vaše knihy načítať?</string>
+    <string name="setup_scan_text">Aplikácia prejde priečinok a pozbiera názov, autora a popis každej knihy. Neskôr už bude pridávať len nové.</string>
+    <string name="setup_scan_button">Načítať knižnicu</string>
+    <string name="setup_later">Neskôr</string>
+    <string name="catalog_stats">%1$d kníh, %2$d súborov</string>
+    <string name="remove_missing">Odstrániť z katalógu chýbajúce súbory</string>
+    <string name="remove_missing_done">Odstránených záznamov: %1$d.</string>
+    <string name="catalog_title">Katalóg</string>
+    <string name="catalog_file_hint">Katalóg zostáva viditeľným súborom, takže prežije aj preinštalovanie aplikácie: %1$s</string>
+    <string name="set_build_progress">%1$d súborov • %2$d nových záznamov • %3$d preskočených</string>
 </resources>

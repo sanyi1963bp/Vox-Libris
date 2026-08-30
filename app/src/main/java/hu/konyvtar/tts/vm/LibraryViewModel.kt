@@ -6,12 +6,15 @@ import android.os.Environment
 import android.os.storage.StorageManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import hu.konyvtar.tts.R
 import hu.konyvtar.tts.data.AppDb
-import hu.konyvtar.tts.data.CatalogBuilder
-import hu.konyvtar.tts.data.CatalogHolder
-import hu.konyvtar.tts.data.FileScanner
+import hu.konyvtar.tts.data.BookFormats
+import hu.konyvtar.tts.data.Catalog
+import hu.konyvtar.tts.data.LibraryScanner
 import hu.konyvtar.tts.data.Prefs
+import hu.konyvtar.tts.model.FINISHED_PERCENT
 import hu.konyvtar.tts.model.FileRow
+import hu.konyvtar.tts.model.ShelfBook
 import hu.konyvtar.tts.model.SortKey
 import hu.konyvtar.tts.model.displayPercent
 import kotlinx.coroutines.Dispatchers
@@ -22,22 +25,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import hu.konyvtar.tts.R
 
 /**
- * A böngésző/katalógus képernyő állapota és műveletei.
- * A 70 ezres nagyságrendű listát SQL-ből töltjük, a rendezés/szűrés is ott fut.
+ * A könyvtár állapota: a polc, a fájlböngésző, a beolvasás és az olvasási
+ * számlálók. Egyetlen katalógussal dolgozik, amit az app maga épít a
+ * telefonon lévő könyvekből.
  */
 class LibraryViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Az almappás keresés legfeljebb ennyi találatot ad vissza. */
-    private val MAX_SEARCH_HITS = 3000
+    private val maxSearchHits = 3000
 
-    data class DbStatus(
-        val path: String? = null,
-        val opened: Boolean = false,
-        val bookCount: Int = 0
-    )
+    /** Mit kell még beállítani induláskor. */
+    enum class Setup { NONE, PICK_ROOT, OFFER_SCAN }
 
     /** Egy elérhető tárolókötet (belső tároló, SD-kártya, USB…). */
     data class StorageVol(val name: String, val path: String)
@@ -45,68 +45,81 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
     data class UiState(
         val currentDir: String = "",
         val entries: List<FileRow> = emptyList(),
-        /** Útvonal -> olvasottság százalék, a listában megjelenő csíkhoz. */
+        /** Útvonal -> olvasottság százalék. */
         val progress: Map<String, Double> = emptyMap(),
         val loading: Boolean = false,
-        val flatMode: Boolean = false,
-        /** A kereső az almappákra is kiterjed-e. */
-        val recursiveSearch: Boolean = false,
-        /** Épp almappás keresés eredményét mutatjuk. */
-        val searchingDeep: Boolean = false,
-        val onlyMatched: Boolean = false,
         val query: String = "",
         val sortKey: SortKey = SortKey.NAME,
         val sortAsc: Boolean = true,
-        val scan: FileScanner.ScanProgress = FileScanner.ScanProgress(),
-        val build: CatalogBuilder.Progress = CatalogBuilder.Progress(),
-        val db: DbStatus = DbStatus(),
+        val recursiveSearch: Boolean = false,
+        val searchingDeep: Boolean = false,
+        val scan: LibraryScanner.Progress = LibraryScanner.Progress(),
         val volumes: List<StorageVol> = emptyList(),
-        val cachedTotal: Int = 0,
-        val cachedMatched: Int = 0,
+        /** Hány mű és hány fájl van a katalógusban. */
+        val catalogBooks: Int = 0,
+        val catalogFiles: Int = 0,
+        /** Olvasási számlálók a nyitóképernyőre. */
+        val finishedCount: Int = 0,
+        val inProgressCount: Int = 0,
+        val shelf: List<ShelfBook> = emptyList(),
+        val shelfLoading: Boolean = false,
+        val setup: Setup = Setup.NONE,
         val message: String? = null
     )
 
     private val _ui = MutableStateFlow(UiState())
     val ui: StateFlow<UiState> = _ui
 
-    /** Az egyszeri (single-tap) megnyitáshoz kiválasztott fájl. */
-    var selectedFile: FileRow? = null
-
     /** A képernyős olvasó célja (útvonal + megjelenítendő cím/szerző). */
     data class ReaderTarget(val path: String, val title: String, val author: String)
 
     var readerTarget: ReaderTarget? = null
 
-    private var scanJob: Job? = null
     private var listJob: Job? = null
+    private var scanJob: Job? = null
 
     init {
         val ctx = app
         _ui.value = _ui.value.copy(
             currentDir = Prefs.rootPath(ctx),
-            flatMode = Prefs.flatMode(ctx),
             sortKey = runCatching { SortKey.valueOf(Prefs.sortKey(ctx)) }.getOrDefault(SortKey.NAME),
             sortAsc = Prefs.sortAsc(ctx),
             recursiveSearch = Prefs.searchRecursive(ctx),
             volumes = listVolumes()
         )
-        viewModelScope.launch { openDbFromPrefsOrDetect() }
-        refresh()
+        viewModelScope.launch { bootstrap() }
+    }
+
+    /** Indulás: mi van már beállítva, és mi hiányzik még. */
+    private suspend fun bootstrap() {
+        val ctx = getApplication<Application>()
+        val counts = withContext(Dispatchers.IO) { Catalog.counts() }
+        val setup = when {
+            !Prefs.rootChosen(ctx) -> Setup.PICK_ROOT
+            counts.books == 0 -> Setup.OFFER_SCAN
+            else -> Setup.NONE
+        }
+        _ui.value = _ui.value.copy(
+            catalogBooks = counts.books,
+            catalogFiles = counts.files,
+            setup = setup
+        )
+        refreshCounters()
+        if (setup == Setup.NONE) loadShelf()
     }
 
     /** Az összes csatolt tárolókötet (belső + SD-kártya + USB). */
     private fun listVolumes(): List<StorageVol> {
         return try {
-            val sm = getApplication<Application>()
-                .getSystemService(Context.STORAGE_SERVICE) as StorageManager
+            val ctx = getApplication<Application>()
+            val sm = ctx.getSystemService(Context.STORAGE_SERVICE) as StorageManager
             sm.storageVolumes.mapNotNull { v ->
                 val dir = v.directory ?: return@mapNotNull null
                 if (v.state != Environment.MEDIA_MOUNTED &&
                     v.state != Environment.MEDIA_MOUNTED_READ_ONLY
                 ) return@mapNotNull null
-                val ctx0 = getApplication<Application>()
-                val label = if (v.isPrimary) ctx0.getString(R.string.storage_internal)
-                else (v.getDescription(ctx0) ?: ctx0.getString(R.string.storage_sd))
+                val label = if (v.isPrimary) ctx.getString(R.string.storage_internal)
+                else (v.getDescription(ctx) ?: ctx.getString(R.string.storage_sd))
                 StorageVol(label, dir.absolutePath)
             }
         } catch (e: Exception) {
@@ -114,72 +127,51 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // ---------------------------------------------------------------- adatbázis
+    // ---------------------------------------------------------------- számlálók, polc
 
-    private suspend fun openDbFromPrefsOrDetect() {
-        val ctx = getApplication<Application>()
-        withContext(Dispatchers.IO) {
-            var path = Prefs.dbPath(ctx)
-            if (path == null || !File(path).exists()) {
-                path = autoDetectDbPath()
-                if (path != null) Prefs.setDbPath(ctx, path)
-            }
-            val cat = if (path != null) CatalogHolder.reopen(ctx, path) else null
-            val status = DbStatus(
-                path = path,
-                opened = cat != null,
-                bookCount = cat?.bookCount() ?: 0
-            )
-            _ui.value = _ui.value.copy(
-                db = status,
-                cachedTotal = AppDb.scanCacheCount(),
-                cachedMatched = AppDb.scanCacheMatchedCount()
-            )
-        }
-    }
-
-    private fun autoDetectDbPath(): String? {
-        val roots = LinkedHashSet<String>()
-        roots.add(Environment.getExternalStorageDirectory().absolutePath)
-        listVolumes().forEach { roots.add(it.path) }
-        val candidates = ArrayList<File>()
-        for (r in roots) {
-            candidates.add(File(r, "ncore_konyvtar.db"))
-            candidates.add(File(r, "Download/ncore_konyvtar.db"))
-            candidates.add(File(r, "Documents/ncore_konyvtar.db"))
-            candidates.add(File(r, "Books/ncore_konyvtar.db"))
-        }
-        return candidates.firstOrNull { it.exists() && it.length() > 0 }?.absolutePath
-    }
-
-    fun openDb(path: String) {
-        val ctx = getApplication<Application>()
+    fun refreshCounters() {
         viewModelScope.launch(Dispatchers.IO) {
-            val cat = CatalogHolder.reopen(ctx, path)
+            val rows = AppDb.allProgress()
+            val fin = rows.count { it.displayPercent() >= FINISHED_PERCENT }
             _ui.value = _ui.value.copy(
-                db = DbStatus(path = path, opened = cat != null, bookCount = cat?.bookCount() ?: 0),
-                message = if (cat != null) {
-                    ctx.getString(R.string.set_db_opened_toast, cat.bookCount())
-                } else {
-                    ctx.getString(R.string.set_db_failed_toast)
-                }
+                finishedCount = fin,
+                inProgressCount = rows.size - fin
             )
-            refresh()
         }
+    }
+
+    fun loadShelf() {
+        viewModelScope.launch {
+            _ui.value = _ui.value.copy(shelfLoading = true)
+            val state = _ui.value
+            val books = withContext(Dispatchers.IO) {
+                Catalog.shelfBooks(state.query, state.sortKey, state.sortAsc)
+            }
+            val prog = withContext(Dispatchers.IO) { progressMap() }
+            _ui.value = _ui.value.copy(shelf = books, progress = prog, shelfLoading = false)
+        }
+    }
+
+    private fun progressMap(): Map<String, Double> {
+        val out = HashMap<String, Double>()
+        for (p in AppDb.allProgress()) out[p.path] = p.displayPercent()
+        return out
+    }
+
+    fun clearMessage() {
+        _ui.value = _ui.value.copy(message = null)
     }
 
     // ---------------------------------------------------------------- navigáció, lista
 
     fun navigateTo(dir: String) {
-        _ui.value = _ui.value.copy(currentDir = dir, flatMode = false)
-        Prefs.setFlatMode(getApplication(), false)
+        _ui.value = _ui.value.copy(currentDir = dir)
         refresh()
     }
 
     fun up() {
         val cur = File(_ui.value.currentDir)
         val parent = cur.parentFile ?: return
-        // A /storage fölé nem megyünk
         if (!parent.absolutePath.startsWith("/storage")) return
         navigateTo(parent.absolutePath)
     }
@@ -198,129 +190,44 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         refresh()
     }
 
-    fun setFlatMode(flat: Boolean) {
-        Prefs.setFlatMode(getApplication(), flat)
-        _ui.value = _ui.value.copy(flatMode = flat)
-        refresh()
-    }
-
     fun setRecursiveSearch(v: Boolean) {
         Prefs.setSearchRecursive(getApplication(), v)
         _ui.value = _ui.value.copy(recursiveSearch = v)
         refresh()
     }
 
-    fun setOnlyMatched(v: Boolean) {
-        _ui.value = _ui.value.copy(onlyMatched = v)
+    fun setRoot(path: String) {
+        Prefs.setRootPath(getApplication(), path)
+        _ui.value = _ui.value.copy(
+            currentDir = path,
+            setup = if (_ui.value.catalogBooks == 0) Setup.OFFER_SCAN else Setup.NONE
+        )
         refresh()
     }
 
-    fun setRoot(path: String) {
-        Prefs.setRootPath(getApplication(), path)
-        navigateTo(path)
-    }
-
-    fun clearMessage() {
-        _ui.value = _ui.value.copy(message = null)
+    fun dismissSetup() {
+        _ui.value = _ui.value.copy(setup = Setup.NONE)
     }
 
     fun refresh() {
-        val ctx = getApplication<Application>()
         val state = _ui.value
         listJob?.cancel()
         listJob = viewModelScope.launch {
-            _ui.value = _ui.value.copy(loading = true, volumes = listVolumes())
+            _ui.value = _ui.value.copy(loading = true)
             val deep = state.recursiveSearch && state.query.trim().length >= 2
             _ui.value = _ui.value.copy(searchingDeep = deep)
             if (deep) delay(350) // gépelés közben ne induljon minden betűre
             val rows = withContext(Dispatchers.IO) {
-                if (deep) {
-                    searchRecursive(ctx, state.currentDir, state.query, state.sortKey, state.sortAsc)
-                } else {
-                    listDirectory(ctx, state.currentDir, state.query, state.sortKey, state.sortAsc)
-                }
+                if (deep) searchRecursive(state.currentDir, state.query, state.sortKey, state.sortAsc)
+                else listDirectory(state.currentDir, state.query, state.sortKey, state.sortAsc)
             }
-            val prog = withContext(Dispatchers.IO) {
-                val out = HashMap<String, Double>()
-                for (p in AppDb.allProgress()) out[p.path] = p.displayPercent()
-                out
-            }
+            val prog = withContext(Dispatchers.IO) { progressMap() }
             _ui.value = _ui.value.copy(entries = rows, progress = prog, loading = false)
         }
     }
 
-    /**
-     * Keresés az aktuális mappában ÉS minden almappájában.
-     *
-     * Két forrást fésül össze: a fájlrendszert (fájlnév szerint, hogy a még
-     * nem szkennelt fájlok is meglegyenek) és a szkennelési gyorsítótárat
-     * (így cím és szerző szerint is talál).
-     */
-    private fun searchRecursive(
-        ctx: Application,
-        rootPath: String,
-        query: String,
-        sortKey: SortKey,
-        asc: Boolean
-    ): List<FileRow> {
-        val q = query.trim().lowercase()
-        val prefix = rootPath.replace('\\', '/').trimEnd('/') + "/"
-        val found = LinkedHashMap<String, FileRow>()
-
-        // 1) A gyorsítótárból: név, cím és szerző szerint is illeszkedhet
-        try {
-            for (r in AppDb.allScanned(query, sortKey, asc, false)) {
-                if (r.path.startsWith(prefix, ignoreCase = true)) found[r.path] = r
-                if (found.size >= MAX_SEARCH_HITS) break
-            }
-        } catch (_: Exception) {
-        }
-
-        // 2) A fájlrendszerből: fájlnév szerint, a még nem szkennelt fájlokért
-        val stack = ArrayDeque<File>()
-        stack.addLast(File(rootPath))
-        while (stack.isNotEmpty() && found.size < MAX_SEARCH_HITS) {
-            val dir = stack.removeLast()
-            val children = try {
-                dir.listFiles()
-            } catch (e: Exception) {
-                null
-            } ?: continue
-            for (f in children) {
-                if (found.size >= MAX_SEARCH_HITS) break
-                val name = f.name
-                if (name.startsWith(".")) continue
-                if (f.isDirectory) {
-                    if (dir.name == "Android" && (name == "data" || name == "obb")) continue
-                    stack.addLast(f)
-                } else {
-                    val ext = name.substringAfterLast('.', "").lowercase()
-                    if (ext !in FileScanner.EBOOK_EXTS) continue
-                    if (!name.lowercase().contains(q)) continue
-                    val path = f.absolutePath.replace('\\', '/')
-                    if (found.containsKey(path)) continue
-                    found[path] = FileRow(
-                        path = path, name = name, ext = ext, isDir = false,
-                        size = f.length(), mtime = f.lastModified()
-                    )
-                }
-            }
-        }
-
-        val list = FileScanner.quickEnrichDir(ctx, found.values.toList())
-        val cmp: Comparator<FileRow> = when (sortKey) {
-            SortKey.NAME -> compareBy { it.name.lowercase() }
-            SortKey.SIZE -> compareBy { it.size }
-            SortKey.DATE -> compareBy { it.mtime }
-            SortKey.TITLE -> compareBy(nullsLast()) { it.cim?.lowercase() }
-            SortKey.AUTHOR -> compareBy(nullsLast()) { it.szerzo?.lowercase() }
-        }
-        val sorted = list.sortedWith(cmp)
-        return if (asc) sorted else sorted.reversed()
-    }
-
+    /** Egy mappa tartalma, a katalógusból kiegészített cím/szerző adatokkal. */
     private fun listDirectory(
-        ctx: Application,
         dirPath: String,
         query: String,
         sortKey: SortKey,
@@ -333,7 +240,6 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             null
         } ?: return emptyList()
 
-        val cached = AppDb.cachedForDir(dirPath.replace('\\', '/'))
         val dirs = ArrayList<FileRow>()
         val files = ArrayList<FileRow>()
         for (f in children) {
@@ -343,50 +249,47 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
                 dirs.add(
                     FileRow(
                         path = f.absolutePath.replace('\\', '/'),
-                        name = name,
-                        ext = "",
-                        isDir = true,
-                        size = 0,
-                        mtime = f.lastModified()
+                        name = name, ext = "", isDir = true,
+                        size = 0, mtime = f.lastModified()
                     )
                 )
             } else {
                 val ext = name.substringAfterLast('.', "").lowercase()
-                if (ext !in FileScanner.EBOOK_EXTS) continue
-                val path = f.absolutePath.replace('\\', '/')
-                val c = cached[path]
+                if (ext !in BookFormats.ALL) continue
                 files.add(
-                    if (c != null && c.size == f.length() && c.mtime == f.lastModified()) {
-                        c
-                    } else {
-                        FileRow(
-                            path = path,
-                            name = name,
-                            ext = ext,
-                            isDir = false,
-                            size = f.length(),
-                            mtime = f.lastModified()
-                        )
-                    }
+                    FileRow(
+                        path = f.absolutePath.replace('\\', '/'),
+                        name = name, ext = ext, isDir = false,
+                        size = f.length(), mtime = f.lastModified()
+                    )
                 )
             }
         }
 
-        // Gyors párosítás a még ismeretlen fájlokra (csak fájlnév-index, olcsó)
-        val enrichedFiles = if (files.any { it.konyvId == null }) {
-            FileScanner.quickEnrichDir(ctx, files)
-        } else {
-            files
-        }
-
+        val enriched = enrich(files)
         val q = query.trim().lowercase()
-        val filteredDirs = if (q.isEmpty()) dirs else dirs.filter { it.name.lowercase().contains(q) }
-        val filteredFiles = if (q.isEmpty()) enrichedFiles else enrichedFiles.filter {
-            it.name.lowercase().contains(q) ||
-                (it.cim?.lowercase()?.contains(q) ?: false) ||
-                (it.szerzo?.lowercase()?.contains(q) ?: false)
-        }
+        val fd = if (q.isEmpty()) dirs else dirs.filter { it.name.lowercase().contains(q) }
+        val ff = if (q.isEmpty()) enriched else enriched.filter { matches(it, q) }
+        return fd.sortedBy { it.name.lowercase() } + sortRows(ff, sortKey, asc)
+    }
 
+    private fun matches(r: FileRow, q: String): Boolean =
+        r.name.lowercase().contains(q) ||
+            (r.cim?.lowercase()?.contains(q) ?: false) ||
+            (r.szerzo?.lowercase()?.contains(q) ?: false)
+
+    /** Cím és szerző hozzáadása a katalógusból. */
+    private fun enrich(files: List<FileRow>): List<FileRow> {
+        if (files.isEmpty()) return files
+        val meta = Catalog.metaForPaths(files.map { it.path })
+        if (meta.isEmpty()) return files
+        return files.map { r ->
+            val m = meta[r.path] ?: return@map r
+            r.copy(konyvId = m.konyvId, cim = m.cim, szerzo = m.szerzo)
+        }
+    }
+
+    private fun sortRows(rows: List<FileRow>, sortKey: SortKey, asc: Boolean): List<FileRow> {
         val cmp: Comparator<FileRow> = when (sortKey) {
             SortKey.NAME -> compareBy { it.name.lowercase() }
             SortKey.SIZE -> compareBy { it.size }
@@ -394,58 +297,96 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             SortKey.TITLE -> compareBy(nullsLast()) { it.cim?.lowercase() }
             SortKey.AUTHOR -> compareBy(nullsLast()) { it.szerzo?.lowercase() }
         }
-        val sortedDirs = filteredDirs.sortedBy { it.name.lowercase() }
-        var sortedFiles = filteredFiles.sortedWith(cmp)
-        if (!asc) sortedFiles = sortedFiles.reversed()
-        return sortedDirs + sortedFiles
+        val sorted = rows.sortedWith(cmp)
+        return if (asc) sorted else sorted.reversed()
     }
 
-    // ---------------------------------------------------------------- szkennelés
+    /**
+     * Keresés az aktuális mappában ÉS minden almappájában: bejárja a
+     * fájlrendszert, majd a találatokat kiegészíti a katalógusból, így cím és
+     * szerző szerint is illeszkedhetnek.
+     */
+    private fun searchRecursive(
+        rootPath: String,
+        query: String,
+        sortKey: SortKey,
+        asc: Boolean
+    ): List<FileRow> {
+        val q = query.trim().lowercase()
+        val found = LinkedHashMap<String, FileRow>()
+        val stack = ArrayDeque<File>()
+        stack.addLast(File(rootPath))
+        while (stack.isNotEmpty() && found.size < maxSearchHits) {
+            val dir = stack.removeLast()
+            val children = try {
+                dir.listFiles()
+            } catch (e: Exception) {
+                null
+            } ?: continue
+            for (f in children) {
+                if (found.size >= maxSearchHits) break
+                val name = f.name
+                if (name.startsWith(".")) continue
+                if (f.isDirectory) {
+                    if (dir.name == "Android" && (name == "data" || name == "obb")) continue
+                    stack.addLast(f)
+                } else {
+                    val ext = name.substringAfterLast('.', "").lowercase()
+                    if (ext !in BookFormats.ALL) continue
+                    val path = f.absolutePath.replace('\\', '/')
+                    if (found.containsKey(path)) continue
+                    found[path] = FileRow(
+                        path = path, name = name, ext = ext, isDir = false,
+                        size = f.length(), mtime = f.lastModified()
+                    )
+                }
+            }
+        }
+        val enriched = enrich(found.values.toList())
+        return sortRows(enriched.filter { matches(it, q) }, sortKey, asc)
+    }
 
-    fun startScan() {
+    // ---------------------------------------------------------------- beolvasás
+
+    /** A könyvtár beolvasása: metaadat-kinyerés és katalógusba írás. */
+    fun startScan(includePdf: Boolean = true) {
         if (_ui.value.scan.running) return
         val ctx = getApplication<Application>()
         val root = File(_ui.value.currentDir)
+        _ui.value = _ui.value.copy(
+            scan = LibraryScanner.Progress(running = true),
+            setup = Setup.NONE
+        )
         scanJob = viewModelScope.launch(Dispatchers.IO) {
-            FileScanner.scanRecursive(ctx, root) { p ->
+            LibraryScanner.scan(ctx, root, includePdf) { p ->
                 _ui.value = _ui.value.copy(scan = p)
             }
-            _ui.value = _ui.value.copy(
-                cachedTotal = AppDb.scanCacheCount(),
-                cachedMatched = AppDb.scanCacheMatchedCount()
-            )
-            withContext(Dispatchers.Main) { refresh() }
+            val counts = Catalog.counts()
+            _ui.value = _ui.value.copy(catalogBooks = counts.books, catalogFiles = counts.files)
+            withContext(Dispatchers.Main) {
+                loadShelf()
+                refresh()
+            }
         }
     }
 
     fun cancelScan() {
-        FileScanner.cancelFlag.set(true)
+        LibraryScanner.cancelFlag.set(true)
     }
 
-    // ---------------------------------------------------------------- katalógus építése
+    fun clearScanResult() {
+        _ui.value = _ui.value.copy(scan = LibraryScanner.Progress())
+    }
 
-    /**
-     * Katalógus építése/frissítése a könyvfájlok saját metaadataiból.
-     * A már bejegyzett fájlokat érintetlenül hagyja.
-     */
-    fun buildCatalog(includePdf: Boolean) {
-        if (_ui.value.build.running) return
-        val ctx = getApplication<Application>()
-        val root = File(_ui.value.currentDir)
-        val target = CatalogBuilder.defaultDbFile()
-        _ui.value = _ui.value.copy(build = CatalogBuilder.Progress(running = true))
-        viewModelScope.launch(Dispatchers.IO) {
-            CatalogBuilder.build(ctx, root, target, includePdf) { p ->
-                _ui.value = _ui.value.copy(build = p)
-            }
+    /** Hiányzó fájlok eltávolítása a katalógusból — csak kézzel indítva. */
+    fun removeMissing(onDone: (Int) -> Unit) {
+        viewModelScope.launch {
+            val removed = withContext(Dispatchers.IO) { Catalog.removeMissing() }
+            val counts = withContext(Dispatchers.IO) { Catalog.counts() }
+            _ui.value = _ui.value.copy(catalogBooks = counts.books, catalogFiles = counts.files)
+            loadShelf()
+            refresh()
+            onDone(removed)
         }
-    }
-
-    fun cancelBuild() {
-        CatalogBuilder.cancelFlag.set(true)
-    }
-
-    fun clearBuildResult() {
-        _ui.value = _ui.value.copy(build = CatalogBuilder.Progress())
     }
 }

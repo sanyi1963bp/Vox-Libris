@@ -63,7 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import hu.konyvtar.tts.data.CatalogHolder
+import hu.konyvtar.tts.data.Catalog
 import hu.konyvtar.tts.data.MetadataExtractor
 import hu.konyvtar.tts.data.Normalizer
 import hu.konyvtar.tts.model.CatalogBook
@@ -110,7 +110,7 @@ fun ExplorerScreen(
         withContext(Dispatchers.IO) {
             val id = r.konyvId
             if (id != null) {
-                infoBook = CatalogHolder.get(context)?.bookById(id)
+                infoBook = Catalog.bookById(id)
             }
             if (infoBook == null) {
                 val m = MetadataExtractor.extract(context, File(r.path), true)
@@ -177,11 +177,11 @@ fun ExplorerScreen(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = if (ui.db.opened) stringResource(R.string.explorer_books_count, ui.db.bookCount)
-                        else stringResource(R.string.explorer_no_db),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (ui.db.opened) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.error
+                        text = stringResource(
+                            R.string.catalog_stats, ui.catalogBooks, ui.catalogFiles
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
                     )
                     IconButton(onClick = { vm.startScan() }) {
                         Icon(
@@ -330,7 +330,8 @@ fun ExplorerScreen(
                         ) {
                             Text(
                                 text = stringResource(
-                                    R.string.explorer_scanning, ui.scan.filesFound, ui.scan.matched
+                                    R.string.set_build_progress,
+                                    ui.scan.scanned, ui.scan.added, ui.scan.skipped
                                 ),
                                 style = MaterialTheme.typography.labelMedium,
                                 modifier = Modifier.weight(1f)

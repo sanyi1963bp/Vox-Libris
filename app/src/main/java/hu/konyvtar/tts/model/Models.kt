@@ -34,6 +34,22 @@ data class CatalogBook(
     val feltoltveDatum: String?
 )
 
+/** Egy fájlhoz tartozó rövid katalógus-adat (lista-megjelenítéshez). */
+data class FileMeta(
+    val konyvId: Long?,
+    val cim: String?,
+    val szerzo: String?
+)
+
+/** Egy könyv a polcon: egy mű és egy hozzá tartozó fájl. */
+data class ShelfBook(
+    val id: Long,
+    val title: String,
+    val author: String,
+    val format: String,
+    val path: String
+)
+
 /** Rövidített könyvadat a párosításhoz (memóriatakarékos). */
 data class BookBrief(
     val id: Long,

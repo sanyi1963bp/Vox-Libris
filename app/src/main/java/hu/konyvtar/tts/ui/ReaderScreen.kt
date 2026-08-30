@@ -92,11 +92,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.konyvtar.tts.data.AppDb
-import hu.konyvtar.tts.data.CatalogHolder
+import hu.konyvtar.tts.data.Catalog
 import hu.konyvtar.tts.data.Normalizer
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.model.Bookmark
 import hu.konyvtar.tts.model.CatalogBook
+import hu.konyvtar.tts.model.displayPercent
 import hu.konyvtar.tts.reader.Sentences
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
@@ -157,6 +158,7 @@ fun ReaderScreen(
     var bookmarksOpen by remember { mutableStateOf(false) }
 
     var infoOpen by remember { mutableStateOf(false) }
+    var readProgress by remember(path) { mutableStateOf<Double?>(null) }
     var bookInfo by remember(path) { mutableStateOf<CatalogBook?>(null) }
 
     var sliderDrag by remember { mutableStateOf<Float?>(null) }
@@ -880,10 +882,12 @@ fun ReaderScreen(
     if (infoOpen) {
         LaunchedEffect(Unit) {
             if (bookInfo == null) {
-                bookInfo = withContext(Dispatchers.IO) {
-                    val row = AppDb.cachedForPath(path)
-                    row?.konyvId?.let { CatalogHolder.get(context)?.bookById(it) }
-                }
+                bookInfo = withContext(Dispatchers.IO) { Catalog.bookForPath(path) }
+            }
+        }
+        LaunchedEffect(infoOpen) {
+            readProgress = withContext(Dispatchers.IO) {
+                AppDb.progressFor(path)?.displayPercent()
             }
         }
         val f = File(path)
@@ -899,6 +903,27 @@ fun ReaderScreen(
                         .verticalScroll(rememberScrollState())
                 ) {
                     val b = bookInfo
+                    // Hol tartasz ebben a könyvben
+                    val prog = readProgress
+                    if (prog != null && prog > 0.05) {
+                        val done = prog >= hu.konyvtar.tts.model.FINISHED_PERCENT
+                        Text(
+                            text = if (done) stringResource(R.string.info_finished)
+                            else stringResource(
+                                R.string.info_progress,
+                                String.format(Locale.getDefault(), "%.1f", prog)
+                            ),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        androidx.compose.material3.LinearProgressIndicator(
+                            progress = { (prog / 100.0).toFloat().coerceIn(0f, 1f) },
+                            color = progressBarColor(done),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(5.dp)
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
                     InfoLine(stringResource(R.string.info_title), b?.cim ?: title)
                     InfoLine(stringResource(R.string.info_author), b?.szerzo ?: author)
                     InfoLine(stringResource(R.string.info_publisher), b?.kiado)
