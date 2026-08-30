@@ -257,4 +257,25 @@
     <string name="catalog_title">Каталог</string>
     <string name="catalog_file_hint">Каталог хранится как видимый файл, поэтому переживает переустановку приложения: %1$s</string>
     <string name="set_build_progress">%1$d файлов • %2$d новых записей • %3$d пропущено</string>
+
+    <!-- Konyvtar lista -->
+    <string name="lib_title">Библиотека</string>
+    <string name="lib_search_hint">Название, автор или имя файла</string>
+    <string name="lib_all">Все</string>
+    <string name="lib_format">Формат</string>
+    <string name="lib_count">%1$d из %2$d книг</string>
+    <string name="lib_no_match">По этому фильтру ничего нет.</string>
+    <string name="lib_sort">Сортировка</string>
+    <string name="lib_sort_title">По названию</string>
+    <string name="lib_sort_author">По автору</string>
+    <string name="lib_sort_format">По формату</string>
+    <string name="lib_hint_gestures">Двойное касание: открыть и читать вслух · Долгое нажатие: карточка</string>
+    <string name="lib_shelf">Полка</string>
+    <string name="lib_formats">Форматы</string>
+    <string name="info_format">Формат</string>
+    <string name="fmt_note_good">Размеченный текст с главами — озвучка точно следует за книгой.</string>
+    <string name="fmt_note_plain">Обычный текст — главы можно определить только по самому тексту.</string>
+    <string name="fmt_note_pdf">Разбит на страницы: переносы строк и номера страниц иногда мешают озвучке.</string>
+    <string name="fmt_note_none">Из этого формата текст извлечь нельзя.</string>
+    <string name="info_folder">Папка</string>
 </resources>

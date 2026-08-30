@@ -6,7 +6,6 @@ import android.os.Environment
 import hu.konyvtar.tts.model.CatalogBook
 import hu.konyvtar.tts.model.FileMeta
 import hu.konyvtar.tts.model.ShelfBook
-import hu.konyvtar.tts.model.SortKey
 import java.io.File
 
 /**
@@ -213,24 +212,15 @@ object Catalog {
         return out
     }
 
-    /** A polc tartalma: minden könyv, egy-egy hozzá tartozó fájllal. */
-    fun shelfBooks(query: String, sort: SortKey, asc: Boolean): List<ShelfBook> {
+    /**
+     * A teljes könyvtár: minden mű, egy-egy hozzá tartozó fájllal, cím
+     * szerint rendezve. Szűrés nélkül adja vissza az egészet — a lista
+     * képernyő a memóriában szűr tovább, így a gépelés több ezer könyvnél is
+     * azonnali marad, és nem terheljük az adatbázist minden leütésnél.
+     */
+    fun allBooks(): List<ShelfBook> {
         val d = open() ?: return emptyList()
-        val dir = if (asc) "ASC" else "DESC"
-        val order = when (sort) {
-            SortKey.AUTHOR -> "(k.szerzo IS NULL OR k.szerzo = ''), k.szerzo COLLATE NOCASE $dir, k.cim COLLATE NOCASE"
-            SortKey.SIZE -> "k.id $dir"
-            SortKey.DATE -> "k.id $dir"
-            else -> "(k.cim IS NULL OR k.cim = ''), k.cim COLLATE NOCASE $dir"
-        }
-        val args = ArrayList<String>()
-        var where = ""
-        if (query.isNotBlank()) {
-            where = "WHERE k.cim LIKE ? OR k.szerzo LIKE ?"
-            val q = "%${query.trim()}%"
-            args.add(q); args.add(q)
-        }
-        val out = ArrayList<ShelfBook>(512)
+        val out = ArrayList<ShelfBook>(1024)
         try {
             d.rawQuery(
                 """
@@ -238,21 +228,32 @@ object Catalog {
                        (SELECT ff.fajl_utvonal FROM fizikai_fajlok ff
                         WHERE ff.konyv_id = k.id ORDER BY ff.id LIMIT 1)
                 FROM konyvek k
-                $where
-                ORDER BY $order
+                ORDER BY (k.cim IS NULL OR k.cim = ''), k.cim COLLATE NOCASE
                 """.trimIndent(),
-                args.toTypedArray()
+                null
             ).use { c ->
                 while (c.moveToNext()) {
                     val path = c.getString(4) ?: continue
+                    val fileName = path.substringAfterLast('/')
+                    val title = c.getString(1)
+                        ?.let { Normalizer.stripInvisible(it).trim() }
+                        ?.takeIf { it.isNotEmpty() }
+                        ?: fileName.substringBeforeLast('.')
+                    val author = c.getString(2)
+                        ?.let { Normalizer.stripInvisible(it).trim() } ?: ""
                     out.add(
                         ShelfBook(
                             id = c.getLong(0),
-                            title = c.getString(1)?.let { Normalizer.stripInvisible(it) }
-                                ?: File(path).name.substringBeforeLast('.'),
-                            author = c.getString(2)?.let { Normalizer.stripInvisible(it) } ?: "",
+                            title = title,
+                            author = author,
                             format = c.getString(3) ?: "",
-                            path = path
+                            path = path,
+                            ext = fileName.substringAfterLast('.', "").lowercase(),
+                            keyTitle = Normalizer.foldAll(title),
+                            keyAuthor = Normalizer.foldAll(author),
+                            keyFile = Normalizer.foldAll(fileName),
+                            letterTitle = Normalizer.letterOf(title),
+                            letterAuthor = Normalizer.letterOf(author)
                         )
                     )
                 }

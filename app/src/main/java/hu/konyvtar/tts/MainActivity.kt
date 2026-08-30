@@ -46,6 +46,7 @@ import hu.konyvtar.tts.model.FileRow
 import hu.konyvtar.tts.tts.TtsService
 import hu.konyvtar.tts.ui.ExplorerScreen
 import hu.konyvtar.tts.ui.FilePickerScreen
+import hu.konyvtar.tts.ui.LibraryScreen
 import hu.konyvtar.tts.ui.ReaderScreen
 import hu.konyvtar.tts.ui.ShelfScreen
 import hu.konyvtar.tts.ui.SettingsScreen
@@ -145,16 +146,24 @@ fun AppRoot(startInPlayer: Boolean) {
 
     NavHost(
         navController = nav,
-        startDestination = "shelf"
+        startDestination = "library"
     ) {
-        composable("shelf") {
-            ShelfScreen(
+        composable("library") {
+            LibraryScreen(
                 vm = vm,
                 onOpenBook = { row -> openReaderFor(row) },
+                onOpenShelf = { nav.navigate("shelf") },
                 onOpenFiles = { nav.navigate("explorer") },
                 onOpenStats = { nav.navigate("stats") },
                 onOpenSettings = { nav.navigate("settings") },
                 onPickRoot = { nav.navigate("pick_root") }
+            )
+        }
+        composable("shelf") {
+            ShelfScreen(
+                vm = vm,
+                onOpenBook = { row -> openReaderFor(row) },
+                onBack = { nav.popBackStack() }
             )
         }
         composable("explorer") {

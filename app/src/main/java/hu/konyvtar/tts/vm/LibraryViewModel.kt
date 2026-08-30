@@ -11,6 +11,7 @@ import hu.konyvtar.tts.data.AppDb
 import hu.konyvtar.tts.data.BookFormats
 import hu.konyvtar.tts.data.Catalog
 import hu.konyvtar.tts.data.LibraryScanner
+import hu.konyvtar.tts.data.Normalizer
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.model.FINISHED_PERCENT
 import hu.konyvtar.tts.model.FileRow
@@ -42,6 +43,9 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
     /** Egy elérhető tárolókötet (belső tároló, SD-kártya, USB…). */
     data class StorageVol(val name: String, val path: String)
 
+    /** Egy fájlformátum és a hozzá tartozó könyvek száma. */
+    data class FormatCount(val ext: String, val count: Int)
+
     data class UiState(
         val currentDir: String = "",
         val entries: List<FileRow> = emptyList(),
@@ -61,8 +65,22 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         /** Olvasási számlálók a nyitóképernyőre. */
         val finishedCount: Int = 0,
         val inProgressCount: Int = 0,
-        val shelf: List<ShelfBook> = emptyList(),
-        val shelfLoading: Boolean = false,
+        /** A teljes könyvtár, ahogy a katalógusban van. */
+        val books: List<ShelfBook> = emptyList(),
+        /** Amit a szűrők után ténylegesen mutatunk. */
+        val libRows: List<ShelfBook> = emptyList(),
+        val libLoading: Boolean = false,
+        val libQuery: String = "",
+        /** Kiválasztott kezdőbetű a betűsávból; üres = mind. */
+        val libLetter: String = "",
+        /** Kiválasztott formátum; üres = mind. */
+        val libFormat: String = "",
+        val libSort: SortKey = SortKey.TITLE,
+        val libAsc: Boolean = true,
+        /** Csak azok a kezdőbetűk, amikhez tényleg van könyv. */
+        val libLetters: List<String> = emptyList(),
+        /** Formátum -> darabszám: ebből látszik, milyen fájlok vannak. */
+        val libFormats: List<FormatCount> = emptyList(),
         val setup: Setup = Setup.NONE,
         val message: String? = null
     )
@@ -76,6 +94,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
     var readerTarget: ReaderTarget? = null
 
     private var listJob: Job? = null
+    private var libJob: Job? = null
     private var scanJob: Job? = null
 
     init {
@@ -85,6 +104,9 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             sortKey = runCatching { SortKey.valueOf(Prefs.sortKey(ctx)) }.getOrDefault(SortKey.NAME),
             sortAsc = Prefs.sortAsc(ctx),
             recursiveSearch = Prefs.searchRecursive(ctx),
+            libSort = runCatching { SortKey.valueOf(Prefs.libSortKey(ctx)) }
+                .getOrDefault(SortKey.TITLE),
+            libAsc = Prefs.libSortAsc(ctx),
             volumes = listVolumes()
         )
         viewModelScope.launch { bootstrap() }
@@ -105,7 +127,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             setup = setup
         )
         refreshCounters()
-        if (setup == Setup.NONE) loadShelf()
+        if (setup == Setup.NONE) loadLibrary()
     }
 
     /** Az összes csatolt tárolókötet (belső + SD-kártya + USB). */
@@ -140,15 +162,120 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun loadShelf() {
+    /** A teljes katalógus beolvasása a memóriába — egyszer, induláskor. */
+    fun loadLibrary() {
         viewModelScope.launch {
-            _ui.value = _ui.value.copy(shelfLoading = true)
-            val state = _ui.value
-            val books = withContext(Dispatchers.IO) {
-                Catalog.shelfBooks(state.query, state.sortKey, state.sortAsc)
-            }
+            _ui.value = _ui.value.copy(libLoading = true)
+            val all = withContext(Dispatchers.IO) { Catalog.allBooks() }
             val prog = withContext(Dispatchers.IO) { progressMap() }
-            _ui.value = _ui.value.copy(shelf = books, progress = prog, shelfLoading = false)
+            val formats = withContext(Dispatchers.Default) {
+                all.groupingBy { it.ext }.eachCount()
+                    .map { FormatCount(it.key, it.value) }
+                    .sortedWith(compareByDescending<FormatCount> { it.count }.thenBy { it.ext })
+            }
+            _ui.value = _ui.value.copy(
+                books = all,
+                progress = prog,
+                libFormats = formats,
+                libLetters = lettersOf(all, _ui.value.libSort),
+                libLoading = false
+            )
+            recomputeLibrary(debounce = false)
+        }
+    }
+
+    fun setLibQuery(q: String) {
+        _ui.value = _ui.value.copy(libQuery = q)
+        recomputeLibrary(debounce = true)
+    }
+
+    /** Betűsáv: ugyanarra a betűre újra koppintva a szűrés megszűnik. */
+    fun setLibLetter(letter: String) {
+        val cur = _ui.value.libLetter
+        _ui.value = _ui.value.copy(libLetter = if (cur == letter) "" else letter)
+        recomputeLibrary(debounce = false)
+    }
+
+    fun setLibFormat(ext: String) {
+        val cur = _ui.value.libFormat
+        _ui.value = _ui.value.copy(libFormat = if (cur == ext) "" else ext)
+        recomputeLibrary(debounce = false)
+    }
+
+    fun setLibSort(key: SortKey) {
+        val cur = _ui.value
+        val asc = if (cur.libSort == key) !cur.libAsc else true
+        Prefs.setLibSortKey(getApplication(), key.name)
+        Prefs.setLibSortAsc(getApplication(), asc)
+        _ui.value = cur.copy(
+            libSort = key,
+            libAsc = asc,
+            libLetters = lettersOf(cur.books, key),
+            // a betűszűrés a másik mezőre már nem érvényes
+            libLetter = if (cur.libSort != key) "" else cur.libLetter
+        )
+        recomputeLibrary(debounce = false)
+    }
+
+    fun clearLibFilters() {
+        _ui.value = _ui.value.copy(libQuery = "", libLetter = "", libFormat = "")
+        recomputeLibrary(debounce = false)
+    }
+
+    private fun lettersOf(books: List<ShelfBook>, sort: SortKey): List<String> {
+        val byAuthor = sort == SortKey.AUTHOR
+        return books.map { it.letterFor(byAuthor) }.distinct()
+            .sortedWith(compareBy({ it != "#" }, { it }))
+    }
+
+    /**
+     * A szűrés és a rendezés a memóriában, a fő szálon kívül fut. Gépelésnél
+     * rövid késleltetéssel, hogy ne induljon újra minden leütésre.
+     */
+    private fun recomputeLibrary(debounce: Boolean) {
+        libJob?.cancel()
+        libJob = viewModelScope.launch {
+            if (debounce) delay(160)
+            val s = _ui.value
+            val rows = withContext(Dispatchers.Default) {
+                val q = Normalizer.foldAll(s.libQuery.trim())
+                val byAuthor = s.libSort == SortKey.AUTHOR
+                var list = s.books.asSequence()
+                if (q.isNotEmpty()) list = list.filter { it.matches(q) }
+                if (s.libFormat.isNotEmpty()) list = list.filter { it.ext == s.libFormat }
+                if (s.libLetter.isNotEmpty()) {
+                    list = list.filter { it.letterFor(byAuthor) == s.libLetter }
+                }
+                sortBooks(list.toList(), s.libSort, s.libAsc)
+            }
+            _ui.value = _ui.value.copy(libRows = rows)
+        }
+    }
+
+    /** Az üres mezős könyvek mindig a lista végére kerülnek. */
+    private fun sortBooks(rows: List<ShelfBook>, sort: SortKey, asc: Boolean): List<ShelfBook> {
+        val base: Comparator<ShelfBook> = when (sort) {
+            SortKey.AUTHOR -> compareBy { it.keyAuthor }
+            SortKey.FORMAT -> compareBy { it.ext }
+            else -> compareBy { it.keyTitle }
+        }
+        val blank: Comparator<ShelfBook> = when (sort) {
+            SortKey.AUTHOR -> compareBy { it.keyAuthor.isEmpty() }
+            SortKey.FORMAT -> compareBy { it.ext.isEmpty() }
+            else -> compareBy { it.keyTitle.isEmpty() }
+        }
+        val dir = if (asc) base else base.reversed()
+        return rows.sortedWith(blank.then(dir).thenBy { it.keyTitle })
+    }
+
+    /**
+     * Csak a haladás újratöltése — a felolvasóból visszatérve ettől mozdul
+     * a lista zöld csíkja, anélkül hogy az egész katalógust újraolvasnánk.
+     */
+    fun refreshProgress() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val prog = progressMap()
+            _ui.value = _ui.value.copy(progress = prog)
         }
     }
 
@@ -296,6 +423,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             SortKey.DATE -> compareBy { it.mtime }
             SortKey.TITLE -> compareBy(nullsLast()) { it.cim?.lowercase() }
             SortKey.AUTHOR -> compareBy(nullsLast()) { it.szerzo?.lowercase() }
+            SortKey.FORMAT -> compareBy { it.ext }
         }
         val sorted = rows.sortedWith(cmp)
         return if (asc) sorted else sorted.reversed()
@@ -364,7 +492,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             val counts = Catalog.counts()
             _ui.value = _ui.value.copy(catalogBooks = counts.books, catalogFiles = counts.files)
             withContext(Dispatchers.Main) {
-                loadShelf()
+                loadLibrary()
                 refresh()
             }
         }
@@ -384,7 +512,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             val removed = withContext(Dispatchers.IO) { Catalog.removeMissing() }
             val counts = withContext(Dispatchers.IO) { Catalog.counts() }
             _ui.value = _ui.value.copy(catalogBooks = counts.books, catalogFiles = counts.files)
-            loadShelf()
+            loadLibrary()
             refresh()
             onDone(removed)
         }

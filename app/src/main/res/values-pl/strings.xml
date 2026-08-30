@@ -257,4 +257,25 @@
     <string name="catalog_title">Katalog</string>
     <string name="catalog_file_hint">Katalog pozostaje widocznym plikiem, więc przetrwa ponowną instalację aplikacji: %1$s</string>
     <string name="set_build_progress">%1$d plików • %2$d nowych wpisów • %3$d pominiętych</string>
+
+    <!-- Konyvtar lista -->
+    <string name="lib_title">Biblioteka</string>
+    <string name="lib_search_hint">Tytuł, autor lub nazwa pliku</string>
+    <string name="lib_all">Wszystkie</string>
+    <string name="lib_format">Format</string>
+    <string name="lib_count">%1$d z %2$d książek</string>
+    <string name="lib_no_match">Brak wyników dla tego filtra.</string>
+    <string name="lib_sort">Sortuj</string>
+    <string name="lib_sort_title">Według tytułu</string>
+    <string name="lib_sort_author">Według autora</string>
+    <string name="lib_sort_format">Według formatu</string>
+    <string name="lib_hint_gestures">Podwójne dotknięcie: otwórz i czytaj na głos · Długie przytrzymanie: szczegóły</string>
+    <string name="lib_shelf">Półka</string>
+    <string name="lib_formats">Formaty</string>
+    <string name="info_format">Format</string>
+    <string name="fmt_note_good">Tekst z podziałem na rozdziały — czytanie wiernie podąża za książką.</string>
+    <string name="fmt_note_plain">Zwykły tekst — rozdziały można tylko zgadywać z samej treści.</string>
+    <string name="fmt_note_pdf">Podzielony na strony: łamanie wierszy i numery stron czasem przeszkadzają w czytaniu.</string>
+    <string name="fmt_note_none">Z tego formatu nie da się wydobyć tekstu.</string>
+    <string name="info_folder">Folder</string>
 </resources>

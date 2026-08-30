@@ -257,4 +257,25 @@
     <string name="catalog_title">Catálogo</string>
     <string name="catalog_file_hint">El catálogo se guarda como archivo visible, así sobrevive a la reinstalación de la aplicación: %1$s</string>
     <string name="set_build_progress">%1$d archivos • %2$d entradas nuevas • %3$d omitidos</string>
+
+    <!-- Konyvtar lista -->
+    <string name="lib_title">Biblioteca</string>
+    <string name="lib_search_hint">Título, autor o nombre de archivo</string>
+    <string name="lib_all">Todos</string>
+    <string name="lib_format">Formato</string>
+    <string name="lib_count">%1$d de %2$d libros</string>
+    <string name="lib_no_match">No hay resultados para este filtro.</string>
+    <string name="lib_sort">Ordenar</string>
+    <string name="lib_sort_title">Por título</string>
+    <string name="lib_sort_author">Por autor</string>
+    <string name="lib_sort_format">Por formato</string>
+    <string name="lib_hint_gestures">Doble toque: abrir y leer en voz alta · Pulsación larga: ficha</string>
+    <string name="lib_shelf">Estantería</string>
+    <string name="lib_formats">Formatos</string>
+    <string name="info_format">Formato</string>
+    <string name="fmt_note_good">Texto estructurado con capítulos: la lectura sigue el libro con precisión.</string>
+    <string name="fmt_note_plain">Texto plano: los capítulos solo se deducen del propio texto.</string>
+    <string name="fmt_note_pdf">Maquetado en páginas: los saltos de línea y los números de página a veces estorban a la lectura.</string>
+    <string name="fmt_note_none">De este formato no se puede extraer texto.</string>
+    <string name="info_folder">Carpeta</string>
 </resources>

@@ -257,4 +257,25 @@
     <string name="catalog_title">Katalog</string>
     <string name="catalog_file_hint">Katalog zůstává viditelným souborem, takže přežije i přeinstalaci aplikace: %1$s</string>
     <string name="set_build_progress">%1$d souborů • %2$d nových záznamů • %3$d přeskočeno</string>
+
+    <!-- Konyvtar lista -->
+    <string name="lib_title">Knihovna</string>
+    <string name="lib_search_hint">Název, autor nebo název souboru</string>
+    <string name="lib_all">Vše</string>
+    <string name="lib_format">Formát</string>
+    <string name="lib_count">%1$d z %2$d knih</string>
+    <string name="lib_no_match">Tomuto filtru nic neodpovídá.</string>
+    <string name="lib_sort">Řadit</string>
+    <string name="lib_sort_title">Podle názvu</string>
+    <string name="lib_sort_author">Podle autora</string>
+    <string name="lib_sort_format">Podle formátu</string>
+    <string name="lib_hint_gestures">Dvojí klepnutí: otevřít a číst nahlas · Dlouhé podržení: podrobnosti</string>
+    <string name="lib_shelf">Police</string>
+    <string name="lib_formats">Formáty</string>
+    <string name="info_format">Formát</string>
+    <string name="fmt_note_good">Členěný text s kapitolami — předčítání přesně sleduje knihu.</string>
+    <string name="fmt_note_plain">Prostý text — kapitoly lze odhadnout jen ze samotného textu.</string>
+    <string name="fmt_note_pdf">Rozvržený do stránek: zalomení řádků a čísla stránek někdy předčítání ruší.</string>
+    <string name="fmt_note_none">Z tohoto formátu nelze získat text.</string>
+    <string name="info_folder">Složka</string>
 </resources>

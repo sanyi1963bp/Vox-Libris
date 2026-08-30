@@ -257,4 +257,25 @@
     <string name="catalog_title">Katalog</string>
     <string name="catalog_file_hint">Der Katalog bleibt eine sichtbare Datei und übersteht so eine Neuinstallation der App: %1$s</string>
     <string name="set_build_progress">%1$d Dateien • %2$d neue Einträge • %3$d übersprungen</string>
+
+    <!-- Konyvtar lista -->
+    <string name="lib_title">Bibliothek</string>
+    <string name="lib_search_hint">Titel, Autor oder Dateiname</string>
+    <string name="lib_all">Alle</string>
+    <string name="lib_format">Format</string>
+    <string name="lib_count">%1$d von %2$d Büchern</string>
+    <string name="lib_no_match">Zu diesem Filter gibt es nichts.</string>
+    <string name="lib_sort">Sortieren</string>
+    <string name="lib_sort_title">Nach Titel</string>
+    <string name="lib_sort_author">Nach Autor</string>
+    <string name="lib_sort_format">Nach Format</string>
+    <string name="lib_hint_gestures">Doppeltippen: öffnen und vorlesen · Lang drücken: Details</string>
+    <string name="lib_shelf">Regal</string>
+    <string name="lib_formats">Formate</string>
+    <string name="info_format">Format</string>
+    <string name="fmt_note_good">Gegliederter Text mit Kapiteln — das Vorlesen folgt dem Buch genau.</string>
+    <string name="fmt_note_plain">Reiner Text — Kapitel lassen sich nur aus dem Text selbst erraten.</string>
+    <string name="fmt_note_pdf">In Seiten gesetzt: Zeilenumbrüche und Seitenzahlen stören manchmal das Vorlesen.</string>
+    <string name="fmt_note_none">Aus diesem Format lässt sich kein Text gewinnen.</string>
+    <string name="info_folder">Ordner</string>
 </resources>

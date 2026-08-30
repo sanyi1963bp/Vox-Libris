@@ -32,6 +32,34 @@ object Normalizer {
     }
 
     /**
+     * Ékezetek elhagyása bármely nyelven (á→a, č→c, ñ→n…), kisbetűsítve.
+     * A számokat, szóközöket és a nem latin írásjeleket meghagyja, ezért
+     * kereséshez és rendezéshez egyaránt jó.
+     */
+    fun foldAll(s: String): String {
+        val d = java.text.Normalizer.normalize(stripInvisible(s), java.text.Normalizer.Form.NFD)
+        return marks.replace(d, "").lowercase()
+    }
+
+    /**
+     * A betűsávhoz: a szöveg kezdőbetűje ékezet nélkül, nagybetűvel.
+     * Számmal vagy jellel kezdődő címek a „#” csoportba kerülnek. A nem
+     * latin betűk (pl. cirill) megmaradnak, így minden nyelven működik.
+     */
+    fun letterOf(s: String): String {
+        for (ch in stripInvisible(s)) {
+            if (ch.isDigit()) return "#"
+            if (ch.isLetter()) {
+                val d = java.text.Normalizer.normalize(
+                    ch.toString(), java.text.Normalizer.Form.NFD
+                )
+                return (d.firstOrNull() ?: ch).uppercaseChar().toString()
+            }
+        }
+        return "#"
+    }
+
+    /**
      * Gyors, hossztartó magyar ékezet-összevonás kereséshez (á→a, ő→o…).
      * A hossz nem változik, ezért a találat pozíciója az eredeti szövegben is
      * pontos — kiemeléshez használható.

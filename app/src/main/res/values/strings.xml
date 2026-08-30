@@ -280,4 +280,25 @@
     <string name="catalog_title">Catalogue</string>
     <string name="catalog_file_hint">The catalogue is kept as a visible file, so it survives reinstalling the app: %1$s</string>
     <string name="set_build_progress">%1$d files • %2$d new entries • %3$d skipped</string>
+
+    <!-- Konyvtar lista -->
+    <string name="lib_title">Library</string>
+    <string name="lib_search_hint">Title, author or file name</string>
+    <string name="lib_all">All</string>
+    <string name="lib_format">Format</string>
+    <string name="lib_count">%1$d of %2$d books</string>
+    <string name="lib_no_match">Nothing matches this filter.</string>
+    <string name="lib_sort">Sort</string>
+    <string name="lib_sort_title">By title</string>
+    <string name="lib_sort_author">By author</string>
+    <string name="lib_sort_format">By format</string>
+    <string name="lib_hint_gestures">Double tap: open and read aloud · Long press: details</string>
+    <string name="lib_shelf">Shelf</string>
+    <string name="lib_formats">Formats</string>
+    <string name="info_format">Format</string>
+    <string name="fmt_note_good">Structured text with chapters — narration follows the book accurately.</string>
+    <string name="fmt_note_plain">Plain text — chapters can only be guessed from the text itself.</string>
+    <string name="fmt_note_pdf">Laid out in pages: line breaks and page numbers sometimes disturb the narration.</string>
+    <string name="fmt_note_none">No text can be extracted from this format.</string>
+    <string name="info_folder">Folder</string>
 </resources>

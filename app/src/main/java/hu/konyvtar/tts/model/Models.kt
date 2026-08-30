@@ -1,6 +1,7 @@
 package hu.konyvtar.tts.model
 
 import hu.konyvtar.tts.R
+import java.io.File
 
 /** Egy sor a fájlböngészőben: fájl vagy mappa + a hozzá párosított katalógus-metaadat. */
 data class FileRow(
@@ -41,14 +42,54 @@ data class FileMeta(
     val szerzo: String?
 )
 
-/** Egy könyv a polcon: egy mű és egy hozzá tartozó fájl. */
+/**
+ * Egy könyv a könyvtárban: egy mű és egy hozzá tartozó fájl.
+ *
+ * A `key*` mezők a kereséshez és a rendezéshez előre elkészített, kisbetűs,
+ * ékezet nélküli változatok. Egyszer, a betöltéskor készülnek el, így a
+ * gépelés közbeni szűrés több ezer könyvnél is azonnali marad.
+ */
 data class ShelfBook(
     val id: Long,
     val title: String,
     val author: String,
     val format: String,
-    val path: String
-)
+    val path: String,
+    /** A fájl kiterjesztése kisbetűvel (epub, pdf…). */
+    val ext: String = "",
+    val keyTitle: String = "",
+    val keyAuthor: String = "",
+    val keyFile: String = "",
+    /** A cím és a szerző kezdőbetűje a betűsávhoz (ékezet nélkül). */
+    val letterTitle: String = "#",
+    val letterAuthor: String = "#"
+) {
+    /** A rendezéshez tartozó kezdőbetű. */
+    fun letterFor(byAuthor: Boolean): String = if (byAuthor) letterAuthor else letterTitle
+
+    /** A fájl neve — a listában és az adatlapon látszik. */
+    val fileName: String get() = path.substringAfterLast('/')
+
+    /** Illeszkedik-e a (már normalizált) keresőkifejezésre. */
+    fun matches(q: String): Boolean =
+        keyTitle.contains(q) || keyAuthor.contains(q) || keyFile.contains(q)
+}
+
+/** A könyv megnyitásához használt sor. */
+fun ShelfBook.toFileRow(): FileRow {
+    val f = File(path)
+    return FileRow(
+        path = path,
+        name = f.name,
+        ext = if (ext.isNotEmpty()) ext else f.extension.lowercase(),
+        isDir = false,
+        size = f.length(),
+        mtime = f.lastModified(),
+        konyvId = id,
+        cim = title,
+        szerzo = author
+    )
+}
 
 /** Rövidített könyvadat a párosításhoz (memóriatakarékos). */
 data class BookBrief(
@@ -106,4 +147,4 @@ data class MatchResult(
     val mode: String
 )
 
-enum class SortKey { NAME, SIZE, DATE, TITLE, AUTHOR }
+enum class SortKey { NAME, SIZE, DATE, TITLE, AUTHOR, FORMAT }

@@ -255,4 +255,25 @@
     <string name="catalog_title">Katalógus</string>
     <string name="catalog_file_hint">A katalógus látható fájlként marad, így túléli az app újratelepítését: %1$s</string>
     <string name="set_build_progress">%1$d fájl • %2$d új bejegyzés • %3$d kihagyva</string>
+
+    <!-- Konyvtar lista -->
+    <string name="lib_title">Könyvtár</string>
+    <string name="lib_search_hint">Cím, szerző vagy fájlnév</string>
+    <string name="lib_all">Mind</string>
+    <string name="lib_format">Formátum</string>
+    <string name="lib_count">%1$d / %2$d könyv</string>
+    <string name="lib_no_match">Erre a szűrésre nincs találat.</string>
+    <string name="lib_sort">Rendezés</string>
+    <string name="lib_sort_title">Cím szerint</string>
+    <string name="lib_sort_author">Szerző szerint</string>
+    <string name="lib_sort_format">Formátum szerint</string>
+    <string name="lib_hint_gestures">Dupla koppintás: megnyitás és felolvasás · Hosszú nyomás: adatlap</string>
+    <string name="lib_shelf">Polc</string>
+    <string name="lib_formats">Formátumok</string>
+    <string name="info_format">Formátum</string>
+    <string name="fmt_note_good">Tagolt szöveg, fejezetekkel — a felolvasás pontosan követi a könyvet.</string>
+    <string name="fmt_note_plain">Sima szöveg — a fejezeteket csak magából a szövegből tudjuk kitalálni.</string>
+    <string name="fmt_note_pdf">Oldalakra tördelve: a sortörések és az oldalszámok néha beleszólnak a felolvasásba.</string>
+    <string name="fmt_note_none">Ebből a formátumból nem tudunk szöveget kinyerni.</string>
+    <string name="info_folder">Mappa</string>
 </resources>

@@ -257,4 +257,25 @@
     <string name="catalog_title">Katalóg</string>
     <string name="catalog_file_hint">Katalóg zostáva viditeľným súborom, takže prežije aj preinštalovanie aplikácie: %1$s</string>
     <string name="set_build_progress">%1$d súborov • %2$d nových záznamov • %3$d preskočených</string>
+
+    <!-- Konyvtar lista -->
+    <string name="lib_title">Knižnica</string>
+    <string name="lib_search_hint">Názov, autor alebo názov súboru</string>
+    <string name="lib_all">Všetko</string>
+    <string name="lib_format">Formát</string>
+    <string name="lib_count">%1$d z %2$d kníh</string>
+    <string name="lib_no_match">Tomuto filtru nič nezodpovedá.</string>
+    <string name="lib_sort">Zoradiť</string>
+    <string name="lib_sort_title">Podľa názvu</string>
+    <string name="lib_sort_author">Podľa autora</string>
+    <string name="lib_sort_format">Podľa formátu</string>
+    <string name="lib_hint_gestures">Dvojité ťuknutie: otvoriť a čítať nahlas · Dlhé podržanie: podrobnosti</string>
+    <string name="lib_shelf">Polica</string>
+    <string name="lib_formats">Formáty</string>
+    <string name="info_format">Formát</string>
+    <string name="fmt_note_good">Členený text s kapitolami — čítanie presne sleduje knihu.</string>
+    <string name="fmt_note_plain">Obyčajný text — kapitoly sa dajú odhadnúť len zo samotného textu.</string>
+    <string name="fmt_note_pdf">Rozvrhnutý do strán: zalomenia riadkov a čísla strán občas rušia čítanie.</string>
+    <string name="fmt_note_none">Z tohto formátu sa nedá získať text.</string>
+    <string name="info_folder">Priečinok</string>
 </resources>

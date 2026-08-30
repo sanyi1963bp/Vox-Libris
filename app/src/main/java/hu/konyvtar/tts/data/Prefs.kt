@@ -55,6 +55,33 @@ object Prefs {
         sp(context).edit().putBoolean(KEY_SORT_ASC, value).apply()
     }
 
+    // ------------------------------------------------------- könyvtár lista
+
+    /** A lista rendezése: TITLE, AUTHOR vagy FORMAT. */
+    fun libSortKey(context: Context): String =
+        sp(context).getString("lib_sort_key", "TITLE") ?: "TITLE"
+
+    fun setLibSortKey(context: Context, value: String) {
+        sp(context).edit().putString("lib_sort_key", value).apply()
+    }
+
+    fun libSortAsc(context: Context): Boolean = sp(context).getBoolean("lib_sort_asc", true)
+
+    fun setLibSortAsc(context: Context, value: Boolean) {
+        sp(context).edit().putBoolean("lib_sort_asc", value).apply()
+    }
+
+    /**
+     * Megnyitott-e már könyvet a listáról. Amíg nem, a lista tetején ott a
+     * kétujjnyi súgó a koppintásokról; utána eltűnik, hogy ne foglalja a helyet.
+     */
+    fun gestureHintSeen(context: Context): Boolean =
+        sp(context).getBoolean("gesture_hint_seen", false)
+
+    fun setGestureHintSeen(context: Context) {
+        sp(context).edit().putBoolean("gesture_hint_seen", true).apply()
+    }
+
     /** Keressen-e a kereső az almappákban is. */
     fun searchRecursive(context: Context): Boolean =
         sp(context).getBoolean("search_recursive", false)

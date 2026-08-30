@@ -38,6 +38,32 @@ telepíti, nála ugyanúgy működik.
   megnyílik a lista.
 - **Haladás-csík** az olvasó könyvadat-ablakában (korábban lemaradt).
 
+## 1. fázis, utólagos javítás — a lista lett a nyitóképernyő ✅ *(kész)*
+
+A polc a teszten megbukott: **3500 könyvnél a lapozgatás reménytelen**. A
+nyitóképernyő ezért a **lista** lett, és minden a megtalálást szolgálja:
+
+- **Kereső**, ami egyszerre nézi a **címet, a szerzőt és a fájlnevet**, ékezetre
+  érzéketlenül (a „jozsef” megtalálja a Józsefet). A szűrés a memóriában fut,
+  ezért gépelés közben azonnal frissül.
+- **Betűsáv** a kereső alatt: egy koppintás a kezdőbetűre, és csak azok a
+  könyvek maradnak. A sáv **csak azokat a betűket mutatja, amikhez tényleg van
+  könyv** — nincs üresbe vezető gomb. Rendezéstől függően a cím vagy a szerző
+  kezdőbetűjét nézi, az ékezetes betűk az alapbetűhöz sorolódnak.
+- **Formátumjelvény minden soron** (EPUB, PDF, MOBI…), színnel megkülönböztetve.
+  Amiből nem tudunk szöveget kinyerni, az **szürke** — így a listában látszik,
+  melyik könyv fog megszólalni.
+- **Formátum-szűrő** a jelvények mellé: darabszámmal együtt sorolja fel, mi van
+  a telefonon (pl. EPUB 2100, PDF 900), és egy koppintással szűkít.
+- **Koppintások**: egy = kijelölés, **kettő = megnyitás és felolvasás**,
+  **hosszú nyomás = adatlap**. Az adatlap tetején a borító.
+- **Az adatlap megmondja, mire számíthatsz** az adott formátumtól: hogy a
+  fejezetek pontosak-e, vagy hogy a PDF-nél a tördelés beleszólhat.
+
+A **polc megmaradt**, egy koppintásra a felső sávban — és ugyanazt mutatja,
+amit a lista éppen: ha rákerestél valamire vagy leszűkítetted egy betűre, a
+polcon is csak azok a könyvek lapozhatók.
+
 ## 2. fázis — Borítók és a polc kiteljesítése
 
 - **Borítókinyerés**: EPUB (OPF `cover`), MOBI/AZW3 (EXTH 201), FB2

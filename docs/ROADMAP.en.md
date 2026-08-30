@@ -39,6 +39,31 @@ anyone who installs it.
   one opens the list.
 - **Progress bar** in the reader's book info dialog (it was missing).
 
+## Phase 1 addendum — the list became the start screen ✅ *(done)*
+
+The shelf failed its test: **with 3500 books, flipping through covers is
+hopeless**. The start screen is now the **list**, and everything on it serves
+finding a book:
+
+- **Search** across the **title, the author and the file name** at once,
+  accent-insensitive. Filtering runs in memory, so it updates as you type.
+- **Letter bar** under the search box: one tap on an initial keeps only those
+  books. The bar **shows only letters that actually have books** — no buttons
+  leading nowhere. It follows the sort order (title or author), and accented
+  letters fold into their base letter.
+- **A format badge on every row** (EPUB, PDF, MOBI…), colour-coded. Formats we
+  cannot extract text from are **grey**, so the list itself tells you which
+  books will speak.
+- **Format filter** next to it: lists what is on the phone with counts
+  (EPUB 2100, PDF 900…) and narrows the list with one tap.
+- **Taps**: one = select, **two = open and read aloud**,
+  **long press = details**. The details sheet has the cover on top.
+- **The details sheet says what to expect** from that format: whether chapters
+  are accurate, or that a PDF layout may disturb the narration.
+
+The **shelf is still there**, one tap away in the top bar — and it shows
+whatever the list currently shows, so a search or a letter narrows the shelf too.
+
 ## Phase 2 — Covers and the full shelf
 
 - **Cover extraction**: EPUB (OPF `cover`), MOBI/AZW3 (EXTH 201), FB2
