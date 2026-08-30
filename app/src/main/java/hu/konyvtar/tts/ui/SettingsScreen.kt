@@ -61,7 +61,8 @@ fun SettingsScreen(
                             contentDescription = stringResource(R.string.common_back)
                         )
                     }
-                }
+                },
+                actions = { NowPlayingButton() }
             )
         }
     ) { padding ->

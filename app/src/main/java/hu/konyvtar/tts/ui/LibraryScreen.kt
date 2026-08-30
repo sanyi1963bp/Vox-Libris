@@ -166,6 +166,7 @@ fun LibraryScreen(
                         )
                     },
                     actions = {
+                        NowPlayingButton()
                         IconButton(onClick = onOpenShelf) {
                             Icon(
                                 Icons.Filled.ViewCarousel,

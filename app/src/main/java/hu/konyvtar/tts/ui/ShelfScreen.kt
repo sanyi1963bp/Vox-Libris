@@ -84,7 +84,8 @@ fun ShelfScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                }
+                },
+                actions = { NowPlayingButton() }
             )
         }
     ) { padding ->

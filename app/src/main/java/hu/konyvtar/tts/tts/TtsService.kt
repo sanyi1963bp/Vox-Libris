@@ -563,7 +563,9 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         stopSpeaking()
         accumulateListened()
         saveProgress()
-        _state.value = _state.value.copy(playing = false)
+        // Teljes leállítás után nincs betöltött könyv: a képernyők
+        // indítás/szünet gombja is eltűnik, hogy ne lehessen hiába nyomni
+        _state.value = PlayerState()
         releaseWakeLock()
         abandonFocus()
         unregisterNoisy()

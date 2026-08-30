@@ -123,6 +123,7 @@ fun FilePickerScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f)
                     )
+                    NowPlayingButton()
                     Box {
                         IconButton(onClick = { storageMenuOpen = true }) {
                             Icon(

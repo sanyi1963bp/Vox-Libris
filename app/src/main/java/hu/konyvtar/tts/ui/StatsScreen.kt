@@ -184,6 +184,7 @@ fun StatsScreen(
                     }
                 },
                 actions = {
+                    NowPlayingButton()
                     IconButton(onClick = { doExport(share = false) }, enabled = !exporting) {
                         Icon(
                             Icons.Filled.Save,
