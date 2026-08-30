@@ -64,6 +64,27 @@ A **polc megmaradt**, egy koppintásra a felső sávban — és ugyanazt mutatja
 amit a lista éppen: ha rákerestél valamire vagy leszűkítetted egy betűre, a
 polcon is csak azok a könyvek lapozhatók.
 
+## Nagytakarítás ✅ *(kész)*
+
+Nem új funkció, hanem a kód rendberakása — azért itt, mert a következő
+fázisok pont a legzűrösebb részekbe érkeznek.
+
+- **Biztonsági háló: 32 egységteszt.** Eddig egy sem volt. A tesztek a
+  parsereket és a szövegkezelést fedik — ott a legveszélyesebb a hiba, mert
+  nem omlik össze semmi, csak rosszul lesz felolvasva egy könyv. Ehhez a
+  parserek `android.util.Xml` helyett szabványos XML-olvasót használnak, így
+  emulátor nélkül futnak. Futtatás: `gradlew testDebugUnitTest`.
+- **Egy adatlap három helyett.** A könyv adatlapja három, betű szerint azonos
+  másolatban élt; emiatt landolt egy korábbi javítás csak kettőben.
+- **Az olvasó szétszedve.** A 840 soros composable öt fájl lett: állapot,
+  felső sáv, vezérlősáv, szöveg, könyvjelzők.
+- **A ViewModel kettévágva**: külön a katalógus, külön a fájlböngésző.
+- **A beállítások kilenc kártyája** külön composable, saját állapottal.
+
+Közben három valódi hiba derült ki, mind javítva: a fájlböngésző üresen
+nyílt hidegindítás után; a böngészés aktuális mappája számított a könyvtár
+gyökerének is; és a `&Otilde;` / `&odblac;` entitások nem oldódtak fel.
+
 ## 2. fázis — Borítók és a polc kiteljesítése
 
 - **Borítókinyerés**: EPUB (OPF `cover`), MOBI/AZW3 (EXTH 201), FB2

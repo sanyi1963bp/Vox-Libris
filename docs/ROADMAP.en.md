@@ -64,6 +64,27 @@ finding a book:
 The **shelf is still there**, one tap away in the top bar — and it shows
 whatever the list currently shows, so a search or a letter narrows the shelf too.
 
+## Cleanup ✅ *(done)*
+
+Not a feature — putting the code in order, done here because the coming
+phases land exactly in the messiest parts.
+
+- **A safety net: 32 unit tests.** There were none. They cover the parsers
+  and the text handling — where a bug is most dangerous, because nothing
+  crashes, a book is just read out wrong. For this the parsers use a standard
+  XML reader instead of `android.util.Xml`, so they run without an emulator.
+  Run them with `gradlew testDebugUnitTest`.
+- **One details sheet instead of three.** It lived in three identical copies,
+  which is why an earlier fix landed in only two of them.
+- **The reader split up.** The 840-line composable became five files: state,
+  top bar, controls, text, bookmarks.
+- **The view model split in two**: the catalogue and the file browser.
+- **The nine settings cards** are separate composables with their own state.
+
+Three real bugs surfaced along the way, all fixed: the file browser opened
+empty after a cold start; the browser's current folder also counted as the
+library root; and the `&Otilde;` / `&odblac;` entities were not decoded.
+
 ## Phase 2 — Covers and the full shelf
 
 - **Cover extraction**: EPUB (OPF `cover`), MOBI/AZW3 (EXTH 201), FB2
