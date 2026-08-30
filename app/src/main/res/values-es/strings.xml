@@ -278,4 +278,16 @@
     <string name="fmt_note_pdf">Maquetado en páginas: los saltos de línea y los números de página a veces estorban a la lectura.</string>
     <string name="fmt_note_none">De este formato no se puede extraer texto.</string>
     <string name="info_folder">Carpeta</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Portadas</string>
+    <string name="set_covers_desc">Las portadas se extraen de los propios archivos. Donde no hay ninguna, se mantiene la dibujada.</string>
+    <string name="set_covers_stats">%1$d portadas · %2$s</string>
+    <string name="set_covers_load">Cargar portadas</string>
+    <string name="set_covers_clear">Borrar portadas</string>
+    <string name="set_covers_progress">%1$d / %2$d libros · %3$d portadas encontradas</string>
+    <string name="set_covers_in_list">Portadas en la lista</string>
+    <string name="set_covers_in_list_hint">Desactivado por defecto: las filas más altas muestran menos libros.</string>
+    <string name="covers_done_title">Portadas cargadas</string>
+    <string name="covers_done">Se encontraron %1$d portadas de %2$d libros.</string>
 </resources>

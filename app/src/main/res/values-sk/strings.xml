@@ -278,4 +278,16 @@
     <string name="fmt_note_pdf">Rozvrhnutý do strán: zalomenia riadkov a čísla strán občas rušia čítanie.</string>
     <string name="fmt_note_none">Z tohto formátu sa nedá získať text.</string>
     <string name="info_folder">Priečinok</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Obálky</string>
+    <string name="set_covers_desc">Obálky pochádzajú priamo zo súborov kníh. Kde žiadna nie je, zostáva kreslená.</string>
+    <string name="set_covers_stats">%1$d obálok · %2$s</string>
+    <string name="set_covers_load">Načítať obálky</string>
+    <string name="set_covers_clear">Vymazať obálky</string>
+    <string name="set_covers_progress">%1$d / %2$d kníh · nájdených %3$d obálok</string>
+    <string name="set_covers_in_list">Obálky v zozname</string>
+    <string name="set_covers_in_list_hint">Predvolene vypnuté: vyššie riadky pojú menej kníh.</string>
+    <string name="covers_done_title">Obálky načítané</string>
+    <string name="covers_done">Nájdených %1$d obálok z %2$d kníh.</string>
 </resources>

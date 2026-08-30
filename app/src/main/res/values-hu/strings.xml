@@ -276,4 +276,16 @@
     <string name="fmt_note_pdf">Oldalakra tördelve: a sortörések és az oldalszámok néha beleszólnak a felolvasásba.</string>
     <string name="fmt_note_none">Ebből a formátumból nem tudunk szöveget kinyerni.</string>
     <string name="info_folder">Mappa</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Borítók</string>
+    <string name="set_covers_desc">A borítók magukból a könyvfájlokból jönnek. Amelyikben nincs, ott marad a rajzolt borító.</string>
+    <string name="set_covers_stats">%1$d borító · %2$s</string>
+    <string name="set_covers_load">Borítók betöltése</string>
+    <string name="set_covers_clear">Borítók törlése</string>
+    <string name="set_covers_progress">%1$d / %2$d könyv · %3$d borító megvan</string>
+    <string name="set_covers_in_list">Borítók a listában</string>
+    <string name="set_covers_in_list_hint">Alapból kikapcsolva: a magasabb sorokba kevesebb könyv fér.</string>
+    <string name="covers_done_title">Borítók betöltve</string>
+    <string name="covers_done">%2$d könyvből %1$d borító lett meg.</string>
 </resources>

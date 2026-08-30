@@ -278,4 +278,16 @@
     <string name="fmt_note_pdf">Rozvržený do stránek: zalomení řádků a čísla stránek někdy předčítání ruší.</string>
     <string name="fmt_note_none">Z tohoto formátu nelze získat text.</string>
     <string name="info_folder">Složka</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Obálky</string>
+    <string name="set_covers_desc">Obálky pocházejí přímo ze souborů knih. Kde žádná není, zůstává kreslená.</string>
+    <string name="set_covers_stats">%1$d obálek · %2$s</string>
+    <string name="set_covers_load">Načíst obálky</string>
+    <string name="set_covers_clear">Smazat obálky</string>
+    <string name="set_covers_progress">%1$d / %2$d knih · nalezeno %3$d obálek</string>
+    <string name="set_covers_in_list">Obálky v seznamu</string>
+    <string name="set_covers_in_list_hint">Ve výchozím stavu vypnuto: vyšší řádky pojmou méně knih.</string>
+    <string name="covers_done_title">Obálky načteny</string>
+    <string name="covers_done">Nalezeno %1$d obálek z %2$d knih.</string>
 </resources>

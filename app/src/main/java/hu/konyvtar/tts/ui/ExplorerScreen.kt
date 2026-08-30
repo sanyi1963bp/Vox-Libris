@@ -25,8 +25,6 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.SdStorage
 import androidx.compose.material.icons.filled.Settings
@@ -41,7 +39,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -87,7 +84,6 @@ fun ExplorerScreen(
 ) {
     val ui by vm.ui.collectAsState()
     val br by browser.ui.collectAsState()
-    val player by TtsService.state.collectAsState()
     val context = LocalContext.current
     val listState = rememberLazyListState()
     var storageMenuOpen by remember { mutableStateOf(false) }
@@ -317,44 +313,7 @@ fun ExplorerScreen(
                 HorizontalDivider()
             }
         },
-        bottomBar = {
-            if (player.path != null) {
-                Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .pointerInput(Unit) {
-                                detectTapGestures(onTap = { onOpenPlayer() })
-                            }
-                            .padding(start = 12.dp, top = 2.dp, bottom = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = player.title,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = String.format(java.util.Locale.getDefault(), "%.1f%%", player.percent) +
-                                    if (player.preparing) stringResource(R.string.explorer_preparing) else "",
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                        IconButton(onClick = { TtsService.send(context, TtsService.ACTION_TOGGLE) }) {
-                            Icon(
-                                if (player.playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                contentDescription = stringResource(
-                                    if (player.playing) R.string.common_pause else R.string.common_play
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        bottomBar = { NowPlayingBar(onOpen = onOpenPlayer) }
     ) { padding ->
         Box(
             modifier = Modifier

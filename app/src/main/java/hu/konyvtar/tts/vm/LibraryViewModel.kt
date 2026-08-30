@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import hu.konyvtar.tts.data.AppDb
 import hu.konyvtar.tts.data.Catalog
+import hu.konyvtar.tts.data.CoverScanner
 import hu.konyvtar.tts.data.LibraryScanner
 import hu.konyvtar.tts.data.Normalizer
 import hu.konyvtar.tts.data.Prefs
@@ -47,6 +48,8 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         /** Útvonal -> olvasottság százalék. */
         val progress: Map<String, Double> = emptyMap(),
         val scan: LibraryScanner.Progress = LibraryScanner.Progress(),
+        /** A borítók betöltése — a beolvasás második, háttérben futó menete. */
+        val covers: CoverScanner.Progress = CoverScanner.Progress(),
         /** Hány mű és hány fájl van a katalógusban. */
         val catalogBooks: Int = 0,
         val catalogFiles: Int = 0,
@@ -84,6 +87,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
     private var listJob: Job? = null
     private var libJob: Job? = null
     private var scanJob: Job? = null
+    private var coverJob: Job? = null
 
     init {
         val ctx = app
@@ -283,7 +287,30 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             val counts = Catalog.counts()
             _ui.value = _ui.value.copy(catalogBooks = counts.books, catalogFiles = counts.files)
             withContext(Dispatchers.Main) { loadLibrary() }
+            // Második menet: a borítók a háttérben töltődnek, a lista már
+            // használható közben
+            if (!LibraryScanner.cancelFlag.get()) startCoverScan()
         }
+    }
+
+    /** A borítók kinyerése a katalógus könyveiből. */
+    fun startCoverScan() {
+        if (_ui.value.covers.running) return
+        val ctx = getApplication<Application>()
+        _ui.value = _ui.value.copy(covers = CoverScanner.Progress(running = true))
+        coverJob = viewModelScope.launch(Dispatchers.IO) {
+            CoverScanner.scan(ctx) { p -> _ui.value = _ui.value.copy(covers = p) }
+            // Új borítók kerültek elő: a lista frissüljön, hogy látszódjanak
+            withContext(Dispatchers.Main) { loadLibrary() }
+        }
+    }
+
+    fun cancelCoverScan() {
+        CoverScanner.cancelFlag.set(true)
+    }
+
+    fun clearCoverResult() {
+        _ui.value = _ui.value.copy(covers = CoverScanner.Progress())
     }
 
     fun cancelScan() {

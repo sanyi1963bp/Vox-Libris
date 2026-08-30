@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -97,6 +98,7 @@ import java.util.Locale
 fun LibraryScreen(
     vm: LibraryViewModel,
     onOpenBook: (FileRow) -> Unit,
+    onOpenNowPlaying: () -> Unit,
     onOpenShelf: () -> Unit,
     onOpenFiles: () -> Unit,
     onOpenStats: () -> Unit,
@@ -112,6 +114,7 @@ fun LibraryScreen(
     var sortMenu by remember { mutableStateOf(false) }
     var formatMenu by remember { mutableStateOf(false) }
     var hintSeen by remember { mutableStateOf(Prefs.gestureHintSeen(context)) }
+    val showCovers = Prefs.coversInList(context)
 
     // A felolvasóból visszatérve frissüljön a haladás és a számlálók.
     // Navigációnál a képernyő saját életciklust kap, ezért ez itt működik.
@@ -166,7 +169,6 @@ fun LibraryScreen(
                         )
                     },
                     actions = {
-                        NowPlayingButton()
                         IconButton(onClick = onOpenShelf) {
                             Icon(
                                 Icons.Filled.ViewCarousel,
@@ -370,7 +372,8 @@ fun LibraryScreen(
                 }
                 HorizontalDivider()
             }
-        }
+        },
+        bottomBar = { NowPlayingBar(onOpen = onOpenNowPlaying) }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -478,6 +481,7 @@ fun LibraryScreen(
                         ) { index, book ->
                             LibraryRow(
                                 book = book,
+                                showCover = showCovers,
                                 stripe = index % 2 == 1,
                                 selected = selected == book.path,
                                 percent = ui.progress[book.path],
@@ -525,6 +529,7 @@ fun LibraryScreen(
 @Composable
 private fun LibraryRow(
     book: ShelfBook,
+    showCover: Boolean,
     stripe: Boolean,
     selected: Boolean,
     percent: Double?,
@@ -537,7 +542,7 @@ private fun LibraryRow(
         stripe -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
         else -> MaterialTheme.colorScheme.surface
     }
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(bg)
@@ -548,47 +553,63 @@ private fun LibraryRow(
                     onLongPress = { onLongPress() }
                 )
             }
-            .padding(start = 8.dp, end = 26.dp, top = 4.dp, bottom = 4.dp)
+            .padding(start = 8.dp, end = 26.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            FormatBadge(book.ext)
-            Spacer(Modifier.width(6.dp))
+        // Bélyegkép csak kérésre: magasabb sorokba kevesebb könyv fér
+        if (showCover) {
+            BookCover(
+                title = book.title,
+                author = book.author,
+                path = book.path,
+                compact = true,
+                modifier = Modifier
+                    .width(30.dp)
+                    .aspectRatio(2f / 3f)
+            )
+            Spacer(Modifier.width(8.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                FormatBadge(book.ext)
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+            }
             Text(
-                text = book.title,
-                style = MaterialTheme.typography.bodyMedium,
+                text = if (book.author.isNotBlank()) book.author + "  ·  " + book.fileName
+                else book.fileName,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.padding(start = 44.dp)
             )
-        }
-        Text(
-            text = if (book.author.isNotBlank()) book.author + "  ·  " + book.fileName
-            else book.fileName,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = 44.dp)
-        )
-        if (percent != null && percent > 0.05) {
-            val done = percent >= FINISHED_PERCENT
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 44.dp, top = 2.dp)
-            ) {
-                LinearProgressIndicator(
-                    progress = { (percent / 100.0).toFloat().coerceIn(0f, 1f) },
-                    color = progressBarColor(done),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(4.dp)
-                )
-                Text(
-                    text = if (done) "  " + stringResource(R.string.row_done)
-                    else String.format(Locale.getDefault(), "  %.0f%%", percent),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            if (percent != null && percent > 0.05) {
+                val done = percent >= FINISHED_PERCENT
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 44.dp, top = 2.dp)
+                ) {
+                    LinearProgressIndicator(
+                        progress = { (percent / 100.0).toFloat().coerceIn(0f, 1f) },
+                        color = progressBarColor(done),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(4.dp)
+                    )
+                    Text(
+                        text = if (done) "  " + stringResource(R.string.row_done)
+                        else String.format(Locale.getDefault(), "  %.0f%%", percent),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

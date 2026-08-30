@@ -301,4 +301,16 @@
     <string name="fmt_note_pdf">Laid out in pages: line breaks and page numbers sometimes disturb the narration.</string>
     <string name="fmt_note_none">No text can be extracted from this format.</string>
     <string name="info_folder">Folder</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Covers</string>
+    <string name="set_covers_desc">Covers are read out of the book files themselves. Where a book has none, the drawn cover stays.</string>
+    <string name="set_covers_stats">%1$d covers · %2$s</string>
+    <string name="set_covers_load">Load covers</string>
+    <string name="set_covers_clear">Delete covers</string>
+    <string name="set_covers_progress">%1$d / %2$d books · %3$d covers found</string>
+    <string name="set_covers_in_list">Covers in the list</string>
+    <string name="set_covers_in_list_hint">Off by default: taller rows fit fewer books on screen.</string>
+    <string name="covers_done_title">Covers loaded</string>
+    <string name="covers_done">%1$d covers found out of %2$d books.</string>
 </resources>

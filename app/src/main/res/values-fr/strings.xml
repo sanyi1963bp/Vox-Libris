@@ -278,4 +278,16 @@
     <string name="fmt_note_pdf">Mis en pages : les retours à la ligne et les numéros de page perturbent parfois la lecture.</string>
     <string name="fmt_note_none">Aucun texte ne peut être extrait de ce format.</string>
     <string name="info_folder">Dossier</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Couvertures</string>
+    <string name="set_covers_desc">Les couvertures proviennent des fichiers eux-mêmes. Quand il n’y en a pas, celle dessinée reste.</string>
+    <string name="set_covers_stats">%1$d couvertures · %2$s</string>
+    <string name="set_covers_load">Charger les couvertures</string>
+    <string name="set_covers_clear">Supprimer les couvertures</string>
+    <string name="set_covers_progress">%1$d / %2$d livres · %3$d couvertures trouvées</string>
+    <string name="set_covers_in_list">Couvertures dans la liste</string>
+    <string name="set_covers_in_list_hint">Désactivé par défaut : des lignes plus hautes montrent moins de livres.</string>
+    <string name="covers_done_title">Couvertures chargées</string>
+    <string name="covers_done">%1$d couvertures trouvées sur %2$d livres.</string>
 </resources>

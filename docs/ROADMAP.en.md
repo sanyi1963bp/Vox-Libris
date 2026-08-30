@@ -85,17 +85,27 @@ Three real bugs surfaced along the way, all fixed: the file browser opened
 empty after a cold start; the browser's current folder also counted as the
 library root; and the `&Otilde;` / `&odblac;` entities were not decoded.
 
-## Phase 2 — Covers and the full shelf
+## Phase 2 — Covers and the now-playing bar ✅ *(done)*
 
-- **Cover extraction**: EPUB (OPF `cover`), MOBI/AZW3 (EXTH 201), FB2
-  (`<binary>` base64), PDF (render the first page). Where no cover exists the
-  current **typographic cover** stays.
-- **Thumbnail store**: downscaled (about 320×480 WebP, ~20 KB each), with the
-  size shown in settings and a clear button.
-- **Two passes**: metadata runs through quickly first (the shelf is usable
-  right away), then real covers load in the background.
-- **Covers in the file list** as well — behind a **toggle**, off by default,
-  because taller rows fit fewer books on screen.
+- **Cover extraction** from the book files themselves. Every format hides it
+  somewhere else: **EPUB** marks it in the OPF (in three different ways:
+  `<meta name="cover">`, `properties="cover-image"`, or an image named
+  "cover"), **MOBI/AZW3** keeps the image's record number in an EXTH record,
+  **FB2** embeds it as base64, and for **PDF** the first page is rendered.
+  Where there is no cover, the drawn one stays.
+- **Thumbnail store**: downscaled WebP (320×480, ~20 KB each) in the app's own
+  folder. Its size is shown in settings and it can be cleared — it is not
+  precious, it can always be extracted again.
+- **Two passes**: metadata runs through quickly and the library is usable at
+  once, then covers load in the background. What was extracted once is never
+  attempted again.
+- **Covers in the list** behind a toggle, off by default.
+- **A now-playing bar** at the bottom of every screen: you see which book is
+  playing and how far it is, one tap takes you back to it, and the button
+  silences it from anywhere. It only appears when a book is loaded.
+
+Cover extraction is guarded by **16 new unit tests** (including the MOBI
+byte-exact offset arithmetic), for 48 tests in total.
 
 ## Phase 3 — Reading experience
 

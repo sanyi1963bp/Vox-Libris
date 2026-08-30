@@ -278,4 +278,16 @@
     <string name="fmt_note_pdf">Разбит на страницы: переносы строк и номера страниц иногда мешают озвучке.</string>
     <string name="fmt_note_none">Из этого формата текст извлечь нельзя.</string>
     <string name="info_folder">Папка</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Обложки</string>
+    <string name="set_covers_desc">Обложки берутся из самих файлов книг. Где её нет, остаётся нарисованная.</string>
+    <string name="set_covers_stats">%1$d обложек · %2$s</string>
+    <string name="set_covers_load">Загрузить обложки</string>
+    <string name="set_covers_clear">Удалить обложки</string>
+    <string name="set_covers_progress">%1$d / %2$d книг · найдено %3$d обложек</string>
+    <string name="set_covers_in_list">Обложки в списке</string>
+    <string name="set_covers_in_list_hint">По умолчанию выключено: в более высокие строки влезает меньше книг.</string>
+    <string name="covers_done_title">Обложки загружены</string>
+    <string name="covers_done">Найдено %1$d обложек из %2$d книг.</string>
 </resources>

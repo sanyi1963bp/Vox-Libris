@@ -278,4 +278,16 @@
     <string name="fmt_note_pdf">Podzielony na strony: łamanie wierszy i numery stron czasem przeszkadzają w czytaniu.</string>
     <string name="fmt_note_none">Z tego formatu nie da się wydobyć tekstu.</string>
     <string name="info_folder">Folder</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Okładki</string>
+    <string name="set_covers_desc">Okładki pochodzą z samych plików książek. Gdy książka jej nie ma, zostaje rysowana.</string>
+    <string name="set_covers_stats">%1$d okładek · %2$s</string>
+    <string name="set_covers_load">Wczytaj okładki</string>
+    <string name="set_covers_clear">Usuń okładki</string>
+    <string name="set_covers_progress">%1$d / %2$d książek · znaleziono %3$d okładek</string>
+    <string name="set_covers_in_list">Okładki na liście</string>
+    <string name="set_covers_in_list_hint">Domyślnie wyłączone: wyższe wiersze mieszczą mniej książek.</string>
+    <string name="covers_done_title">Okładki wczytane</string>
+    <string name="covers_done">Znaleziono %1$d okładek w %2$d książkach.</string>
 </resources>

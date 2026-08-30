@@ -278,4 +278,16 @@
     <string name="fmt_note_pdf">Disposto em páginas: as quebras de linha e os números de página por vezes atrapalham a leitura.</string>
     <string name="fmt_note_none">Não é possível extrair texto deste formato.</string>
     <string name="info_folder">Pasta</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Capas</string>
+    <string name="set_covers_desc">As capas vêm dos próprios ficheiros. Onde não existe nenhuma, fica a desenhada.</string>
+    <string name="set_covers_stats">%1$d capas · %2$s</string>
+    <string name="set_covers_load">Carregar capas</string>
+    <string name="set_covers_clear">Apagar capas</string>
+    <string name="set_covers_progress">%1$d / %2$d livros · %3$d capas encontradas</string>
+    <string name="set_covers_in_list">Capas na lista</string>
+    <string name="set_covers_in_list_hint">Desligado por omissão: linhas mais altas mostram menos livros.</string>
+    <string name="covers_done_title">Capas carregadas</string>
+    <string name="covers_done">Encontradas %1$d capas em %2$d livros.</string>
 </resources>

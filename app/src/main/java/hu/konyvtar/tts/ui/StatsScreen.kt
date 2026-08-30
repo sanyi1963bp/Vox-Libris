@@ -71,6 +71,7 @@ import hu.konyvtar.tts.R
 @Composable
 fun StatsScreen(
     onBack: () -> Unit,
+    onOpenNowPlaying: () -> Unit,
     onOpenReader: (ProgressRow) -> Unit
 ) {
     val context = LocalContext.current
@@ -184,7 +185,6 @@ fun StatsScreen(
                     }
                 },
                 actions = {
-                    NowPlayingButton()
                     IconButton(onClick = { doExport(share = false) }, enabled = !exporting) {
                         Icon(
                             Icons.Filled.Save,
@@ -199,7 +199,8 @@ fun StatsScreen(
                     }
                 }
             )
-        }
+        },
+        bottomBar = { NowPlayingBar(onOpen = onOpenNowPlaying) }
     ) { padding ->
         Column(
             modifier = Modifier

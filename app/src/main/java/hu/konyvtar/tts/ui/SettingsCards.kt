@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import hu.konyvtar.tts.R
 import hu.konyvtar.tts.data.AppLanguages
 import hu.konyvtar.tts.data.Catalog
+import hu.konyvtar.tts.data.CoverScanner
+import hu.konyvtar.tts.data.CoverStore
 import hu.konyvtar.tts.data.LibraryScanner
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.reader.TextExtractor
@@ -153,6 +155,84 @@ fun CatalogCard(
             Spacer(Modifier.height(4.dp))
             OutlinedButton(onClick = onRemoveMissing) {
                 Text(stringResource(R.string.remove_missing))
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------- borítók
+
+@Composable
+fun CoversCard(
+    covers: CoverScanner.Progress,
+    onLoad: () -> Unit,
+    onCancel: () -> Unit
+) {
+    val context = LocalContext.current
+    var inList by remember { mutableStateOf(Prefs.coversInList(context)) }
+    var stats by remember { mutableStateOf(0 to 0L) }
+
+    // A borítók száma a menet végén és a törlés után is frissül
+    LaunchedEffect(covers.running, covers.found) {
+        stats = withContext(Dispatchers.IO) {
+            CoverStore.count(context) to CoverStore.sizeBytes(context)
+        }
+    }
+
+    SettingsCard(stringResource(R.string.set_covers_title)) {
+        Text(
+            text = stringResource(R.string.set_covers_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = stringResource(R.string.set_covers_stats, stats.first, fmtSize(stats.second)),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(Modifier.height(6.dp))
+        if (covers.running) {
+            LinearProgressIndicator(
+                progress = {
+                    if (covers.total > 0) covers.checked.toFloat() / covers.total else 0f
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = stringResource(
+                    R.string.set_covers_progress, covers.checked, covers.total, covers.found
+                ),
+                style = MaterialTheme.typography.labelSmall
+            )
+            OutlinedButton(onClick = onCancel) {
+                Text(stringResource(R.string.common_abort))
+            }
+        } else {
+            Button(onClick = onLoad) { Text(stringResource(R.string.set_covers_load)) }
+            Spacer(Modifier.height(4.dp))
+            OutlinedButton(onClick = {
+                CoverStore.clear(context)
+                stats = 0 to 0L
+            }) { Text(stringResource(R.string.set_covers_clear)) }
+        }
+        Spacer(Modifier.height(6.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Switch(checked = inList, onCheckedChange = {
+                inList = it
+                Prefs.setCoversInList(context, it)
+            })
+            Column {
+                Text(
+                    stringResource(R.string.set_covers_in_list),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    stringResource(R.string.set_covers_in_list_hint),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

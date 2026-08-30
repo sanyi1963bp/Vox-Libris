@@ -40,6 +40,7 @@ import hu.konyvtar.tts.vm.LibraryViewModel
 fun SettingsScreen(
     vm: LibraryViewModel,
     onBack: () -> Unit,
+    onOpenNowPlaying: () -> Unit,
     onPickRoot: () -> Unit
 ) {
     val context = LocalContext.current
@@ -62,9 +63,9 @@ fun SettingsScreen(
                         )
                     }
                 },
-                actions = { NowPlayingButton() }
             )
-        }
+        },
+        bottomBar = { NowPlayingBar(onOpen = onOpenNowPlaying) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -92,6 +93,12 @@ fun SettingsScreen(
                 }
             )
 
+            CoversCard(
+                covers = ui.covers,
+                onLoad = { vm.startCoverScan() },
+                onCancel = { vm.cancelCoverScan() }
+            )
+
             AppearanceCard()
             UiLanguageCard()
             NarrationLanguageCard()
@@ -102,6 +109,31 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    // ---------------------------------------------------------------- borítók eredménye
+    val covers = ui.covers
+    if (!covers.running && covers.done) {
+        AlertDialog(
+            onDismissRequest = { vm.clearCoverResult() },
+            title = {
+                Text(
+                    stringResource(R.string.covers_done_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+            text = {
+                Text(
+                    stringResource(R.string.covers_done, covers.found, covers.total),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { vm.clearCoverResult() }) {
+                    Text(stringResource(R.string.common_ok))
+                }
+            }
+        )
     }
 
     // ---------------------------------------------------------------- beolvasás eredménye

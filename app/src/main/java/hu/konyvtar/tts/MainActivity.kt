@@ -154,6 +154,7 @@ fun AppRoot(startInPlayer: Boolean) {
             LibraryScreen(
                 vm = vm,
                 onOpenBook = { row -> openReaderFor(row) },
+                onOpenNowPlaying = { openNowPlayingReader() },
                 onOpenShelf = { nav.navigate("shelf") },
                 onOpenFiles = { nav.navigate("explorer") },
                 onOpenStats = { nav.navigate("stats") },
@@ -165,6 +166,7 @@ fun AppRoot(startInPlayer: Boolean) {
             ShelfScreen(
                 vm = vm,
                 onOpenBook = { row -> openReaderFor(row) },
+                onOpenNowPlaying = { openNowPlayingReader() },
                 onBack = { nav.popBackStack() }
             )
         }
@@ -195,6 +197,7 @@ fun AppRoot(startInPlayer: Boolean) {
         composable("stats") {
             StatsScreen(
                 onBack = { nav.popBackStack() },
+                onOpenNowPlaying = { openNowPlayingReader() },
                 onOpenReader = { p ->
                     vm.readerTarget = LibraryViewModel.ReaderTarget(p.path, p.title, p.author)
                     nav.navigate("reader")
@@ -205,6 +208,7 @@ fun AppRoot(startInPlayer: Boolean) {
             SettingsScreen(
                 vm = vm,
                 onBack = { nav.popBackStack() },
+                onOpenNowPlaying = { openNowPlayingReader() },
                 onPickRoot = { nav.navigate("pick_root") }
             )
         }

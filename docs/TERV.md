@@ -85,17 +85,27 @@ Közben három valódi hiba derült ki, mind javítva: a fájlböngésző ürese
 nyílt hidegindítás után; a böngészés aktuális mappája számított a könyvtár
 gyökerének is; és a `&Otilde;` / `&odblac;` entitások nem oldódtak fel.
 
-## 2. fázis — Borítók és a polc kiteljesítése
+## 2. fázis — Borítók és a „most szól" sáv ✅ *(kész)*
 
-- **Borítókinyerés**: EPUB (OPF `cover`), MOBI/AZW3 (EXTH 201), FB2
-  (`<binary>` base64), PDF (első oldal kirajzolása). Ahol nincs borító, marad
-  a mostani **tipográfiai borító**.
-- **Bélyegkép-tár**: kicsinyítve (kb. 320×480 WebP, ~20 KB/db), méret látszik
-  a beállításokban és törölhető.
-- **Két menetben**: előbb a metaadatok futnak végig gyorsan (a polc máris
-  használható), utána a háttérben töltődnek a valódi borítók.
-- **A fájllistában is** lehessen borító — **kapcsolóval**, alapból kikapcsolva,
-  mert a magasabb sorokba kevesebb könyv fér.
+- **Borítókinyerés** magukból a könyvfájlokból. Minden formátumnak megvan a
+  maga rejtekhelye: az **EPUB** az OPF-ben jelöli meg (háromféleképpen is:
+  `<meta name="cover">`, `properties="cover-image"`, vagy egy „cover" nevű
+  kép), a **MOBI/AZW3** egy EXTH-rekordban tartja a kép rekordszámát, az
+  **FB2** base64-ben ágyazza be, a **PDF**-nél az első oldalt rajzoljuk ki.
+  Ahol nincs borító, marad a címből és a szerzőből rajzolt.
+- **Bélyegkép-tár**: kicsinyítve, WebP-ben (320×480, ~20 KB/db), az app saját
+  mappájában. Mérete látszik a beállításokban és törölhető — nem érték, bármikor
+  újra kinyerhető.
+- **Két menetben**: a metaadatok gyorsan végigfutnak és a könyvtár máris
+  használható, a borítók utána, a háttérben töltődnek. Amit egyszer
+  kinyertünk, azt nem próbáljuk újra.
+- **Borítók a listában** kapcsolóval, alapból kikapcsolva.
+- **„Most szól" sáv** minden képernyő alján: látod, melyik könyv szól és hol
+  tart, egy koppintással visszaugrasz hozzá, a gombbal bárhonnan
+  elnémítható. Csak akkor látszik, ha van betöltött könyv.
+
+A borítókinyerésre **16 új egységteszt** ügyel (a MOBI bájtpontos
+offset-számolására is), így összesen 48 teszt fut.
 
 ## 3. fázis — Olvasási élmény
 

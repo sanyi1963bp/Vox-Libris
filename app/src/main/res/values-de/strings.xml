@@ -278,4 +278,16 @@
     <string name="fmt_note_pdf">In Seiten gesetzt: Zeilenumbrüche und Seitenzahlen stören manchmal das Vorlesen.</string>
     <string name="fmt_note_none">Aus diesem Format lässt sich kein Text gewinnen.</string>
     <string name="info_folder">Ordner</string>
+
+    <!-- Boritok -->
+    <string name="set_covers_title">Cover</string>
+    <string name="set_covers_desc">Die Cover kommen aus den Buchdateien selbst. Wo keines vorhanden ist, bleibt das gezeichnete.</string>
+    <string name="set_covers_stats">%1$d Cover · %2$s</string>
+    <string name="set_covers_load">Cover laden</string>
+    <string name="set_covers_clear">Cover löschen</string>
+    <string name="set_covers_progress">%1$d / %2$d Bücher · %3$d Cover gefunden</string>
+    <string name="set_covers_in_list">Cover in der Liste</string>
+    <string name="set_covers_in_list_hint">Standardmäßig aus: höhere Zeilen zeigen weniger Bücher.</string>
+    <string name="covers_done_title">Cover geladen</string>
+    <string name="covers_done">%1$d Cover aus %2$d Büchern gefunden.</string>
 </resources>

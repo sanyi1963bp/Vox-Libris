@@ -1,5 +1,6 @@
 package hu.konyvtar.tts.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,28 +13,65 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import hu.konyvtar.tts.data.CoverStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
- * Tipográfiai könyvborító: ha a fájlból nincs kinyert borítókép, a címből és
- * a szerzőből rajzolunk egyet. A szín a címből származik, tehát ugyanaz a
- * könyv mindig ugyanolyan színű lesz.
+ * Könyvborító.
+ *
+ * Ha a fájlból ki tudtuk nyerni az igazi borítót, azt mutatjuk; ha nem, a
+ * címből és a szerzőből rajzolunk egyet. A rajzolt borító színe a címből
+ * származik, tehát ugyanaz a könyv mindig ugyanolyan.
+ *
+ * @param path a könyv fájlja; enélkül csak a rajzolt borító jön
  */
 @Composable
 fun BookCover(
     title: String,
     author: String,
     modifier: Modifier = Modifier,
-    compact: Boolean = false
+    compact: Boolean = false,
+    path: String? = null
 ) {
+    val context = LocalContext.current
+    var cover by remember(path) { mutableStateOf<ImageBitmap?>(null) }
+    LaunchedEffect(path) {
+        if (path == null) return@LaunchedEffect
+        cover = withContext(Dispatchers.IO) {
+            CoverStore.load(context, path)?.asImageBitmap()
+        }
+    }
+
+    val real = cover
+    if (real != null) {
+        Image(
+            bitmap = real,
+            contentDescription = title,
+            contentScale = ContentScale.Crop,
+            modifier = modifier.clip(RoundedCornerShape(if (compact) 3.dp else 8.dp))
+        )
+        return
+    }
+
     val pair = coverColors(title + "|" + author)
     Box(
         modifier = modifier

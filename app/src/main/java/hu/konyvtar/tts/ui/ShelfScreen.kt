@@ -60,6 +60,7 @@ import hu.konyvtar.tts.vm.LibraryViewModel
 fun ShelfScreen(
     vm: LibraryViewModel,
     onOpenBook: (FileRow) -> Unit,
+    onOpenNowPlaying: () -> Unit,
     onBack: () -> Unit
 ) {
     val ui by vm.ui.collectAsState()
@@ -85,9 +86,9 @@ fun ShelfScreen(
                         fontWeight = FontWeight.Bold
                     )
                 },
-                actions = { NowPlayingButton() }
             )
-        }
+        },
+        bottomBar = { NowPlayingBar(onOpen = onOpenNowPlaying) }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -185,6 +186,7 @@ private fun ShelfPage(
             BookCover(
                 title = book.title,
                 author = book.author,
+                path = book.path,
                 modifier = Modifier.fillMaxSize()
             )
         }

@@ -107,6 +107,7 @@ fun BookDetailsDialog(
                 BookCover(
                     title = shownTitle,
                     author = shownAuthor,
+                    path = book.path,
                     modifier = Modifier
                         .width(104.dp)
                         .aspectRatio(2f / 3f)

@@ -82,6 +82,17 @@ object Prefs {
         sp(context).edit().putBoolean("gesture_hint_seen", true).apply()
     }
 
+    /**
+     * Látszódjon-e bélyegkép a könyvlistában. Alapból nem: a képek magasabb
+     * sorokat jelentenek, és így kevesebb könyv fér egy képernyőre.
+     */
+    fun coversInList(context: Context): Boolean =
+        sp(context).getBoolean("covers_in_list", false)
+
+    fun setCoversInList(context: Context, value: Boolean) {
+        sp(context).edit().putBoolean("covers_in_list", value).apply()
+    }
+
     /** Keressen-e a kereső az almappákban is. */
     fun searchRecursive(context: Context): Boolean =
         sp(context).getBoolean("search_recursive", false)
