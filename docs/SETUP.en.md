@@ -137,21 +137,23 @@ worth exempting the app:
 - **Any Android:** Settings → Apps → **Könyvtár TTS** → Battery →
   **Unrestricted**.
 
-## A.7 Copying the catalogue and the books
+## A.7 Copying the books over
 
-1. Connect the phone to the PC over USB and choose **File transfer (MTP)** on
-   the phone.
-2. Copy the catalogue `.db` into the root of **internal storage** or into
-   `Download`. **The `.db` only** — not the `-wal` and `-shm` files! (If the
-   PC-side program was running, close it first so the `.db` is complete.)
-3. Copy your book files anywhere — these are perfectly fine on an SD card.
-4. In the app: **Settings → "Adatbázisfájl kiválasztása…"** (select database
-   file) if it is not in one of the usual locations.
+1. Connect the phone to the PC with a USB cable and choose
+   **"File transfer" (MTP)** on the phone.
+2. Copy the book files into any folder — an SD card is fine.
+3. In the app, show it the folder (it asks on first start; later:
+   **Settings → Books root folder**) and run the scan.
 
-> **Why internal storage for the `.db`?** SQLite performs many small random
-> reads, which are noticeably slower on a memory card. Book files are fine on
-> a card: the app reads each one once, and afterwards the extracted text
-> comes from the cache.
+**You do not need to copy a catalogue over**: the app builds one itself from
+the books on the phone. The finished catalogue goes into
+`Download/KonyvtarTTS/sajat_katalogus.db` — deliberately in a visible place, so
+it survives reinstalling the app and can be opened on a PC.
+
+> **Books can live on a card**, but the catalogue belongs on internal storage:
+> SQLite does many small random reads, which are noticeably slower on a memory
+> card. Book files are read through once, after which the extracted text comes
+> from the cache.
 
 ---
 

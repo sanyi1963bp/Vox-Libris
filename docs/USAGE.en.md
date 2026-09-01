@@ -1,247 +1,376 @@
-# Vox Libris — user guide
+# Vox Libris — usage guide
 
 🇬🇧 English (this page) · 🇭🇺 [Magyar](HASZNALAT.md) · ⬅ [Back to the main page](../README.en.md)
 
-> **Installation**, setting up the TTS engine and voices, Bluetooth details
-> and build dependencies live on a separate page:
-> **[Setup & dependencies](SETUP.en.md)**
-
-> **Note:** the app's user interface is in Hungarian. Where a button or label
-> matters, this guide gives the Hungarian text in quotes with the translation
-> next to it.
+> **Installing**, setting up the text-to-speech engine and its voices, the
+> Bluetooth details and the build dependencies are on a separate page:
+> **[Setup and dependencies](SETUP.en.md)**
 
 ---
 
 ## Contents
 
 1. [What you need](#1-what-you-need)
-2. [Installation](#2-installation)
-3. [First launch — permissions](#3-first-launch--permissions)
-4. [Setting up the catalogue](#4-setting-up-the-catalogue)
-5. [File browser](#5-file-browser)
-6. [Book details](#6-book-details)
-7. [Reader screen](#7-reader-screen)
-8. [Headset buttons](#8-headset-buttons)
-9. [Reading list and export](#9-reading-list-and-export)
-10. [Settings](#10-settings)
-11. [Troubleshooting](#11-troubleshooting)
+2. [Installing](#2-installing)
+3. [First start — permissions](#3-first-start--permissions)
+4. [Reading in your library](#4-reading-in-your-library)
+5. [Library — the start screen](#5-library--the-start-screen)
+6. [File browser](#6-file-browser)
+7. [The context menu](#7-the-context-menu)
+8. [Shelf](#8-shelf)
+9. [Reader screen](#9-reader-screen)
+10. [Headset buttons](#10-headset-buttons)
+11. [Reading list and export](#11-reading-list-and-export)
+12. [Settings](#12-settings)
+13. [Troubleshooting](#13-troubleshooting)
 
 ---
 
 ## 1. What you need
 
-- A phone running **Android 11 or newer**.
-- A **system TTS engine** with a voice for your language. Google
-  Text-to-Speech is preinstalled on most phones; the voice data has to be
-  downloaded once (Settings → Accessibility → Text-to-speech output).
-- **Book files** on the phone or an SD card.
-- Optionally an **SQLite catalogue** (`.db`) with the metadata. The app works
-  without one too — you simply get no title, author or synopsis next to the
-  files.
+- An **Android 11 or newer** phone.
+- A **system TTS engine** with a voice for your language. Most phones already
+  have Google Text-to-Speech; if a voice is missing, one button in the app's
+  settings downloads it.
+- **Books on the phone**, in one folder — subfolders are fine, and an SD card
+  works too.
 
-## 2. Installation
+No account, no internet, no prepared database.
 
-1. Copy `app-release.apk` to the phone.
-2. Tap it in a file manager and install. If the system blocks it, allow that
-   file manager to install from "unknown sources".
-3. To update, install the new APK over the old one — **your data (positions,
-   bookmarks, scan cache) is preserved.**
+## 2. Installing
 
-## 3. First launch — permissions
+The easiest way is the
+**[download page](https://sanyi1963bp.github.io/Vox-Libris/docs/)**: open it on
+the phone and one button installs the app.
 
-An explanatory screen greets you on first launch:
+By hand: download the APK from the
+[Releases](https://github.com/sanyi1963bp/Vox-Libris/releases) page and open it
+on the phone. The system will warn you about an app from an unknown source —
+that is normal, because it does not come from the Play Store; you have to allow
+installing from whatever app you opened it with.
 
-- **"All files access"** — required so the app can see your books and the
-  catalogue anywhere on storage. The button takes you to system settings;
-  turn it on and go back to the app (it notices by itself).
-- **Notification permission** (Android 13+) — requested in a popup. Granting
-  it puts the playback controls in the notification shade and on the lock
-  screen.
+## 3. First start — permissions
 
-## 4. Setting up the catalogue
+The app asks for **one permission that matters**: **"All files access"**.
+Without it, it cannot see your books. The button takes you to the system
+settings, where you switch it on.
 
-The app automatically looks for `ncore_konyvtar.db` in the root of internal
-storage and the SD card, and in the `Download`, `Documents` and `Books`
-folders.
+From Android 13 it also asks for **notification permission**. Everything works
+without it, you just get no controls on the lock screen.
 
-If yours lives elsewhere or has another name: **Settings** (gear icon, top
-right) → **"Adatbázisfájl kiválasztása…"** (select database file), then browse
-to it.
+**It does not ask for internet access, and cannot** — the permission is not in
+the manifest. All data stays on the phone.
 
-The header always shows the state: `68319 könyv` (books, in green) or
-`nincs DB` (no database, in red).
+## 4. Reading in your library
 
-> **Tip:** keep the `.db` on **internal storage**, not on an SD card. SQLite
-> does many small random reads, which are noticeably slower on a card. Book
-> files are fine on a card — the app reads each one once, after which the
-> extracted text comes from the cache.
->
-> When you refresh the catalogue on the PC, copy it over the old one with the
-> same name and path — everything keeps working and your positions survive.
+On first start the app asks **where your books are**, then offers to read them
+in. This happens in two passes:
 
-## 5. File browser
+**First pass — metadata.** It walks the folder and all its subfolders, reads
+the title, author, description, publisher, series, ISBN and tags out of the
+files, and builds a catalogue from them. A thousand books takes about a minute.
+When it finishes, your library is already usable.
 
-The app's home screen: dense, icon-free rows so that as many entries as
-possible fit on screen.
+**Second pass — covers.** It starts in the background and extracts the cover
+images from the files. This is slower (decoding an image, rendering a PDF
+page), which is why it runs separately — you can use the app meanwhile.
 
-### Two views
+### Running it again
 
-- **"Mappák"** (folders) — the real directory structure of your storage.
-- **"Katalógus"** (catalogue) — every previously scanned file in **one flat
-  list**, regardless of folders. With a large collection this is the more
-  useful one: you can search and sort across your whole library.
+After copying in new books: **Settings → Catalogue → Read the library**. The
+scan is **incremental** — existing entries are left alone, only new books are
+added. The same goes for covers: what was extracted once is never attempted
+again.
 
-### Top bar
+### Where the catalogue lives
 
-| Element | What it does |
+```
+Download/KonyvtarTTS/sajat_katalogus.db
+```
+
+Deliberately a **visible file**, not in the app's private storage: it survives
+reinstalling the app and can be opened on a PC with any SQLite tool. If you
+delete it, you only need to run the scan again — your reading progress is not
+kept in it.
+
+### Worth knowing
+
+- **It cannot invent a description.** Where the file contains none (typically
+  scanned PDFs and TXT), it stays empty.
+- **Duplicates are merged:** if you have the same book as both epub and mobi,
+  one catalogue entry is created with two files, based on an
+  accent-insensitive comparison of title and author.
+- **Bad metadata in the file:** sometimes a book has the title and author
+  swapped, or missing. The app writes down what is in the file — fix it in the
+  source file with Calibre and scan again.
+
+## 5. Library — the start screen
+
+All your books in one list. **Swipe** left or right to switch to the
+[file browser](#6-file-browser); two dots next to the title show where you are.
+
+### Search
+
+The search box looks at the **title, the author, the file name and your own
+notes** at once, accent-insensitive. It updates as you type, even with
+thousands of books.
+
+### Letter bar
+
+Under the search box. One tap on an initial keeps only those books; tapping the
+same letter again clears the filter.
+
+The bar **shows only letters you actually have books for** — no buttons leading
+nowhere. It follows the sort order (title or author), and accented letters fold
+into their base letter.
+
+> The letter bar is itself horizontally scrollable, so a swipe there moves the
+> bar first. To switch views, swipe over the list.
+
+### Sorting and the format filter
+
+Two icons next to the search box:
+
+| Icon | What it does |
 |---|---|
-| 📡 **radar** | recursive scan from the current folder down, plus catalogue matching |
-| 📊 **bar chart** | reading list and statistics |
-| ⚙ **gear** | settings |
-| **search field** | filter by file name, title and author |
-| 💾 **SD card icon** | switch storage volume (internal, SD card, USB) |
-| ⬆ **arrow** | go up one level |
+| **sort** | by title, author or format; choosing it again reverses the order |
+| **filter** | formats with counts (EPUB 2100, PDF 900…), one tap narrows the list |
 
-### Columns and sorting
+The format filter doubles as an **overview**: it tells you what is on your
+phone.
 
-The header reads **Név · Szerző · Méret · Dátum** (name · author · size ·
-date) — tap any of them to sort by it, tap again to reverse. The active
-column is coloured and marked with a ▲▼ arrow.
+### What a row shows
 
-Every row has two lines: file name, size and date on top; below it — when the
-catalogue has a match — **the author and title in green**.
+On the left the **format badge**, then the title, and under it the author and
+the file name. If you started the book, a **green progress bar** at the bottom.
+If it has a note, a small ✎ next to the title.
 
-### Scanning
+**A grey format badge means no text can be extracted from that file** — that
+book will not speak.
 
-The radar icon walks the current folder and all its subfolders, collects book
-files and matches them against the catalogue. You can watch the file and
-match counts as it goes; "Mégse" (cancel) stops it.
+### Taps
 
-Scanning is **incremental**: unchanged files are not reprocessed, so the
-second run is much faster.
-
-### Moving fast
-
-A **fast-scroll bar** sits on the right edge of the list — drag it to fly
-through tens of thousands of rows instantly.
-
-## 6. Book details
-
-Opens on a **single tap** on a file. It shows:
-
-- title, author and every catalogue field (publisher, year, ISBN, series,
-  tags),
-- the **synopsis / blurb**,
-- the first few thousand characters of the book as a **preview**,
-- your progress, if you have started it.
-
-Buttons: **"Folytatás"** (continue) or **"Felolvasás"** (read aloud),
-**"Elölről"** (from the start), **share** (hand the full text to another TTS
-app), and **"Olvasás képernyőn"** (read on screen).
-
-## 7. Reader screen
-
-The heart of the app: **you read and listen here** — there is no separate
-player screen.
-
-It opens from a long press in the browser, from the details screen, from the
-reading list, or by tapping the notification.
+| Gesture | What it does |
+|---|---|
+| **single tap** | selects the row |
+| **double tap** | opens it **and reads it aloud** from the last position |
+| **long press** | [context menu](#7-the-context-menu) |
 
 ### Top bar
 
 | Icon | Function |
 |---|---|
-| 🔍 | search in the text (accent-insensitive) |
-| 🔖+ | add bookmark |
-| 🔖 | bookmark list |
-| ⏹ | stop narration completely (only while it is playing) |
+| **shelf** | swipeable cover view |
+| **folder** | swipes to the file browser |
+| **bar chart** | reading list and statistics |
+| **gear** | settings |
 
-### Bottom control bar
+Below it, in one line: how many books the filter shows out of the total, and on
+the right the **Finished / In progress** counters — tapping one opens the list.
 
-| ⏫ | ⬆ | ⏮ | ▶/⏸ | ⏭ | ⬇ | ⏬ |
+## 6. File browser
+
+The same books, by folder. A dense, icon-free list so that as many rows as
+possible fit on one screen.
+
+### Top bar
+
+| Element | What it does |
+|---|---|
+| **book icon** | swipes back to the library |
+| **radar** | read the library |
+| **bar chart** | reading list and statistics |
+| **gear** | settings |
+| **search box** | filter by file name, title and author |
+| **"Subfolders too"** | the search covers the whole tree, not just one level |
+| **SD card icon** | switch storage (internal, SD card, USB) |
+| **⬆ arrow** | one level up |
+
+### Columns and sorting
+
+The header has **Name · Author · Size · Date** — tap any of them to sort by it;
+tap again to reverse.
+
+Every row has two parts: the file name, size and date on top; underneath — if
+it is in the catalogue — the author and the title.
+
+### Taps
+
+| Gesture | What it does |
+|---|---|
+| **single tap** | open the folder, or open the book for reading |
+| **double tap** | open **and read aloud** |
+| **long press** | [context menu](#7-the-context-menu) |
+
+The **ⓘ** button at the end of the row opens the details sheet directly.
+
+### Moving quickly
+
+There is a **fast scrollbar** along the right edge — drag it and you fly
+through tens of thousands of rows.
+
+## 7. The context menu
+
+**It opens on long press, and it is the same in both views.**
+
+| Entry | What it does |
+|---|---|
+| **Details** | cover, description, all metadata, how far you are |
+| **Note** | your own note on the book (saving it empty deletes it) |
+| **Rename** | within the file's own folder |
+| **Move** | to another folder, with a small folder browser |
+| **Copy** | to another folder; the original stays |
+| **Delete** | permanent — always asks, and shows the file name |
+
+### Why in the app and not in a file manager
+
+This menu does not just move the file: **everything attached to it follows** —
+the catalogue entry, the reading progress, the bookmarks, the note and the
+thumbnail.
+
+Do the same in a file manager and all of that stays behind on the old path, and
+the book turns up **as new, from zero**.
+
+### About deleting
+
+There is no undo and no trash. The confirmation dialog shows the file name —
+read it before you agree.
+
+### In the reader
+
+For the book you are currently reading there are **no file operations**: it
+will not be renamed or deleted from under you, because that would break the
+narration path and the position saving. **You can still write a note** — in
+fact that is where it is most useful.
+
+## 8. Shelf
+
+A swipeable cover view: browse your books as if standing in front of a shelf.
+It opens from the **shelf icon** in the top bar.
+
+It shows whatever the **list currently filters** — if you searched for
+something or narrowed it to one letter, only those books are on the shelf.
+
+Under the cover: title, author and a progress bar. Tap to open the book, long
+press for its details.
+
+Where no cover could be extracted from the file, a **drawn cover** appears,
+made from the title and the author — the colour comes from the title, so the
+same book always looks the same.
+
+## 9. Reader screen
+
+This is the heart of the app: **you read here and you listen here** — there is
+no separate player.
+
+You can get here by double-tapping in the list or the browser, from the details
+sheet, from the reading list, by tapping the now-playing bar, or from the
+notification.
+
+### Top bar
+
+| Icon | Function |
+|---|---|
+| **⬅** | back |
+| **🔍** | search inside the text (accent-insensitive) |
+| **gear** | settings |
+| **⋮** | bookmark here · bookmark list · details · stop narration |
+
+### Bottom controls
+
+At the top a status line: which paragraph you are on, and while narrating, the
+chapter, the percentage and the time spent listening. Next to it two toggles:
+
+- 🎯 **follow** — the text scrolls along with the narration (if you scroll
+  yourself, it does not jump out from under your hand),
+- 🎚 **tuning** — opens font size, speed (0.5×–3×) and pitch.
+
+Under that the **position slider** with a percentage, and at the bottom the
+transport:
+
+| ⏫ | ⏮ | ◀ | ▶/⏸ | ▶ | ⏭ | ⏬ |
 |---|---|---|---|---|---|---|
-| previous chapter | one screen back | previous sentence | play/pause | next sentence | one screen forward | next chapter |
-
-Below it:
-
-- **A− / A＋** — font size (remembered),
-- **position slider** — jump anywhere in the book, with a percentage readout,
-- 🎯 **follow** — when on, the text scrolls along with the narration (it will
-  not yank the page away while you are scrolling yourself),
-- 🎚 **tuning** — speed (0.5×–3×) and pitch sliders.
-
-The info line shows which paragraph you are on, plus the percentage and time
-listened while narration is running.
+| chapter back | paragraph back | sentence back | play/pause | sentence forward | paragraph forward | chapter forward |
 
 ### Gestures on the text
 
-- **Double tap** → narration starts **exactly from the sentence** you tapped.
-- **Long press** → bookmark for that paragraph (a 🔖 appears in front of it).
+- **Double tap** → narration starts **exactly from the sentence** you touched.
+- **Long press** → a bookmark on that paragraph (🔖 appears in front of it).
 
-The sentence being read is **highlighted**, its paragraph faintly tinted — so
-you can follow along visually.
+The sentence being spoken is **highlighted**, and its paragraph faintly tinted
+— so you can follow along by eye.
 
-### In-text search
+### Search inside the text
 
-Opens with the 🔍 icon. Searches from 2 characters up, **ignoring accents**
-(typing "varazslono" finds "varázslónő"). Hits are highlighted, a counter
-shows your position (e.g. `3/17`), and the ▲▼ buttons jump between them.
+Opens with 🔍. It searches from 2 characters, **accent-insensitively**. Hits are
+highlighted, the counter shows where you are (e.g. `3/17`), and ▲▼ jump between
+them.
 
 ### Bookmarks
 
-Long-press anywhere in the text, or use the 🔖+ button. While narration is
-running the bookmark lands **on the sentence being read**, not on whatever
-you happen to be looking at.
+Long press anywhere in the text, or the ⋮ menu's *Bookmark here*. While
+narration is running, the bookmark lands **on the spoken position**, not where
+you happen to be looking.
 
-The list behind the 🔖 button shows the paragraph number, the date and a
-snippet; tap to jump there, use the bin icon to delete.
+The list shows the paragraph number, the date and a snippet; tap to jump there,
+the bin icon deletes it.
 
 ### Chapters
 
-Chapter navigation works per format:
+Chapter stepping works differently per format:
 
-- **epub** — real chapter documents and headings,
-- **mobi, html** — headings (`h1`–`h6`),
-- **fb2** — section titles,
-- **txt, rtf, pdf, docx** — heading heuristics (numbered chapters, roman
-  numerals, all-caps lines).
+- **epub** — from the real chapter files and the headings,
+- **mobi, html** — from the headings (`h1`–`h6`),
+- **fb2** — from the section titles,
+- **txt, rtf, pdf, docx** — by heuristics (chapter words, Roman numerals,
+  all-caps lines).
 
-If no chapter markers are found at all, the button falls back to ~5% jumps so
+If no chapter marks can be found at all, the button falls back to ~5% jumps, so
 it is never useless.
 
-## 8. Headset buttons
+Chapter breaks are marked in the text by a **blood-red band**, and a deeper
+double tone sounds before them during narration (switchable).
 
-Works with both Bluetooth and wired headsets, including single-button types:
+### Now-playing bar
 
-| Press | Effect |
+While narration is running, the book's title and progress sit at the bottom of
+**every other screen**. The button silences it from anywhere, and tapping the
+bar takes you back to the book, right where it is.
+
+## 10. Headset buttons
+
+Works with Bluetooth and wired headsets, including single-button types:
+
+| Presses | Effect |
 |---|---|
 | **1×** | play / pause |
-| **2×** | rewind ~5 seconds |
-| **3×** | also rewinds |
+| **2×** | ~5 seconds back |
+| **3×** | also jumps back |
 
 The "5 seconds" is an estimate: TTS has no real timeline, so the app converts
-it from the configured speech rate and snaps to a sentence boundary.
+from the speech rate you set and snaps to a sentence boundary.
 
-Button control stays alive while narration is playing or paused (the
-notification is visible). Once you fully stop it with ⏹, the headset button
-no longer restarts it — deliberately, so it cannot start talking in your
+Button control lives as long as the reader is running or paused (the
+notification is visible). If you stop it completely with **Stop**, the headset
+button will not restart it — deliberately, so nothing starts talking in your
 pocket.
 
-## 9. Reading list and export
+## 11. Reading list and export
 
-Opens with the 📊 icon in the browser.
+Opens from the 📊 icon in the top bar, or by tapping the counters at the top of
+the library.
 
-Four figures at the top: **started · finished · in progress · total listening
+Four numbers on top: **Started · Finished · In progress · total listening
 time**. Below, two sections:
 
-- **📖 "Folyamatban"** (in progress) — started but not finished,
-- **✔ "Elolvasott"** (finished) — above 98%.
+- **📖 In progress** — the ones you started but have not finished,
+- **✔ Finished** — the ones above 98%.
 
-Each book shows a progress bar, exact percentage, listening time, last date,
-and three buttons: **▶ read aloud**, **📖 read on screen**, **🗑 remove from
-the list**.
+Each book has a progress bar, an exact percentage, listening time, the last
+date, and three buttons: **▶ read aloud**, **📖 read**, **🗑 remove from the
+list**.
 
-Progress counts the **higher** of on-screen reading and narration.
+Progress counts the **larger** of on-screen reading and narration.
 
 ### Export
 
@@ -249,105 +378,78 @@ Two buttons in the header:
 
 - **💾 Save** — writes the record into `Download/KonyvtarTTS/`:
   - `olvasas_<date>.csv` — status, title, author, completion %, paragraph,
-    minutes listened, last opened, file path, book ID
+    minutes listened, last time, file path, book ID
   - `konyvjelzok_<date>.csv` — every bookmark with its snippet
   - `konyvtar_tts_<date>.db` — a copy of the app's whole database
-- **📤 Share** — runs the same export, then hands the CSVs to e-mail, cloud
-  storage, anything.
+- **📤 Share** — runs the same, then hands the CSVs to e-mail, cloud, anything.
 
-The CSV is **semicolon-separated with a UTF-8 BOM**, so Excel and LibreOffice
-open it correctly on a double click. The `.db` copy is plain SQLite, so you
-can query it on a PC with any tool (e.g. Python's `sqlite3`).
+The CSV is **semicolon-separated, UTF-8 with BOM**, so Excel and LibreOffice
+open it correctly on a double click. The `.db` copy is SQLite, so it can be
+queried on a PC with any tool (e.g. Python's `sqlite3`).
 
-## 10. Settings
+## 12. Settings
 
-- **Catalogue database** — current path and state, and a picker to change it.
-- **Books root folder** — where the browser opens on start.
-- **Build catalogue from books** — see [10/a](#10a-building-a-catalogue-from-your-books).
-- **Caches** — how many files you have scanned and how much extracted text is
-  stored; both can be cleared. (Clearing does **not** touch your positions.)
-- **Text-to-speech** — a shortcut to the system TTS settings, where you can
-  change engine and voice.
+Cards, one under the other:
 
-## 10/a. Building a catalogue from your books
-
-With no prepared catalogue, the app **can build one itself** — from the
-metadata stored inside the book files, with no internet.
-
-**How:** Settings → *"Katalógus építése a könyvekből"* (build catalogue from
-books) → **Build**. It walks the current root folder recursively and writes
-the result to `Download/KonyvtarTTS/sajat_katalogus.db`. When it finishes, one
-button puts it straight into use.
-
-**Re-running after adding books:** the button then reads *"Frissítés az új
-könyvekkel"* (update with new books). **Existing entries are left alone** — it
-recognises by file path what is already in there and only processes new files.
-So the second run is much faster, and anything you fixed by hand or on the PC
-survives.
-
-### What it finds per format
-
-| Format | Extracted |
+| Card | What it sets |
 |---|---|
-| **EPUB** | title, author, publisher, year, ISBN, language, **synopsis**, series + index, tags |
-| **FB2** | author, title, **annotation**, genre, series, publisher, year, ISBN |
-| **MOBI/AZW3** | title, author, publisher, **description**, ISBN, subjects, date |
-| **DOCX** | title, author, description, keywords |
-| **RTF** | title, author, subject, comment (when filled in) |
-| **PDF** | title, author, keywords — **toggleable**, because it is slower |
-| **TXT and the rest** | title and author guessed from the file name |
+| **Books root folder** | where the scan looks for your books |
+| **Catalogue** | how many works and files it holds, where the file is, whether to scan PDFs, **Read the library**, remove missing files |
+| **Covers** | how many covers there are and how much space they take, **Load covers**, delete, and the **Covers in the list** toggle (off by default) |
+| **Appearance** | light/dark/system theme, six colour schemes, interface font size |
+| **Interface language** | ten languages, or follow the system |
+| **Narration language** | any language of the installed TTS engine, plus a button to the voice downloader |
+| **Audio cues** | chapter cue on/off, its volume |
+| **Reading and controls** | follow, keep the screen on, how far the headset's double press jumps back |
+| **Cache** | how much extracted text is stored, clearable (it does not touch your positions) |
+| **Text-to-speech engine** | jump to the system TTS settings |
 
-The **PDF toggle** exists because reading PDF metadata requires walking the
-file structure, which is slow for large files. On top of that, PDF "titles"
-are often junk (the scanner software's name, a file name, "Microsoft Word -
-something.doc"), so the app filters obviously useless values out and falls
-back to the file name.
+> **The interface language is separate from the narration language.** You can
+> read an English book with a Hungarian interface, or the other way round.
 
-### Worth knowing
+## 13. Troubleshooting
 
-- **It cannot invent a synopsis.** Where the file carries no description
-  (typically scanned PDFs and TXT files), the synopsis stays empty.
-- **Duplicates are merged:** if the same book exists as both epub and mobi,
-  one catalogue entry is created with two files, based on an
-  accent-insensitive comparison of title and author.
-- **The schema is identical** to the PC-built catalogue (`konyvek` +
-  `fizikai_fajlok`), so the file opens in any SQLite tool on your computer
-  and the app treats it the same way.
-- **Bad metadata inside a file:** some books have title and author swapped,
-  or fields missing. The app writes whatever the file says — fix it in the
-  source file with Calibre and rebuild.
-- **Old entries persist.** To remove things, delete the whole
-  `sajat_katalogus.db` and build again.
+**The list is empty although I have books**
+The scan has not run yet. Settings → Catalogue → Read the library. Also check
+that the root folder points where you think it does.
 
-## 11. Troubleshooting
-
-**Red "nincs DB" in the header**
-The catalogue was not found. Settings → select database file. Check that you
-copied the `.db` itself (not the `-wal`/`-shm` files).
+**I see no covers, only coloured placeholders**
+Covers load in the second pass. Settings → Covers → Load covers. Where the file
+contains no cover (TXT, RTF, DOCX), the drawn one stays.
 
 **I cannot see the SD card**
-Use the 💾 icon at the start of the path row to switch volumes. If the card is
-not listed, the system has not mounted it.
+In the browser, switch storage with the 💾 icon. If the card does not appear,
+the system has not mounted it.
 
-**"Ez a könyv DRM-védett" (this book is DRM protected)**
+**"This book is DRM protected"**
 Mobipocket-encrypted files cannot be opened. Convert them (e.g. with Calibre)
 to a free format.
 
-**"A PDF nem tartalmaz szövegréteget" (the PDF has no text layer)**
-It is a scanned, image-based PDF. Run OCR on it, then read the resulting
-`.txt`.
+**"The PDF has no text layer"**
+A scanned, image-based PDF. It needs OCR first, after which it works as `.txt`.
 
-**`.doc` files will not play**
-The old binary `.doc` format is not supported — convert to `.docx` or `.txt`.
+**`.doc` files do not speak**
+The old binary `.doc` is not supported — convert to `.docx` or `.txt`. That is
+why their badge is grey in the list.
 
 **Narration stops after a while**
-Battery optimisation likely killed the service. Exempt the app in system
-settings (Settings → Apps → Könyvtár TTS → Battery → Unrestricted).
+Battery optimisation may have killed the service. In the system settings,
+exempt the app from power restrictions (Settings → Apps → Vox Libris →
+Battery → Unrestricted).
 
-**No voice for my language**
-Settings → Text-to-speech → in the system TTS settings, download the language
-pack for Google Text-to-Speech.
+**There is no voice for my language**
+Settings → Narration language → *Download voices*, or download the language
+pack in the system TTS settings.
 
 **The first open is slow**
-The first time, the app extracts the entire text from the book (which can take
-a while for a large PDF). Afterwards it comes from the cache and is instant.
+The first time, the app extracts the whole text from the book (with a large PDF
+this can take a while). After that it comes from the cache and is instant.
+
+**Swiping does not change the view**
+You are probably swiping on the letter bar, which scrolls itself. Try over the
+list.
+
+**I renamed a file and lost my progress**
+If you renamed it outside the app, in a file manager, then yes — the app looks
+on the old path. Use the [context menu](#7-the-context-menu); it carries
+everything over.

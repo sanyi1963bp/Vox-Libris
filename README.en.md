@@ -1,203 +1,254 @@
 # Vox Libris
 
-**Local e-book library browser and text-to-speech reader for Android — built for very large libraries.**
+**Local e-book library and text-to-speech reader for Android — built for very
+large libraries.**
 
 🇬🇧 English (this page) · 🇭🇺 [Magyar](README.md)
 
-**Interface in ten languages**: English · Hungarian · German · French ·
+**The interface in ten languages**: Hungarian · English · German · French ·
 Spanish · Portuguese · Polish · Czech · Slovak · Russian
 
-🔧 [Setup](docs/SETUP.en.md) · 📖 [User guide](docs/USAGE.en.md) · 🗺 [Roadmap](docs/ROADMAP.en.md) · 📝 [Changelog](CHANGELOG.md)
+📱 [Download and tester guide](https://sanyi1963bp.github.io/Vox-Libris/docs/) ·
+🔧 [Setup](docs/SETUP.en.md) · 📖 [Usage](docs/USAGE.en.md) ·
+🗺 [Roadmap](docs/ROADMAP.en.md) · 📝 [Changelog](CHANGELOG.md)
 
 ---
 
-A native Android application (Kotlin + Jetpack Compose). It **builds its own
-catalogue** from the books on your phone — using the metadata stored inside
-the files, with no internet — and then reads them aloud with the system TTS
-engine: sentence by sentence, with automatic resume, bookmarks and headset
-button control.
+A native Android app (Kotlin + Jetpack Compose). It **builds its own
+catalogue** from the books on your phone — out of the metadata stored in the
+files, with no internet — and then reads them aloud through the system's
+text-to-speech engine: sentence by sentence, resuming automatically, with
+bookmarks and headset-button control.
 
 No account, no server, no prepared database: install it, show it where your
-books are, and that is all.
+books are, and that's it.
 
-Cover images are **deliberately never touched**: the app reads no image from
-external folders, nor from inside the book files. That is what keeps scrolling
-instant with 70,000+ records, and keeps memory usage flat.
+The app appears on the phone as **Vox Libris** (**Könyvtár TTS** in Hungarian).
 
-> **Note:** the interface is available in ten languages and can be switched
-> in the settings, independently of the narration language. The
-> sentence-splitting heuristics were tuned for Hungarian but work for other
-> Latin-script languages as well.
+## Two views
 
-The app appears on the phone as **Könyvtár TTS** ("Library TTS").
+The start screen is the **library**: all your books in one list, with search, a
+letter bar and a format filter. **Swipe** left or right to switch to the
+**file browser**, where you see the same books by folder. Two dots next to the
+title show which view you are on.
+
+There is also a **shelf** (flipping through covers, from the top bar icon) and
+a **reader screen**, where the text and every control live together.
 
 ## Gestures at a glance
 
-| Gesture | In the file browser | In the reader |
+| Gesture | Library and browser | While reading |
 |---|---|---|
-| **Single tap** | open folder / open the book for reading | — |
-| **Double tap** | open **and read aloud** from the last position | read aloud **from the tapped sentence** |
-| **Long press** | open the book | add a bookmark to the paragraph |
+| **Single tap** | select / open folder | — |
+| **Double tap** | open **and read aloud** from the last position | read aloud **from the sentence you touched** |
+| **Long press** | context menu (details, note, file operations) | bookmark the paragraph |
 
-## Features
+## Main features
 
 - **Its own catalogue, without internet.** The app walks your books folder and
-  builds a catalogue **from the files' own embedded metadata** (EPUB/FB2/MOBI/
-  DOCX headers: title, author, synopsis, publisher, series, ISBN, tags).
-  Re-running it is **incremental**: existing entries are left untouched, only
-  newly copied books are added. The catalogue is a visible file, so it survives
-  reinstalling the app.
-- **The shelf is the start screen.** A pageable cover view: browse your books
-  like standing in front of a shelf. Under each cover a progress bar shows
-  where you are — no bar means you have not started it.
-- **Total Commander style browser.** Dense, icon-free file rows (name, size,
-  date, matched author/title), folder navigation, recursive scanning, sort by
-  tapping a column header, fast-scroll bar, storage switcher
-  (internal ⇄ SD card ⇄ USB). Each book has an **ⓘ button** for its details
-  and a **progress bar** once you have started it.
-- **A single book screen.** The text and every control in one place — no
-  separate player or details window. One bottom row: **chapter ◀ ·
-  paragraph ◀ · sentence ◀ · ▶/⏸ · sentence ▶ · paragraph ▶ · chapter ▶**.
-  Next to it a position slider, font size, **follow mode** (the text scrolls
-  along with narration) and **tuning** (speed, pitch). Top bar: search,
-  settings, and a menu with bookmarks, book info and stop.
-- **Audio cues.** A soft tone before every paragraph and a deeper double tone
-  before every chapter — each toggleable, with adjustable volume. Chapter
-  boundaries are also marked with a **blood-red band** in the text.
-- **Appearance.** Light/dark theme or follow-system, **six colour schemes**
-  (classic green, ocean blue, sepia, sunset, night, high contrast), and
-  separately adjustable font sizes for the interface and the book.
-- **Narration language.** Any language the installed TTS engine offers can be
-  selected, and the voice installer opens with a single button.
-- **Sentence-level narration.** TTS advances sentence by sentence, the
-  current sentence is highlighted, and the saved position is
-  sentence-accurate — so resuming always picks up exactly where you stopped.
-- **In-text search.** Accent-insensitive (typing *varazslono* finds
-  *varázslónő*), with highlighted hits, ▲▼ navigation and a match counter.
-- **Bookmarks.** Long-press anywhere; list, jump, delete. A bookmark added
-  during playback lands on the sentence being read.
-- **Headset buttons** (Bluetooth and wired, via MediaSession):
-  1 press = play/pause, 2 presses = rewind ~5 seconds.
-- **Ten languages.** The whole interface is translated, and the **interface
-  language is set separately from the narration language**. Adding a language
-  is a single XML file, no coding involved.
-- **Reading list and statistics.** Separate **finished** and **in progress**
-  sections, with progress bars, listening time and last-opened dates.
-- **Export.** The reading record as CSV plus a copy of the SQLite database
-  into `Download/KonyvtarTTS/` (to copy over to a PC), or shared straight to
-  e-mail / cloud storage.
-- **External TTS.** The extracted plain text can be handed to another
-  text-to-speech app via `ACTION_SEND`.
+  builds a catalogue **from the files' own metadata** (title, author,
+  description, publisher, series, ISBN, tags from EPUB/FB2/MOBI/DOCX headers).
+  Running it again is **incremental**: existing entries are left alone, only
+  newly copied books are added. The catalogue is a visible file
+  (`Download/KonyvtarTTS/sajat_katalogus.db`), so it survives reinstalling the
+  app and can be opened on a PC.
+- **Search that actually finds things.** It looks at the **title, the author,
+  the file name and your own notes** at once, accent-insensitive. Filtering
+  runs in memory, so it updates as you type even with thousands of books.
+- **A letter bar** that shows only the initials you actually have books for —
+  no buttons leading nowhere. It follows the sort order: title or author.
+- **Real covers**, extracted from the book files themselves: EPUB (three
+  different OPF conventions), MOBI/AZW3 (EXTH record), FB2 (base64), PDF (the
+  first page rendered). Stored downscaled as WebP (~20 KB each), loaded in a
+  **second, background pass** so the list is usable straight away. Where a
+  book has no cover, one is drawn from the title and the author.
+- **Format at a glance.** Every row carries a format badge; formats that
+  cannot be read aloud are **grey**. The format filter lists what is on the
+  phone, with counts.
+- **File operations from every view.** Rename, move, copy, delete — and
+  **everything attached to the file follows it**: the catalogue entry, the
+  reading progress, the bookmarks, the note and the thumbnail. Doing the same
+  in a file manager would silently lose all of it.
+- **Personal notes.** Attach anything to a book; a mark in the list shows
+  which books have one, and search looks inside the notes too.
+- **One single book screen.** Text and every control in one place — no
+  separate player or detail window. In one row at the bottom:
+  **chapter ◀ · paragraph ◀ · sentence ◀ · ▶/⏸ · sentence ▶ · paragraph ▶ ·
+  chapter ▶**. Next to it a position slider, font size, **follow** (the text
+  scrolls along with the narration) and **tuning** (speed, pitch).
+- **A now-playing bar** at the bottom of every screen: you see which book is
+  playing and how far it is, one tap takes you back to it, and the button
+  silences it from anywhere.
+- **Sentence-level narration.** The engine advances sentence by sentence; the
+  current sentence is highlighted; the saved position is sentence-accurate, so
+  resuming always picks up exactly where you left off.
+- **A cue before each chapter** — a deeper double tone, separately switchable
+  with adjustable volume. Chapter breaks are also marked in the text by a
+  **blood-red band**.
+- **Search inside the text.** Accent-insensitive, hits highlighted, ▲▼ to jump
+  between them, with a counter.
+- **Bookmarks.** Long press anywhere in the text; list, jump, delete.
+- **Headset buttons** (Bluetooth and wired, over MediaSession):
+  1 press = play/pause, 2 presses = ~5 seconds back.
+- **Appearance.** Light/dark theme or follow the system, **six colour
+  schemes** (classic green, sea blue, sepia, sunset, night, high contrast),
+  and separately adjustable font size for the interface and for the book.
+- **Ten languages.** The whole interface is translated, and **the interface
+  language is set separately from the narration language**. Adding a new
+  language is one XML file, no code.
+- **Reading list + statistics.** **Finished** and **in progress** books in
+  separate categories, with progress bars, listening time and last date.
+- **Export.** The reading record to CSV and an SQLite copy in
+  `Download/KonyvtarTTS/`, or shared by e-mail or to the cloud.
 
 ## Format support
 
-| Format | Status |
-|---|---|
-| epub, txt, fb2, htm/html | full |
-| mobi, prc, azw, azw3 | full (PalmDOC decompression; clear error message for DRM and HUFF/CDIC files) |
-| rtf | full (including Windows-1250 code page) |
-| pdf | text layer extraction (scanned PDFs report an error — run OCR and read the .txt) |
-| docx | full |
-| doc, djvu | listing and matching only — convert for narration (e.g. with Calibre) |
+| Format | Narration | Cover |
+|---|---|---|
+| epub | full | yes |
+| fb2 | full | yes |
+| mobi, prc, azw, azw3 | full (PalmDOC decompression; a clear message for DRM and HUFF/CDIC files) | yes |
+| pdf | text layer extraction (a clear message for scanned PDFs — after OCR they work as .txt) | first page |
+| txt, htm/html | full | no |
+| rtf | full (including the Windows-1250 code page) | no |
+| docx | full | no |
+| doc, djvu | no — needs converting first (e.g. with Calibre) | no |
 
-Every format is handled by a **self-contained, dependency-free parser**; PDF
-is the only one using an external library (PDFBox-Android).
+Every format is handled by a **hand-written, dependency-free reader** (only
+PDF uses an external library, PDFBox-Android).
+
+## Installing
+
+The easiest route is the
+**[download page](https://sanyi1963bp.github.io/Vox-Libris/docs/)**: open it on
+the phone and one button installs the app; everything you need to know is on
+that page.
+
+By hand:
+
+1. Download the latest APK from the
+   [Releases](https://github.com/sanyi1963bp/Vox-Libris/releases) page and
+   install it (you may need to allow "unknown sources").
+2. On first start grant **"All files access"** (the button takes you to the
+   system settings), and on Android 13+ the notification permission too.
+3. The app asks **where your books are** — pick the folder.
+4. Then it offers to **read them in**. One button, and the catalogue is built;
+   covers load in the background afterwards.
+
+After copying in new books just run the scan again (Settings → Catalogue): it
+leaves existing entries alone and only adds the new ones.
+
+**You also need a text-to-speech engine** with a voice for your language. That
+is part of the system, not of this app — installing it, downloading voices and
+the Bluetooth headset details are described in
+**[docs/SETUP.en.md](docs/SETUP.en.md)**.
+
+A detailed walkthrough of every screen: [docs/USAGE.en.md](docs/USAGE.en.md)
 
 ## Building
 
-Prerequisites: Android Studio, or just the Android SDK + JDK 17.
+Prerequisite: Android Studio, or just the Android SDK + JDK 17.
 
 ```bash
 gradlew.bat assembleRelease
 ```
 
-Output: `app/build/outputs/apk/release/app-release.apk` (~9 MB, signed with
+Output: `app/build/outputs/apk/release/app-release.apk` (~10 MB, signed with
 the debug key so it installs right away). From Android Studio: open the
-folder and hit Run ▶.
+folder, then Run ▶.
+
+The unit tests run without an emulator:
+
+```bash
+gradlew.bat testDebugUnitTest
+```
 
 Minimum Android 11 (API 30), target Android 15 (API 35).
 AGP 8.11.1 · Kotlin 2.2.0 · Gradle 8.13 · Compose BOM 2025.01.00
-
-## Install and first run
-
-1. Copy `app-release.apk` to the phone and install it (you may need to allow
-   "unknown sources").
-2. Copy your book files to any folder (an SD card is fine).
-3. On first launch grant the **"All files access"** permission (the button
-   takes you to system settings), and the notification permission on
-   Android 13+.
-4. The app asks **where your books are** — pick the folder.
-5. Then it offers to **read them**. One button, and the catalogue is built; at
-   the end the shelf opens with your books.
-
-After copying in new books just run the scan again (Settings → Catalogue): it
-leaves existing entries untouched and only adds the new ones.
-
-**You also need a TTS engine** with a voice for your language. It is part of
-the system, not of this app — installing it, downloading voices and
-everything about Bluetooth headsets is covered here:
-**[docs/SETUP.en.md](docs/SETUP.en.md)**
-
-Full walkthrough of every screen: [docs/USAGE.en.md](docs/USAGE.en.md)
 
 ## Architecture
 
 ```
 app/src/main/java/hu/konyvtar/tts/
-├── MainActivity.kt        – navigation, permission screen
-├── App.kt                 – application-level init
-├── model/Models.kt        – data classes, progress calculation
+├── MainActivity.kt            – navigation, the swipeable main screen, permissions
+├── App.kt                     – app-level initialisation
+├── model/Models.kt            – data classes, progress calculation
 ├── data/
-│   ├── CatalogDb.kt       – the external catalogue (read-only) + CatalogHolder
-│   ├── AppDb.kt           – own DB: scan cache, positions, bookmarks
-│   ├── Matcher.kt         – file name → book matching, text normalisation
-│   ├── FileScanner.kt     – recursive scan, incremental cache
-│   ├── Exporter.kt        – CSV + SQLite export into Downloads
-│   └── Prefs.kt           – settings
-├── reader/                – text extraction per format
-│   ├── TextExtractor.kt   – single entry point, chapters, text cache
-│   └── Sentences.kt       – Hungarian sentence boundary detection
-├── tts/TtsService.kt      – foreground service: TTS, position saving, MediaSession
-└── ui/                    – Compose screens (Explorer, Detail, Reader,
-                             Stats, Settings, FilePicker)
+│   ├── Catalog.kt             – the app's own catalogue (a visible .db in Downloads)
+│   ├── AppDb.kt               – positions, bookmarks, notes
+│   ├── LibraryScanner.kt      – the scan: metadata extraction + catalogue write
+│   ├── MetadataExtractor.kt   – title, author, description from the files
+│   ├── CoverExtractor.kt      – cover extraction per format
+│   ├── CoverStore.kt          – thumbnail store (WebP + memory cache)
+│   ├── CoverScanner.kt        – the covers' background second pass
+│   ├── FileOps.kt             – rename, move, copy, delete
+│   ├── Normalizer.kt          – text normalisation, accent folding
+│   ├── Exporter.kt            – CSV + SQLite export to Downloads
+│   └── Prefs.kt               – settings
+├── reader/                    – text extraction per format
+│   ├── TextExtractor.kt       – single entry point, chapters, text cache
+│   ├── Sentences.kt           – sentence boundary detection
+│   └── XmlReader.kt           – Android-free XML, so the parsers are testable
+├── tts/TtsService.kt          – foreground service: TTS, position, MediaSession
+├── vm/
+│   ├── LibraryViewModel.kt    – catalogue, filtered list, shelf, scanning
+│   └── BrowserViewModel.kt    – browsing the file system
+└── ui/                        – Compose screens
+    ├── LibraryScreen.kt       – the library list (start screen)
+    ├── ExplorerScreen.kt      – file browser
+    ├── ShelfScreen.kt         – swipeable cover view
+    ├── ReaderScreen.kt        – state and wiring; the presentation lives in
+    │                            ReaderTopBar, ReaderControls, ReaderText,
+    │                            BookmarksDialog
+    ├── BookDetails.kt         – the book's details sheet (for all three views)
+    ├── FileActions.kt         – the context menu and its dialogs
+    └── …                      – Settings, Stats, FilePicker, NowPlayingBar
+
+app/src/test/java/hu/konyvtar/tts/   – 55 unit tests, no emulator needed
 ```
 
-Key design decisions:
+Notable design decisions:
 
-- **Reading positions live in the app's own database**, not in the
-  catalogue — so refreshing the catalogue (re-copying it from the PC) never
-  wipes your progress.
-- **Extracted text is cached** (`cacheDir/text/`), which makes every reopen
-  instant. Chapter boundaries are stored in a small sidecar file next to it.
-- Matching primarily uses `fizikai_fajlok.fajl_nev`, reusing work already
-  done on the PC, and falls back to title + author parsed from the file
-  name — handling the invisible U+200B characters that appear in titles
-  scraped from moly.hu.
-- The large catalogue is **never copied into the app**; it is opened in
-  place, read-only.
-- The browser list sorts and filters **in SQL**, not in memory, which is why
-  it stays fast with tens of thousands of rows.
+- **Reading positions live in the app's own database**, not in the catalogue —
+  so rebuilding the catalogue never destroys your progress.
+- The **catalogue is deliberately a visible file** in Downloads rather than in
+  the app's private storage: it survives reinstalling, and opens on a PC.
+- The **list filters in memory**, not in SQL: the catalogue is loaded once with
+  pre-computed, accent-free keys — which is what keeps search instant while
+  typing, even with thousands of books.
+- **Covers load in a separate pass.** Extracting a cover is far more expensive
+  than reading metadata (decoding an image, rendering a PDF page), so the list
+  is never made to wait for it.
+- **Extracted text is cached** (`cacheDir/text/`), so after the first open,
+  resuming is instant. Chapter boundaries are saved in a small sidecar file.
+- **File operations carry the references over.** That is their whole point: the
+  catalogue, the progress, the bookmarks, the note and the thumbnail all
+  follow the file.
+- **The parsers do not depend on Android** (a small `XmlReader` of our own), so
+  they can be tested with plain JUnit — that is where a bug is most dangerous,
+  because nothing crashes, a book is just read out wrong.
 
 ## Privacy
 
-The app **requests no internet access** (there is no `INTERNET` permission in
-the manifest), so it is technically incapable of sending data anywhere.
-Everything — the catalogue, the books, reading positions, bookmarks — stays
-on the phone. No analytics, no ads, no accounts.
+The app **does not request internet access** (there is no `INTERNET`
+permission in the manifest), so it is technically incapable of sending data
+anywhere. Everything — the catalogue, the books, the reading positions, the
+bookmarks, the notes — stays on the phone. No analytics, no ads, no user
+account.
 
-## License
+## Licence
 
-MIT — see [LICENSE](LICENSE). Free to use, modify and distribute, as long as
-the copyright notice is retained.
+MIT — see the [LICENSE](LICENSE) file. Free to use, modify and distribute,
+keeping the copyright notice.
 
 ## Status
 
-A personal project built for daily use, but usable by anyone with a similar
-setup. Issues and ideas are welcome.
+A personal project, built for daily use, but anyone is welcome to use it for
+the same purpose. Bug reports and ideas are welcome in Issues.
 
-## Credits
+## Thanks
 
 - [PDFBox-Android](https://github.com/TomRoush/PdfBox-Android) — PDF text
   layer extraction
-- The app uses the system TTS engine (Google Text-to-Speech is recommended
-  for Hungarian voices)
+- The app uses the system TTS engine (Google Text-to-Speech is a good choice
+  for most languages)

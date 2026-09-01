@@ -136,21 +136,23 @@ szolgáltatást. Érdemes kivenni az appot a korlátozás alól:
 - **Általánosan (bármely Android):** Beállítások → Alkalmazások → **Könyvtár
   TTS** → Akkumulátor → **Korlátlan** (*Unrestricted*).
 
-## A.7 A katalógus és a könyvek felmásolása
+## A.7 A könyvek felmásolása
 
 1. Csatlakoztasd a telefont USB-kábellel a PC-hez, és a telefonon válaszd a
    **„Fájlátvitel" (MTP)** módot.
-2. Másold a katalógus `.db` fájlt a **belső tároló** gyökerébe vagy a
-   `Download` mappába. **Csak a `.db`-t** — a `-wal` és `-shm` fájlokat ne!
-   (Ha a PC-s programod épp futott, előbb zárd be, hogy a `.db` teljes legyen.)
-3. Másold a könyvfájlokat tetszőleges mappába — ezek nyugodtan mehetnek
+2. Másold a könyvfájlokat tetszőleges mappába — ezek nyugodtan mehetnek
    SD-kártyára is.
-4. Az appban: **Beállítások → Adatbázisfájl kiválasztása…**, ha nem a
-   szokásos helyen van.
+3. Az appban mutasd meg a mappát (első indításkor rákérdez, később:
+   **Beállítások → Könyvek gyökérmappája**), és indítsd el a beolvasást.
 
-> **Miért a belső tároló a jó hely a `.db`-nek?** Az SQLite sok apró,
-> véletlenszerű olvasást végez, ami memóriakártyán érezhetően lassabb. A
-> könyvfájlok viszont mehetnek kártyára: azokat az app egyszer olvassa
+**Katalógust nem kell felmásolnod**: az app maga építi a telefonon lévő
+könyvekből. A kész katalógus a `Download/KonyvtarTTS/sajat_katalogus.db`
+fájlba kerül — szándékosan látható helyre, hogy túlélje az app
+újratelepítését, és PC-n is megnyitható legyen.
+
+> **A könyvek mehetnek kártyára**, a katalógus viszont a belső tárolón jó
+> helyen: az SQLite sok apró, véletlenszerű olvasást végez, ami
+> memóriakártyán érezhetően lassabb. A könyvfájlokat az app egyszer olvassa
 > végig, utána a kinyert szöveg gyorsítótárból jön.
 
 ---

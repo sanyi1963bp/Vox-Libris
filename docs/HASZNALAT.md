@@ -13,14 +13,16 @@
 1. [Mire lesz szükséged](#1-mire-lesz-szükséged)
 2. [Telepítés](#2-telepítés)
 3. [Első indítás — engedélyek](#3-első-indítás--engedélyek)
-4. [A katalógus beállítása](#4-a-katalógus-beállítása)
-5. [Fájlböngésző](#5-fájlböngésző)
-6. [Könyv részletei](#6-könyv-részletei)
-7. [Olvasó képernyő](#7-olvasó-képernyő)
-8. [Fülhallgató-gombok](#8-fülhallgató-gombok)
-9. [Olvasási lista és exportálás](#9-olvasási-lista-és-exportálás)
-10. [Beállítások](#10-beállítások)
-11. [Hibaelhárítás](#11-hibaelhárítás)
+4. [A könyvtár beolvasása](#4-a-könyvtár-beolvasása)
+5. [Könyvtár — a nyitóképernyő](#5-könyvtár--a-nyitóképernyő)
+6. [Fájlböngésző](#6-fájlböngésző)
+7. [A helyi menü](#7-a-helyi-menü)
+8. [Polc](#8-polc)
+9. [Olvasó képernyő](#9-olvasó-képernyő)
+10. [Fülhallgató-gombok](#10-fülhallgató-gombok)
+11. [Olvasási lista és exportálás](#11-olvasási-lista-és-exportálás)
+12. [Beállítások](#12-beállítások)
+13. [Hibaelhárítás](#13-hibaelhárítás)
 
 ---
 
@@ -28,142 +30,264 @@
 
 - **Android 11 vagy újabb** telefon.
 - **Rendszer TTS motor** magyar hanggal. A legtöbb telefonon a Google
-  Szövegfelolvasó már fent van; a magyar hangot egyszer le kell tölteni
-  (Beállítások → Kisegítő lehetőségek → Szövegfelolvasó).
-- **Könyvfájlok** a telefonon vagy SD-kártyán.
-- Opcionálisan egy **SQLite katalógus** (`.db`) a metaadatokkal. Enélkül is
-  működik az app, csak akkor nem lesz cím/szerző/fülszöveg a fájlok mellett.
+  Szövegfelolvasó eleve fent van; ha nincs magyar hang, egy gombbal
+  letölthető az app beállításaiból.
+- **Könyvek a telefonon**, egy mappában — almappákkal együtt jó, és mehet
+  SD-kártyára is.
+
+Nem kell hozzá fiók, internet vagy előre elkészített adatbázis.
 
 ## 2. Telepítés
 
-1. Másold a telefonra az `app-release.apk` fájlt.
-2. Koppints rá a fájlkezelőben, és telepítsd. Ha a rendszer tiltja, engedélyezd
-   az adott alkalmazásnak az „ismeretlen források” telepítését.
-3. Frissítéskor ugyanígy telepítsd rá az újat — **az adataid (pozíciók,
-   könyvjelzők, szkennelés) megmaradnak.**
+A legegyszerűbb a **[letöltőoldal](https://sanyi1963bp.github.io/Vox-Libris/docs/)**:
+telefonról megnyitva egy gombbal települ.
+
+Kézzel: töltsd le az APK-t a
+[Releases](https://github.com/sanyi1963bp/Vox-Libris/releases) oldalról, és
+nyisd meg a telefonon. A rendszer figyelmeztet, hogy ismeretlen forrásból
+származó alkalmazás — ez normális, mert nem a Play Áruházból jön; engedélyezni
+kell a telepítést annak az appnak, amivel megnyitottad.
 
 ## 3. Első indítás — engedélyek
 
-Az első indításnál egy magyarázó képernyő fogad:
+Az app **egyetlen érdemi engedélyt** kér: **„Minden fájl kezelése"**. Enélkül
+nem látja a könyveidet. A gomb a rendszerbeállításokba visz, ott kell
+bekapcsolni.
 
-- **„Minden fájl kezelése” engedély** — ez kell ahhoz, hogy az app lássa a
-  könyveidet és a katalógust bárhol a tárolón. A gomb a rendszerbeállításokba
-  visz; kapcsold be, majd lépj vissza az appba (magától észreveszi).
-- **Értesítési engedély** (Android 13-tól) — ezt egy felugró ablak kéri. Ha
-  megadod, a felolvasás vezérlői megjelennek az értesítési sávban is,
-  a lezárt képernyőn szintén.
+Android 13-tól kér **értesítési engedélyt** is. Enélkül is működik minden,
+csak nem lesz vezérlősáv a lezárt képernyőn.
 
-## 4. A katalógus beállítása
+**Internet-engedélyt nem kér, és nem is tud kérni** — nincs a manifestben.
+Minden adat a telefonon marad.
 
-Az app automatikusan megkeresi az `ncore_konyvtar.db` fájlt a belső tároló és
-az SD-kártya gyökerében, valamint a `Download`, `Documents` és `Books`
-mappákban.
+## 4. A könyvtár beolvasása
 
-Ha máshol van, vagy más a neve: **Beállítások** (fogaskerék a jobb felső
-sarokban) → **„Adatbázisfájl kiválasztása…”**, és tallózd ki.
+Első indításkor az app megkérdezi, **hol vannak a könyveid**, majd felajánlja,
+hogy beolvassa őket. Ez két menetben történik:
 
-A fejlécben mindig látod az állapotot: `68319 könyv` (zölden), vagy
-`nincs DB` (pirosan).
+**Első menet — metaadatok.** Végigjárja a mappát és minden almappáját,
+kiolvassa a fájlokból a címet, szerzőt, fülszöveget, kiadót, sorozatot, ISBN-t
+és a címkéket, és katalógust épít belőlük. Ezer könyv körülbelül egy perc.
+Ennek a végén a könyvtárad már használható.
 
-> **Tipp:** a `.db` fájlt a **belső tárolóra** tedd, ne SD-kártyára. Az SQLite
-> sok apró, véletlenszerű olvasást végez, ami a kártyán érezhetően lassabb.
-> A könyvfájlok viszont nyugodtan lehetnek kártyán — azokat az app egyszer
-> olvassa végig, utána a kinyert szöveg gyorsítótárból jön.
->
-> Ha a PC-n frissíted a katalógust, ugyanoda, ugyanazzal a névvel másold
-> felül — minden magától működik tovább, a pozícióid megmaradnak.
+**Második menet — borítók.** A háttérben indul, és kinyeri a borítóképeket a
+fájlokból. Ez lassabb (képet kell dekódolni, PDF-nél oldalt kirajzolni), ezért
+fut külön — közben nyugodtan használhatod az appot.
 
-## 5. Fájlböngésző
+### Újrafuttatás
 
-Ez az app nyitóképernyője: sűrű, ikonmentes lista, hogy egy képernyőre minél
-több sor férjen.
+Új könyvek bemásolása után: **Beállítások → Katalógus → Könyvtár beolvasása**.
+A beolvasás **inkrementális** — a meglévő bejegyzésekhez nem nyúl, csak az
+újakat veszi fel. Ugyanígy a borítóknál: amit egyszer kinyert, azt nem
+próbálja újra.
 
-### Két nézet
+### Hol van a katalógus
 
-- **Mappák** — a tároló valódi könyvtárszerkezete, ahogy megszoktad.
-- **Katalógus** — minden korábban beszkennelt fájl **egyetlen listában**,
-  mappáktól függetlenül. Nagy gyűjteménynél ez a hasznosabb: kereshetsz és
-  rendezhetsz az egész könyvtáradban.
+```
+Download/KonyvtarTTS/sajat_katalogus.db
+```
+
+Szándékosan **látható fájl**, nem az app rejtett tárhelyén: túléli az app
+újratelepítését, és PC-n bármilyen SQLite-eszközzel megnyitható. Ha törlöd,
+csak egy új beolvasás kell — az olvasási haladásod nem ebben van.
+
+### Amit tudni érdemes
+
+- **Fülszöveget nem tud varázsolni.** Ahol a fájl nem tartalmaz leírást
+  (tipikusan szkennelt PDF, TXT), ott üres marad.
+- **Duplikátumok összevonása:** ha ugyanaz a könyv megvan epubban és mobiban
+  is, egyetlen katalógusbejegyzés jön létre, két fájllal — a cím és a szerző
+  ékezet-független összevetése alapján.
+- **Rossz metaadat a fájlban:** előfordul, hogy egy könyvben fel van cserélve
+  a cím és a szerző, vagy hiányos. Az app azt írja be, ami a fájlban van — ezt
+  Calibre-vel tudod javítani a forrásfájlban, majd újraépíteni.
+
+## 5. Könyvtár — a nyitóképernyő
+
+Az összes könyved egy listában. Jobbra-balra **pöccintve** átvált a
+[fájlböngészőre](#6-fájlböngésző); a cím melletti két pötty mutatja, hol
+állsz.
+
+### Keresés
+
+A kereső egyszerre nézi a **címet, a szerzőt, a fájlnevet és a saját
+jegyzeteidet**, ékezettől függetlenül — a *jozsef* megtalálja a *József*-et.
+Gépelés közben azonnal frissül, több ezer könyvnél is.
+
+### Betűsáv
+
+A kereső alatt. Egy koppintás a kezdőbetűre, és csak az azzal kezdődő könyvek
+maradnak; ugyanarra a betűre újra koppintva megszűnik a szűrés.
+
+A sáv **csak azokat a betűket mutatja, amikhez tényleg van könyved** — nincs
+üresbe vezető gomb. A rendezéstől függően a cím vagy a szerző kezdőbetűjét
+nézi, és az ékezetes betűk az alapbetűhöz sorolódnak (az Á az A-nál van).
+
+> A betűsáv maga is vízszintesen görgethető, ezért ott a pöccintés először azt
+> mozdítja. Ha nézetet akarsz váltani, a lista területén pöccints.
+
+### Rendezés és formátumszűrő
+
+A kereső mellett két ikon:
+
+| Ikon | Mit csinál |
+|---|---|
+| **rendezés** | cím, szerző vagy formátum szerint; újra választva megfordítja a sorrendet |
+| **szűrő** | formátumok darabszámmal (EPUB 2100, PDF 900…), koppintásra szűkít |
+
+A formátumszűrő egyben **áttekintés is**: ebből látod, miből mennyi van a
+telefonodon.
+
+### Egy sor felépítése
+
+Balról a **formátumjelvény**, mellette a cím, alatta a szerző és a fájlnév.
+Ha elkezdted a könyvet, alul **zöld haladás-csík**. Ha van hozzá jegyzeted, a
+cím mellett egy kis ✎ jel.
+
+**A szürke formátumjelvény azt jelenti, hogy abból a fájlból nem tudunk
+szöveget kinyerni** — az a könyv nem fog megszólalni.
+
+### Koppintások
+
+| Gesztus | Mit csinál |
+|---|---|
+| **egy koppintás** | kijelöli a sort |
+| **dupla koppintás** | megnyitja **és felolvassa** az utolsó pozíciótól |
+| **hosszú nyomás** | [helyi menü](#7-a-helyi-menü) |
+
+### Felső sáv
+
+| Ikon | Funkció |
+|---|---|
+| **polc** | lapozható borítónézet |
+| **mappa** | átlapoz a fájlböngészőre |
+| **oszlopdiagram** | olvasási lista és statisztika |
+| **fogaskerék** | beállítások |
+
+Alatta egy sorban: hány könyvet mutat a szűrés az összesből, jobbra pedig az
+**Elolvasva / Folyamatban** számlálók — koppintásra megnyílik a lista.
+
+## 6. Fájlböngésző
+
+Ugyanazok a könyvek, mappák szerint. Sűrű, ikonmentes lista, hogy egy
+képernyőre minél több sor férjen.
 
 ### Felső sáv
 
 | Elem | Mit csinál |
 |---|---|
-| 📡 **radar** | rekurzív szkennelés az aktuális mappától lefelé + párosítás a katalógussal |
-| 📊 **oszlopdiagram** | olvasási lista és statisztika |
-| ⚙ **fogaskerék** | beállítások |
+| **könyv ikon** | visszalapoz a könyvtárra |
+| **radar** | könyvtár beolvasása |
+| **oszlopdiagram** | olvasási lista és statisztika |
+| **fogaskerék** | beállítások |
 | **keresőmező** | szűrés fájlnév, cím és szerző szerint |
-| 💾 **SD-kártya ikon** | váltás a tárolók között (belső, SD-kártya, USB) |
-| ⬆ **nyíl** | egy szinttel feljebb |
+| **„Almappák is"** | a keresés az egész fanézetre kiterjed, nem csak egy szintre |
+| **SD-kártya ikon** | váltás a tárolók között (belső, SD-kártya, USB) |
+| **⬆ nyíl** | egy szinttel feljebb |
 
 ### Oszlopok és rendezés
 
 A fejlécben **Név · Szerző · Méret · Dátum** — bármelyikre koppintva aszerint
-rendez; újra koppintva megfordítja a sorrendet. Az aktív oszlop színnel és
-▲▼ nyíllal van jelölve.
+rendez; újra koppintva megfordítja a sorrendet.
 
 Minden sor két részből áll: fent a fájlnév, méret, dátum; alatta — ha a
-katalógusban megvan — **zölden a szerző és a cím**.
+katalógusban megvan — a szerző és a cím.
 
-### Szkennelés
+### Koppintások
 
-A radar ikon végigjárja az aktuális mappát és minden almappáját, összegyűjti
-a könyvfájlokat, és párosítja őket a katalógussal. Közben látod, hány fájlnál
-tart és mennyit párosított; a „Mégse” gombbal megszakítható.
+| Gesztus | Mit csinál |
+|---|---|
+| **egy koppintás** | mappa megnyitása, vagy a könyv megnyitása olvasásra |
+| **dupla koppintás** | megnyitás **és felolvasás** |
+| **hosszú nyomás** | [helyi menü](#7-a-helyi-menü) |
 
-A szkennelés **inkrementális**: a változatlan fájlokat nem dolgozza fel újra,
-így a második futás sokkal gyorsabb.
+A sor végén lévő **ⓘ** gomb közvetlenül az adatlapot nyitja.
 
 ### Gyors mozgás
 
 A lista jobb szélén **gyorsgörgető sáv** van — húzva több tízezer soron is
 azonnal átszaladsz.
 
-## 6. Könyv részletei
+## 7. A helyi menü
 
-Egy fájlra **egyszer koppintva** nyílik. Itt látod:
+**Hosszú nyomásra jön elő, mindkét nézetben ugyanaz.**
 
-- cím, szerző, és a katalógusból minden metaadat (kiadó, év, ISBN, sorozat,
-  címkék),
-- a **fülszöveget / leírást**,
-- a könyv **első pár ezer karakterét** előnézetként,
-- a haladásodat, ha már elkezdted.
+| Pont | Mit csinál |
+|---|---|
+| **Adatlap** | borító, leírás, minden metaadat, hol tartasz a könyvben |
+| **Jegyzet** | saját jegyzet a könyvhöz (üresen mentve törlődik) |
+| **Átnevezés** | a fájl saját mappáján belül |
+| **Áthelyezés** | másik mappába, kis mappaböngészővel |
+| **Másolás** | másik mappába; az eredeti marad |
+| **Törlés** | végleges — mindig rákérdez, és mutatja a fájl nevét |
 
-Gombok: **Folytatás** (vagy Felolvasás), **Elölről**, **Megosztás** (a teljes
-szöveg átadása másik TTS appnak), és **Olvasás képernyőn**.
+### Miért az appban és ne fájlkezelőben
 
-## 7. Olvasó képernyő
+Ez a menü nem csak a fájlt mozgatja: **minden hozzá kötött adat is követi**
+— a katalógusbejegyzés, az olvasási haladás, a könyvjelzők, a jegyzet és a
+bélyegkép.
+
+Ha ugyanezt egy fájlkezelőben csinálod, mindez ott marad a régi útvonalon, és
+a könyv **újként bukkan fel, nulláról**.
+
+### A törlésről
+
+Nincs visszavonás és nincs kuka. A megerősítő ablak megmutatja a fájl nevét —
+olvasd el, mielőtt rábólintasz.
+
+### Az olvasóban
+
+Az épp olvasott könyvnél **nincs fájlművelet**: nem nevezzük át és nem
+töröljük magad alól, mert az eltörné a felolvasás útvonalát és a
+pozíciómentést. **Jegyzetet viszont ott is írhatsz** — sőt, olvasás közben az
+a leghasznosabb.
+
+## 8. Polc
+
+Lapozható borítónézet: úgy nézegetheted a könyveket, mint a polc előtt állva.
+A felső sáv **polc ikonjával** nyílik.
+
+Azt mutatja, amit a **lista éppen szűr** — ha rákerestél valamire vagy
+leszűkítetted egy betűre, a polcon is csak azok lapozhatók.
+
+A borító alatt cím, szerző és haladás-csík. Koppintás megnyitja a könyvet,
+hosszú nyomás az adatlapját.
+
+Ahol a fájlból nem sikerült borítót kinyerni, ott a címből és a szerzőből
+**rajzolt borító** látszik — a szín a címből származik, tehát ugyanaz a könyv
+mindig ugyanolyan.
+
+## 9. Olvasó képernyő
 
 Ez az app szíve: **itt olvasol és itt hallgatsz is** — nincs külön lejátszó.
 
-Megnyitható: hosszú nyomással a böngészőben, a részletezőből, az olvasási
-listából, vagy az értesítésre koppintva.
+Megnyitható a listából vagy a böngészőből dupla koppintással, az adatlapról,
+az olvasási listából, a „most szól" sávra koppintva, vagy az értesítésről.
 
 ### Felső sáv
 
 | Ikon | Funkció |
 |---|---|
-| 🔍 | keresés a szövegben (ékezet-független) |
-| 🔖+ | könyvjelző hozzáadása |
-| 🔖 | könyvjelzők listája |
-| ⏹ | felolvasás teljes leállítása (csak ha épp szól) |
+| **⬅** | vissza |
+| **🔍** | keresés a szövegben (ékezet-független) |
+| **fogaskerék** | beállítások |
+| **⋮** | könyvjelző ide · könyvjelzők listája · adatlap · felolvasás leállítása |
 
 ### Alsó vezérlősáv
 
-| ⏫ | ⬆ | ⏮ | ▶/⏸ | ⏭ | ⬇ | ⏬ |
+Legfelül egy állapotsor: hányadik bekezdésnél jársz, és ha szól a felolvasás,
+a fejezet, a százalék és a hallgatással töltött idő is. Mellette két kapcsoló:
+
+- 🎯 **követés** — a szöveg magától gördül a felolvasott résszel (ha te
+  görgetsz, nem ugrik el a kezed alól),
+- 🎚 **hangolás** — kinyitja a betűméret, a sebesség (0,5×–3×) és a
+  hangmagasság állítását.
+
+Alatta a **pozíció-csúszka** százalékkijelzéssel, legalul pedig a léptetés:
+
+| ⏫ | ⏮ | ◀ | ▶/⏸ | ▶ | ⏭ | ⏬ |
 |---|---|---|---|---|---|---|
-| fejezet vissza | képernyő vissza | mondat vissza | lejátszás/szünet | mondat előre | képernyő előre | fejezet előre |
-
-Alatta:
-
-- **A− / A＋** — betűméret (megjegyzi),
-- **pozíció-csúszka** — ugrás a könyv bármely pontjára, százalékkijelzéssel,
-- 🎯 **követés** — ha be van kapcsolva, a szöveg magától gördül a felolvasott
-  résszel (ha te görgetsz, nem ugrik el a kezed alól),
-- 🎚 **hangolás** — sebesség (0,5×–3×) és hangmagasság csúszkák.
-
-Az információs sor mutatja, hányadik bekezdésnél jársz, és ha szól a
-felolvasás, a százalékot meg a hallgatással töltött időt is.
+| fejezet vissza | bekezdés vissza | mondat vissza | lejátszás/szünet | mondat előre | bekezdés előre | fejezet előre |
 
 ### Gesztusok a szövegen
 
@@ -177,16 +301,17 @@ színezett — így szemmel is követheted.
 ### Keresés a szövegben
 
 A 🔍 ikonnal nyílik. Legalább 2 karakter után keres, **ékezet-függetlenül**
-(a „varazslono” megtalálja a „varázslónő”-t). A találatok kiemelve, a
+(a „varazslono" megtalálja a „varázslónő"-t). A találatok kiemelve, a
 számláló mutatja, hányadiknál jársz (pl. `3/17`), a ▲▼ gombokkal ugrálhatsz.
 
 ### Könyvjelzők
 
-Hosszú nyomás bárhol a szövegen, vagy a 🔖+ gomb. Ha épp szól a felolvasás,
-a jelző **a felolvasott helyre** kerül, nem oda, ahol nézelődsz.
+Hosszú nyomás bárhol a szövegen, vagy a ⋮ menü *Könyvjelző ide* pontja. Ha
+épp szól a felolvasás, a jelző **a felolvasott helyre** kerül, nem oda, ahol
+nézelődsz.
 
-A 🔖 gombbal megnyíló listában látod a bekezdés számát, dátumot és egy
-részletet; koppintásra odaugrik, a kuka ikonnal törölhető.
+A listában látod a bekezdés számát, a dátumot és egy részletet; koppintásra
+odaugrik, a kuka ikonnal törölhető.
 
 ### Fejezetek
 
@@ -195,13 +320,22 @@ A fejezetléptetés formátumtól függően működik:
 - **epub** — a valódi fejezetfájlok és a címsorok alapján,
 - **mobi, html** — a címsorok (`h1`–`h6`) alapján,
 - **fb2** — a szekciócímek alapján,
-- **txt, rtf, pdf, docx** — címsor-heurisztikával („12. fejezet”, római
+- **txt, rtf, pdf, docx** — címsor-heurisztikával („12. fejezet", római
   számok, csupa nagybetűs sorok).
 
 Ha egy könyvben semmilyen fejezetjelet nem talál, a gomb ~5%-os ugrásra vált,
 hogy sose legyen használhatatlan.
 
-## 8. Fülhallgató-gombok
+A fejezethatárokat a szövegben **vérvörös sáv** jelzi, és felolvasáskor
+mélyebb kettős hang szól előttük (kikapcsolható).
+
+### „Most szól" sáv
+
+Amíg felolvasás megy, **minden más képernyő alján** ott a könyv címe és a
+haladás. A gombbal bárhonnan elnémítható, a sávra koppintva pedig
+visszaugrasz a könyvhöz — oda, ahol tart.
+
+## 10. Fülhallgató-gombok
 
 Működik Bluetooth-os és vezetékes fülhallgatóval is, az egygombos típusokkal:
 
@@ -211,16 +345,18 @@ Működik Bluetooth-os és vezetékes fülhallgatóval is, az egygombos típusok
 | **2×** | ~5 másodperc vissza |
 | **3×** | szintén visszaugrás |
 
-A „5 másodperc” becslés: a TTS-nek nincs valódi idővonala, ezért az app a
+A „5 másodperc" becslés: a TTS-nek nincs valódi idővonala, ezért az app a
 beállított beszédsebességből számolja át, és mondathatárra igazít.
 
 A gombvezérlés addig él, amíg a felolvasó fut vagy szünetel (látszik az
-értesítés). Ha az ⏹ Stop gombbal teljesen leállítod, a fülhallgató gombja már
-nem indítja újra — ez szándékos, hogy ne szólaljon meg váratlanul a zsebedben.
+értesítés). Ha a **Stop** gombbal teljesen leállítod, a fülhallgató gombja
+már nem indítja újra — ez szándékos, hogy ne szólaljon meg váratlanul a
+zsebedben.
 
-## 9. Olvasási lista és exportálás
+## 11. Olvasási lista és exportálás
 
-A böngésző 📊 ikonjával nyílik.
+A felső sáv 📊 ikonjával nyílik, vagy a könyvtár tetején lévő számlálókra
+koppintva.
 
 Felül négy szám: **Elkezdett · Elolvasott · Folyamatban · összes hallgatási
 idő**. Alatta két szekció:
@@ -249,86 +385,52 @@ A CSV **pontosvesszős, UTF-8 BOM-mal**, hogy a magyar Excel és a LibreOffice
 dupla kattintásra, ékezethelyesen nyissa meg. A `.db` másolat SQLite, tehát
 PC-n bármilyen eszközzel (pl. Python `sqlite3`) lekérdezhető.
 
-## 10. Beállítások
+## 12. Beállítások
 
-- **Katalógus-adatbázis** — az aktuális fájl útvonala és állapota, csere.
-- **Könyvek gyökérmappája** — hol nyíljon a böngésző induláskor.
-- **Katalógus építése a könyvekből** — lásd a [10/a](#10a-katalógus-építése-a-könyvekből) pontot.
-- **Gyorsítótárak** — hány fájlt szkenneltél, mennyi kinyert szöveg van
-  tárolva, és mindkettő törölhető. (A törlés a **pozícióidat nem** bántja.)
-- **Szövegfelolvasó** — közvetlen ugrás a rendszer TTS-beállításaihoz, ahol
-  motort és hangot válthatsz.
+Kártyák egymás alatt:
 
-## 10/a. Katalógus építése a könyvekből
-
-Ha nincs kész katalógusod, az app **maga készít egyet** — a könyvfájlok
-belsejében tárolt metaadatokból, internet nélkül.
-
-**Használat:** Beállítások → *Katalógus építése a könyvekből* → **Építés**.
-Forrásként az aktuális gyökérmappát járja végig (rekurzívan), az eredmény
-pedig ide kerül: `Download/KonyvtarTTS/sajat_katalogus.db`. Az építés végén
-egy gombbal azonnal használatba is veheted.
-
-**Újrafuttatás új könyvek után:** a gomb ilyenkor már *Frissítés az új
-könyvekkel* feliratú. **A meglévő bejegyzéseket nem bántja** — útvonal
-szerint felismeri, mi van már benne, és csak az újakat dolgozza fel. Így a
-második futás sokkal gyorsabb, és amit esetleg kézzel vagy a PC-n javítottál
-az adatbázisban, az megmarad.
-
-### Mit talál meg formátumonként
-
-| Formátum | Mit nyer ki |
+| Kártya | Mit állít |
 |---|---|
-| **EPUB** | cím, szerző, kiadó, év, ISBN, nyelv, **fülszöveg**, sorozat + kötetszám, címkék |
-| **FB2** | szerző, cím, **annotáció**, műfaj, sorozat, kiadó, év, ISBN |
-| **MOBI/AZW3** | cím, szerző, kiadó, **leírás**, ISBN, tárgyszavak, dátum |
-| **DOCX** | cím, szerző, leírás, kulcsszavak |
-| **RTF** | cím, szerző, tárgy, megjegyzés (ha ki van töltve) |
-| **PDF** | cím, szerző, kulcsszavak — **kapcsolható**, mert lassabb |
-| **TXT és a többi** | a fájlnévből kitalált cím és szerző |
+| **Könyvek gyökérmappája** | hol keresse a könyveidet a beolvasás |
+| **Katalógus** | hány mű és hány fájl van benne, a fájl helye, PDF-ek beolvasása, **Könyvtár beolvasása**, hiányzó fájlok eltávolítása |
+| **Borítók** | hány borító van és mennyi helyet foglal, **Borítók betöltése**, törlés, és a **Borítók a listában** kapcsoló (alapból ki) |
+| **Megjelenés** | világos/sötét/rendszerkövető téma, hat színséma, a felület betűmérete |
+| **Felület nyelve** | tíz nyelv, vagy rendszerkövetés |
+| **Felolvasás nyelve** | a telepített TTS motor bármelyik nyelve, és egy gomb a hangletöltőhöz |
+| **Hangjelzések** | fejezetjelző hang be/ki, hangereje |
+| **Olvasás és vezérlés** | követés, képernyő ébren tartása, a fülhallgató dupla nyomásának ugrása |
+| **Gyorsítótár** | mennyi kinyert szöveg van tárolva, törölhető (a pozícióidat nem bántja) |
+| **Szövegfelolvasó motor** | ugrás a rendszer TTS-beállításaihoz |
 
-A **PDF-kapcsoló** azért van külön, mert a PDF-eknél a metaadat beolvasásához
-végig kell nézni a fájl szerkezetét, ami nagy fájloknál lassú. Ráadásul a
-PDF-ek „címe" gyakran szemét (a szkennelő program neve, fájlnév, „Microsoft
-Word - valami.doc"), ezért az app kiszűri az ilyen nyilvánvalóan használhatatlan
-értékeket, és inkább a fájlnévre támaszkodik.
+> **A felület nyelve külön áll a felolvasás nyelvétől.** Olvashatsz magyar
+> felülettel angol könyvet, vagy fordítva.
 
-### Amit tudni érdemes
+## 13. Hibaelhárítás
 
-- **Fülszöveget nem tud varázsolni.** Ahol a fájl nem tartalmaz leírást
-  (tipikusan szkennelt PDF, TXT), ott a szinopszis üres marad.
-- **Duplikátumok összevonása:** ha ugyanaz a könyv megvan epubban és mobiban
-  is, egyetlen katalógusbejegyzés jön létre, két fájllal — a cím és a szerző
-  ékezet-független összevetése alapján.
-- **A séma azonos** a PC-n készült katalóguséval (`konyvek` +
-  `fizikai_fajlok`), ezért a fájl a gépeden bármilyen SQLite-eszközzel
-  megnyitható, és az app is ugyanúgy kezeli.
-- **Rossz metaadat a fájlban:** előfordul, hogy egy könyvben fel van cserélve
-  a cím és a szerző, vagy hiányos. Ilyenkor az app azt írja be, ami a fájlban
-  van — ezt Calibre-vel tudod javítani a forrásfájlban, majd újraépíteni.
-- **A régi bejegyzések megmaradnak.** Ha törölni akarsz belőle, töröld az
-  egész `sajat_katalogus.db`-t, és építsd újra.
+**A lista üres, pedig vannak könyveim**
+Még nem futott le a beolvasás. Beállítások → Katalógus → Könyvtár beolvasása.
+Ellenőrizd azt is, hogy a gyökérmappa jó helyre mutat-e.
 
-## 11. Hibaelhárítás
-
-**„Nincs DB” pirossal a fejlécben**
-A katalógus nem található. Beállítások → Adatbázisfájl kiválasztása. Ellenőrizd,
-hogy tényleg a `.db` fájlt másoltad-e fel (ne a `-wal`/`-shm` fájlokat).
+**Nem látok borítókat, csak színes helyettesítőket**
+A borítók a második menetben töltődnek. Beállítások → Borítók → Borítók
+betöltése. Ahol a fájl nem tartalmaz borítót (TXT, RTF, DOCX), ott marad a
+rajzolt.
 
 **Nem látom az SD-kártyát**
-Az útvonal-sor elején lévő 💾 ikonnal válts tárolót. Ha nem jelenik meg a
-kártya, a rendszer nem csatolta fel.
+A böngészőben a 💾 ikonnal válts tárolót. Ha nem jelenik meg a kártya, a
+rendszer nem csatolta fel.
 
-**„Ez a könyv DRM-védett”**
+**„Ez a könyv DRM-védett"**
 A Mobipocket-titkosítású fájlokat nem tudja megnyitni. Konvertáld (pl.
 Calibre-vel) egy szabad formátumra.
 
-**„A PDF nem tartalmaz szövegréteget”**
+**„A PDF nem tartalmaz szövegréteget"**
 Szkennelt, képalapú PDF. OCR-rel kell szöveget csinálni belőle, utána `.txt`
 formában felolvasható.
 
 **A `.doc` fájlok nem szólalnak meg**
 A régi bináris `.doc` nem támogatott — konvertáld `.docx`-re vagy `.txt`-re.
+A listában ezért szürke a jelvényük.
 
 **A felolvasás elhallgat egy idő után**
 Az akkumulátor-optimalizálás leállíthatta a szolgáltatást. A rendszer
@@ -336,9 +438,18 @@ beállításaiban vedd ki az appot az energiatakarékos korlátozás alól
 (Beállítások → Alkalmazások → Könyvtár TTS → Akkumulátor → Korlátlan).
 
 **Nincs magyar hang**
-Beállítások → Szövegfelolvasó → a rendszer TTS-beállításainál töltsd le a
-magyar nyelvi csomagot a Google Szövegfelolvasóhoz.
+Beállítások → Felolvasás nyelve → *Hangok letöltése*, vagy a rendszer
+TTS-beállításaiban töltsd le a magyar nyelvi csomagot.
 
 **Lassú az első megnyitás**
 Az első alkalommal az app kinyeri a teljes szöveget a könyvből (nagy PDF-nél
 ez eltarthat egy ideig). Utána gyorsítótárból jön, és azonnali.
+
+**A pöccintés nem vált nézetet**
+Valószínűleg a betűsávon pöccintesz, ami maga is görgethető. A lista
+területén próbáld.
+
+**Átneveztem egy fájlt, és eltűnt a haladásom**
+Ha az appon kívül, fájlkezelőben nevezted át, akkor igen — az app a régi
+útvonalon keresi. Használd a [helyi menüt](#7-a-helyi-menü), az mindent
+átvezet.

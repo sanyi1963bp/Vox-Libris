@@ -1,13 +1,15 @@
 # Vox Libris
 
-**Helyi e-könyvtár böngésző és felolvasó (TTS) Androidra — nagyon nagy könyvtárakhoz.**
+**Helyi e-könyvtár és felolvasó (TTS) Androidra — nagyon nagy könyvtárakhoz.**
 
 🇭🇺 Magyar (ez a lap) · 🇬🇧 [English](README.en.md)
 
 **A felület tíz nyelven**: magyar · angol · német · francia · spanyol ·
 portugál · lengyel · cseh · szlovák · orosz
 
-🔧 [Telepítés](docs/TELEPITES.md) · 📖 [Használat](docs/HASZNALAT.md) · 🗺 [Fejlesztési terv](docs/TERV.md) · 📝 [Változásnapló](CHANGELOG.md)
+📱 [Letöltés és tesztelői útmutató](https://sanyi1963bp.github.io/Vox-Libris/docs/) ·
+🔧 [Telepítés](docs/TELEPITES.md) · 📖 [Használat](docs/HASZNALAT.md) ·
+🗺 [Fejlesztési terv](docs/TERV.md) · 📝 [Változásnapló](CHANGELOG.md)
 
 ---
 
@@ -20,19 +22,25 @@ könyvjelzőkkel és fülhallgató-gombos vezérléssel.
 Nem kell hozzá se fiók, se szerver, se előre elkészített adatbázis: telepíted,
 megmutatod, hol vannak a könyveid, és kész.
 
-Borítóképekkel **szándékosan nem foglalkozik**: se külső mappából, se a
-könyvfájlok belsejéből nem olvas be képet. Ettől marad villámgyors a
-görgetés 70 000+ rekord mellett is, és nem eszi a memóriát.
-
 Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
+
+## A két nézet
+
+A nyitóképernyő a **könyvtár**: az összes könyved egy listában, kereséssel,
+betűsávval és formátumszűrővel. Jobbra-balra **pöccintve** átvált a
+**fájlböngészőre**, ahol mappák szerint nézheted ugyanezt. A cím melletti két
+pötty mutatja, melyiknél állsz.
+
+Ezen kívül van egy **polc** is (borítókat lapozva, a felső sáv ikonjáról), és
+egy **olvasó képernyő**, ahol a szöveg és minden vezérlő együtt van.
 
 ## Gesztusok röviden
 
-| Gesztus | Fájlböngészőben | Olvasó képernyőn |
+| Gesztus | Könyvtárban és böngészőben | Olvasó képernyőn |
 |---|---|---|
-| **Szimpla koppintás** | mappa megnyitása / könyv megnyitása olvasásra | — |
+| **Szimpla koppintás** | kijelölés / mappa megnyitása | — |
 | **Dupla koppintás** | megnyitás **és felolvasás** az utolsó pozíciótól | felolvasás **a megérintett mondattól** |
-| **Hosszú nyomás** | könyv megnyitása | könyvjelző a bekezdéshez |
+| **Hosszú nyomás** | helyi menü (adatlap, jegyzet, fájlműveletek) | könyvjelző a bekezdéshez |
 
 ## Fő funkciók
 
@@ -40,40 +48,53 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
   **a fájlok saját metaadataiból** épít katalógust (EPUB/FB2/MOBI/DOCX
   fejlécekből: cím, szerző, fülszöveg, kiadó, sorozat, ISBN, címkék).
   Újrafuttatva **inkrementális**: a meglévő bejegyzéseket érintetlenül hagyja,
-  csak az újonnan bemásolt könyveket veszi fel. A katalógus látható fájl, így
-  túléli az app újratelepítését is.
-- **Polc mint nyitóképernyő.** Lapozható borítónézet: úgy nézegetheted a
-  könyveket, mint a polc előtt állva. A borító alatt haladás-csík mutatja, hol
-  tartasz — ha el sem kezdted, nincs csík.
-- **Total Commander-stílusú böngésző.** Sűrű, ikonmentes fájllista (név,
-  méret, dátum, párosított szerző/cím), mappánkénti navigáció, rekurzív
-  szkennelés, oszlopfejlécre koppintva rendezés, gyorsgörgető sáv,
-  tárolóváltó (belső tároló ⇄ SD-kártya ⇄ USB). Minden könyv mellett **ⓘ
-  gomb** az adatokhoz, és **olvasottsági csík** azoknál, amiket elkezdtél.
+  csak az újonnan bemásolt könyveket veszi fel. A katalógus látható fájl
+  (`Download/KonyvtarTTS/sajat_katalogus.db`), így túléli az app
+  újratelepítését, és PC-n is megnyitható.
+- **Keresés, ami tényleg megtalál.** A kereső egyszerre nézi a **címet, a
+  szerzőt, a fájlnevet és a saját jegyzeteidet**, ékezettől függetlenül (a
+  *jozsef* megtalálja a *József*-et). A szűrés memóriában fut, ezért gépelés
+  közben több ezer könyvnél is azonnal frissül.
+- **Betűsáv**, ami csak azokat a kezdőbetűket mutatja, amikhez tényleg van
+  könyved — nincs üresbe vezető gomb. A rendezéstől függően a cím vagy a
+  szerző kezdőbetűjét nézi.
+- **Valódi borítók.** Kinyeri őket magukból a könyvfájlokból: EPUB (az OPF
+  háromféle jelölése), MOBI/AZW3 (EXTH-rekord), FB2 (base64), PDF (az első
+  oldal kirajzolása). Kicsinyítve, WebP-ben tárolja (~20 KB/db), és a
+  beolvasás **második, háttérben futó menetében** töltődnek, hogy a lista
+  addig is használható legyen. Ahol nincs borító, a címből és a szerzőből
+  rajzol egyet.
+- **Formátum egy pillantásra.** Minden soron ott a formátumjelvény; ami nem
+  olvasható fel, az **szürke**. A formátumszűrő darabszámmal sorolja fel,
+  miből mennyi van a telefonon.
+- **Fájlműveletek minden nézetből.** Átnevezés, áthelyezés, másolás, törlés —
+  és **minden hozzá kötött adat követi a fájlt**: a katalógusbejegyzés, az
+  olvasási haladás, a könyvjelzők, a jegyzet és a bélyegkép. Fájlkezelőben
+  elvégezve mindez csendben elveszne.
+- **Saját jegyzetek.** Bármit hozzáfűzhetsz egy könyvhöz; a listában jel
+  mutatja, melyikhez van, és a kereső a jegyzetekben is keres.
 - **Egyetlen könyv-képernyő.** A szöveg és minden vezérlő egy helyen —
   nincs külön lejátszó- vagy részletező-ablak. Alul egy sorban:
   **fejezet ◀ · bekezdés ◀ · mondat ◀ · ▶/⏸ · mondat ▶ · bekezdés ▶ ·
   fejezet ▶**. Mellette pozíció-csúszka, betűméret, **követés** (a szöveg
   magától gördül a felolvasott résszel) és **hangolás** (sebesség,
-  hangmagasság). Felül: keresés, beállítások, és menüben a könyvjelzők, a
-  könyv adatai és a leállítás.
-- **Hangjelzések.** Halk, rövid jelzés minden bekezdés előtt, mélyebb kettős
-  hang minden fejezet előtt — külön kapcsolható, állítható hangerővel.
-  A fejezethatárokat a szövegben **vérvörös sáv** is jelzi.
-- **Megjelenés.** Világos/sötét téma vagy rendszerkövetés, **hat színséma**
-  (klasszikus zöld, tenger kék, szépia, naplemente, éjszakai, magas
-  kontraszt), és külön állítható betűméret a felülethez és a könyvhöz.
-- **Felolvasás nyelve.** A telepített TTS motor bármelyik nyelve
-  választható, és egy gombbal megnyitható a hangletöltő.
+  hangmagasság).
+- **„Most szól" sáv** minden képernyő alján: látod, melyik könyv szól és hol
+  tart, egy koppintással visszaugrasz hozzá, a gombbal bárhonnan elnémítható.
 - **Mondatszintű felolvasás.** A TTS mondatonként halad; az éppen felolvasott
   mondat kiemelve látszik; a mentett pozíció is mondatpontos, így a
   folytatás mindig ott veszi fel a fonalat, ahol abbahagytad.
-- **Keresés a szövegben.** Ékezet-független (a *varazslono* megtalálja a
-  *varázslónő*-t), a találatok kiemelve, ▲▼ gombokkal ugrálva, számlálóval.
-- **Könyvjelzők.** Hosszú nyomásra bárhol; lista, ugrás, törlés. A lejátszás
-  közben letett jelző a felolvasott helyre kerül.
+- **Hangjelzés a fejezetek előtt** — mélyebb kettős hang, külön kapcsolható,
+  állítható hangerővel. A fejezethatárokat a szövegben **vérvörös sáv** is
+  jelzi.
+- **Keresés a szövegben.** Ékezet-független, a találatok kiemelve, ▲▼
+  gombokkal ugrálva, számlálóval.
+- **Könyvjelzők.** Hosszú nyomásra bárhol a szövegben; lista, ugrás, törlés.
 - **Fülhallgató-gombok** (Bluetooth és vezetékes, MediaSession-en át):
   1 nyomás = Start/Stop, 2 nyomás = ~5 másodperc vissza.
+- **Megjelenés.** Világos/sötét téma vagy rendszerkövetés, **hat színséma**
+  (klasszikus zöld, tenger kék, szépia, naplemente, éjszakai, magas
+  kontraszt), és külön állítható betűméret a felülethez és a könyvhöz.
 - **Tíz nyelv.** A teljes felület lefordítva, és **a felület nyelve külön
   állítható a felolvasás nyelvétől**. Új nyelv hozzáadása egyetlen XML-fájl,
   kódolás nélkül.
@@ -81,50 +102,39 @@ Az alkalmazás a telefonon **Könyvtár TTS** néven jelenik meg.
   **folyamatban lévő** könyvek, haladás-csíkkal, hallgatási idővel, utolsó
   dátummal.
 - **Exportálás.** Az olvasási nyilvántartás CSV-be és SQLite-másolatba a
-  `Download/KonyvtarTTS/` mappába (PC-re másoláshoz), vagy megosztás
-  e-mailben/felhőbe.
-- **Külső TTS.** A kinyert teljes szöveg átadható más felolvasó
-  alkalmazásnak (`ACTION_SEND`).
+  `Download/KonyvtarTTS/` mappába, vagy megosztás e-mailben/felhőbe.
 
 ## Formátumtámogatás
 
-| Formátum | Állapot |
-|---|---|
-| epub, txt, fb2, htm/html | teljes |
-| mobi, prc, azw, azw3 | teljes (PalmDOC kitömörítés; DRM-es és HUFF/CDIC fájlnál érthető hibaüzenet) |
-| rtf | teljes (Windows-1250 kódlappal is) |
-| pdf | szövegréteg kinyerése (szkennelt PDF-nél hibaüzenet — OCR után .txt-ként felolvasható) |
-| docx | teljes |
-| doc, djvu | csak listázás és párosítás — felolvasáshoz konvertálás kell (pl. Calibre) |
+| Formátum | Felolvasás | Borító |
+|---|---|---|
+| epub | teljes | igen |
+| fb2 | teljes | igen |
+| mobi, prc, azw, azw3 | teljes (PalmDOC kitömörítés; DRM-es és HUFF/CDIC fájlnál érthető hibaüzenet) | igen |
+| pdf | szövegréteg kinyerése (szkennelt PDF-nél hibaüzenet — OCR után .txt-ként felolvasható) | az első oldal |
+| txt, htm/html | teljes | nincs |
+| rtf | teljes (Windows-1250 kódlappal is) | nincs |
+| docx | teljes | nincs |
+| doc, djvu | nem — konvertálás kell hozzá (pl. Calibre) | nincs |
 
 Minden formátumot **saját, függőségmentes olvasó** dolgoz fel (egyedül a PDF
 használ külső könyvtárat, a PDFBox-Androidot).
 
-## Építés
+## Telepítés
 
-Előfeltétel: Android Studio, vagy csak Android SDK + JDK 17.
+A legegyszerűbb út a **[letöltőoldal](https://sanyi1963bp.github.io/Vox-Libris/docs/)**:
+telefonról megnyitva egy gombbal települ, és minden tudnivaló rajta van.
 
-```bash
-gradlew.bat assembleRelease
-```
+Kézzel:
 
-Kimenet: `app/build/outputs/apk/release/app-release.apk` (~9 MB, debug
-kulccsal aláírva, azonnal telepíthető). Android Studióból: nyisd meg a
-mappát, majd Run ▶.
-
-Minimum Android 11 (API 30), cél: Android 15 (API 35).
-AGP 8.11.1 · Kotlin 2.2.0 · Gradle 8.13 · Compose BOM 2025.01.00
-
-## Telepítés és első indítás
-
-1. Másold a telefonra az `app-release.apk`-t és telepítsd (az „ismeretlen
-   forrás” engedélyezése kellhet).
-2. Másold fel a könyvfájlokat egy tetszőleges mappába (mehetnek SD-kártyára is).
-3. Első indításkor add meg a **„Minden fájl kezelése”** engedélyt (a gomb a
+1. Töltsd le a legfrissebb APK-t a
+   [Releases](https://github.com/sanyi1963bp/Vox-Libris/releases) oldalról, és
+   telepítsd (az „ismeretlen forrás" engedélyezése kellhet).
+2. Első indításkor add meg a **„Minden fájl kezelése"** engedélyt (a gomb a
    rendszerbeállításokba visz), Android 13+ esetén az értesítési engedélyt is.
-4. Az app megkérdezi, **hol vannak a könyveid** — válaszd ki a mappát.
-5. Utána felajánlja, hogy **beolvassa őket**. Egy gomb, és elkészül a
-   katalógus; a végén megnyílik a polc a könyveiddel.
+3. Az app megkérdezi, **hol vannak a könyveid** — válaszd ki a mappát.
+4. Utána felajánlja, hogy **beolvassa őket**. Egy gomb, és elkészül a
+   katalógus; a borítók a háttérben töltődnek utána.
 
 Új könyvek bemásolása után elég újra elindítani a beolvasást
 (Beállítások → Katalógus): a meglévő bejegyzésekhez nem nyúl, csak az újakat
@@ -137,51 +147,96 @@ fülhallgatók tudnivalói itt vannak leírva:
 
 Részletes leírás minden képernyőről: [docs/HASZNALAT.md](docs/HASZNALAT.md)
 
+## Építés
+
+Előfeltétel: Android Studio, vagy csak Android SDK + JDK 17.
+
+```bash
+gradlew.bat assembleRelease
+```
+
+Kimenet: `app/build/outputs/apk/release/app-release.apk` (~10 MB, debug
+kulccsal aláírva, azonnal telepíthető). Android Studióból: nyisd meg a
+mappát, majd Run ▶.
+
+Az egységtesztek emulátor nélkül futnak:
+
+```bash
+gradlew.bat testDebugUnitTest
+```
+
+Minimum Android 11 (API 30), cél: Android 15 (API 35).
+AGP 8.11.1 · Kotlin 2.2.0 · Gradle 8.13 · Compose BOM 2025.01.00
+
 ## Architektúra
 
 ```
 app/src/main/java/hu/konyvtar/tts/
-├── MainActivity.kt        – navigáció, engedély-képernyő
-├── App.kt                 – app-szintű inicializálás
-├── model/Models.kt        – adatosztályok, haladásszámítás
+├── MainActivity.kt            – navigáció, a lapozható főképernyő, engedélykérés
+├── App.kt                     – app-szintű inicializálás
+├── model/Models.kt            – adatosztályok, haladásszámítás
 ├── data/
-│   ├── CatalogDb.kt       – a külső katalógus (csak olvasás) + CatalogHolder
-│   ├── AppDb.kt           – saját DB: szkennelési cache, pozíciók, könyvjelzők
-│   ├── Matcher.kt         – fájlnév → könyv párosítás, szövegnormalizálás
-│   ├── FileScanner.kt     – rekurzív szkennelés, inkrementális cache
-│   ├── Exporter.kt        – CSV + SQLite export a Letöltések mappába
-│   └── Prefs.kt           – beállítások
-├── reader/                – szövegkinyerés formátumonként
-│   ├── TextExtractor.kt   – egységes belépési pont, fejezetek, szöveg-cache
-│   └── Sentences.kt       – magyar mondathatár-felismerés
-├── tts/TtsService.kt      – előtér-szolgáltatás: TTS, pozíciómentés, MediaSession
-└── ui/                    – Compose képernyők (Explorer, Detail, Reader,
-                             Stats, Settings, FilePicker)
+│   ├── Catalog.kt             – a saját katalógus (látható .db a Letöltésekben)
+│   ├── AppDb.kt               – pozíciók, könyvjelzők, jegyzetek
+│   ├── LibraryScanner.kt      – beolvasás: metaadat + katalógusba írás
+│   ├── MetadataExtractor.kt   – cím, szerző, fülszöveg a fájlokból
+│   ├── CoverExtractor.kt      – borítókép kinyerése formátumonként
+│   ├── CoverStore.kt          – bélyegkép-tár (WebP + memória-gyorstár)
+│   ├── CoverScanner.kt        – a borítók háttérben futó második menete
+│   ├── FileOps.kt             – átnevezés, áthelyezés, másolás, törlés
+│   ├── Normalizer.kt          – szövegnormalizálás, ékezetfolding
+│   ├── Exporter.kt            – CSV + SQLite export a Letöltések mappába
+│   └── Prefs.kt               – beállítások
+├── reader/                    – szövegkinyerés formátumonként
+│   ├── TextExtractor.kt       – egységes belépési pont, fejezetek, szöveg-cache
+│   ├── Sentences.kt           – mondathatár-felismerés
+│   └── XmlReader.kt           – Android-független XML, hogy tesztelhető legyen
+├── tts/TtsService.kt          – előtér-szolgáltatás: TTS, pozíció, MediaSession
+├── vm/
+│   ├── LibraryViewModel.kt    – katalógus, szűrt lista, polc, beolvasás
+│   └── BrowserViewModel.kt    – a fájlrendszer böngészése
+└── ui/                        – Compose képernyők
+    ├── LibraryScreen.kt       – a könyvtár listája (nyitóképernyő)
+    ├── ExplorerScreen.kt      – fájlböngésző
+    ├── ShelfScreen.kt         – lapozható borítónézet
+    ├── ReaderScreen.kt        – állapot és huzalozás; a megjelenítés külön:
+    │                            ReaderTopBar, ReaderControls, ReaderText,
+    │                            BookmarksDialog
+    ├── BookDetails.kt         – a könyv adatlapja (mindhárom nézetnek)
+    ├── FileActions.kt         – a helyi menü és ablakai
+    └── …                      – Settings, Stats, FilePicker, NowPlayingBar
+
+app/src/test/java/hu/konyvtar/tts/   – 55 egységteszt, emulátor nélkül
 ```
 
 Fontosabb tervezési döntések:
 
 - **Az olvasási pozíciók az app saját adatbázisában** vannak, nem a
-  katalógusban — így a katalógus frissítése (újramásolása a PC-ről) sosem
-  törli a haladást.
+  katalógusban — így a katalógus újraépítése sosem törli a haladást.
+- A **katalógus szándékosan látható fájl** a Letöltések mappában, nem az app
+  rejtett tárhelyén: túléli az újratelepítést, és PC-n is megnyitható.
+- A **lista memóriában szűr**, nem SQL-ből: a katalógus egyszer betöltődik,
+  előre elkészített, ékezet nélküli kulcsokkal — ezért marad azonnali a
+  gépelés közbeni keresés több ezer könyvnél is.
+- A **borítók külön menetben** töltődnek. Egy borító kinyerése sokkal drágább,
+  mint a metaadaté (kép dekódolása, PDF-oldal kirajzolása), ezért nem
+  várakoztatjuk vele a listát.
 - A **kinyert szöveg gyorsítótárba** kerül (`cacheDir/text/`), ezért az első
   megnyitás után a folytatás azonnali. A fejezethatárok külön kis fájlba
   mentődnek a szöveg mellé.
-- A párosítás elsődlegesen `fizikai_fajlok.fajl_nev` alapján történik (a PC-n
-  már elvégzett munka újrahasznosítása), tartalékként cím + szerző
-  egyeztetéssel a fájlnévből — a moly.hu-s címekben előforduló láthatatlan
-  U+200B karaktereket is kezelve.
-- A nagy katalógust **nem másoljuk be** az appba: helyben, csak olvasásra
-  nyitjuk meg.
-- A böngészőlista **SQL-ből** rendez és szűr, nem memóriában — ezért marad
-  gyors több tízezer sornál is.
+- A **fájlműveletek átvezetik a hivatkozásokat.** Ez a lényegük: a katalógus,
+  a haladás, a könyvjelzők, a jegyzet és a bélyegkép mind követi a fájlt.
+- A **parserek nem függenek az Androidtól** (saját `XmlReader`), ezért sima
+  JUnit-tal tesztelhetők — ott a legveszélyesebb a hiba, mert nem omlik össze
+  semmi, csak rosszul lesz felolvasva egy könyv.
 
 ## Adatvédelem
 
 Az alkalmazás **nem kér internet-hozzáférést** (nincs `INTERNET` engedély a
 manifestben), tehát technikailag képtelen adatot küldeni bárhová. Minden
-adat — a katalógus, a könyvek, az olvasási pozíciók, a könyvjelzők — a
-telefonon marad. Nincs analitika, nincs hirdetés, nincs felhasználói fiók.
+adat — a katalógus, a könyvek, az olvasási pozíciók, a könyvjelzők, a
+jegyzetek — a telefonon marad. Nincs analitika, nincs hirdetés, nincs
+felhasználói fiók.
 
 ## Licenc
 

@@ -9,6 +9,88 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.2.0] — 2026-09-01
+
+**Pöccintés a nézetek között**
+
+- A **könyvtár** és a **fájlböngésző** egyetlen lapozható felület lett:
+  jobbra-balra pöccintve váltasz köztük. A cím mellett két pötty mutatja,
+  hol állsz. A rendszer-vissza a második lapról az elsőre visz, nem lép ki.
+- A **polc kimarad a lapozásból**: ott a pöccintés már a könyvek közti
+  mozgást jelenti, a két gesztus ütné egymást.
+- A **helyi menü mindkét nézetben ugyanaz**, és ugyanúgy, hosszú nyomásra
+  jön elő. Az első pontja az **adatlap**, utána a jegyzet és a
+  fájlműveletek. Korábban a listában a hosszú nyomás egyből az adatlapot
+  nyitotta, a böngészőben pedig a menüt.
+
+### [4.1.0] — 2026-09-01
+
+**Fájlműveletek és saját jegyzetek**
+
+- **Átnevezés, áthelyezés, másolás, törlés** minden nézetből. A lényeg nem a
+  fájlmozgatás, hanem hogy **minden hozzá kötött adat is követi a fájlt**:
+  a katalógusbejegyzés, az olvasási haladás, a könyvjelzők, a jegyzet és a
+  bélyegkép. Fájlkezelőben elvégezve mindez csendben elveszne.
+- A **törlés mindig rákérdez**, és a fájl nevét is megmutatja.
+- Az **olvasóban nincs fájlművelet**: az épp olvasott könyvet nem nevezzük át
+  és nem töröljük magad alól. Jegyzetet ott is írhatsz hozzá.
+- **Saját jegyzetek**: bármit hozzáfűzhetsz egy könyvhöz. A listában jel
+  mutatja, melyikhez van, és a **kereső a jegyzetekben is keres**.
+- 7 új egységteszt a fájlnév-ellenőrzésre (összesen 55).
+
+### [4.0.0] — 2026-08-31
+
+**Valódi borítók**
+
+- **Borítókinyerés** magukból a könyvfájlokból: **EPUB** (az OPF háromféle
+  jelölése), **MOBI/AZW3** (EXTH-rekord), **FB2** (base64), **PDF** (az első
+  oldal kirajzolása). Ahol nincs borító, marad a címből és a szerzőből
+  rajzolt.
+- **Bélyegkép-tár**: WebP, 320×480, kb. 20 KB/db, mérete látszik a
+  beállításokban és törölhető.
+- **Két menetben**: a metaadatok gyorsan végigfutnak, a borítók utána, a
+  háttérben töltődnek. Amit egyszer kinyertünk, azt nem próbáljuk újra.
+- **Borítók a listában** kapcsolóval, alapból kikapcsolva.
+- **„Most szól" sáv** minden képernyő alján: a könyv címe és a haladás, egy
+  koppintással vissza a könyvhöz, gombbal bárhonnan elnémítható.
+- 16 új egységteszt, köztük a MOBI bájtpontos offset-számolása.
+
+### [3.2.0] — 2026-08-30
+
+- **Indítás/szünet gomb minden képernyőn.** Felolvasás közben más nézetre
+  váltva eddig nem lehetett elnémítani a könyvet.
+- A teljes leállítás (értesítés → Stop) mostantól üríti a lejátszó állapotát;
+  eddig a leállított könyv „betöltve" maradt.
+
+### [3.1.1] — 2026-08-30
+
+**Nagytakarítás** — nem új funkció, a kód rendberakása.
+
+- **32 egységteszt**, eddig egy sem volt. A parsereket és a szövegkezelést
+  fedik — ott a legveszélyesebb a hiba, mert nem omlik össze semmi, csak
+  rosszul lesz felolvasva egy könyv.
+- **Egy adatlap három helyett**; az olvasó 840 soros függvénye öt fájl lett;
+  a ViewModel kettévágva (katalógus / fájlböngésző); a beállítások kilenc
+  kártyája külön composable.
+- **Három valódi hiba** derült ki és javult: a fájlböngésző üresen nyílt
+  hidegindítás után; a böngészés aktuális mappája számított a könyvtár
+  gyökerének is; a `&Otilde;` / `&odblac;` entitások nem oldódtak fel.
+
+### [3.1.0] — 2026-08-30
+
+**A lista lett a nyitóképernyő**
+
+- A polc háromezer könyvnél használhatatlannak bizonyult: lapozgatva
+  képtelenség megtalálni egy könyvet.
+- **Kereső**, ami egyszerre nézi a címet, a szerzőt és a fájlnevet,
+  ékezetre érzéketlenül. A szűrés a memóriában fut.
+- **Betűsáv**, ami csak azokat a kezdőbetűket mutatja, amikhez van könyv.
+- **Formátumjelvény minden soron**; ami nem olvasható fel, az szürke.
+  **Formátum-szűrő** darabszámmal.
+- Koppintások: egy = kijelölés, kettő = megnyitás és felolvasás, hosszú =
+  adatlap, tetején a borítóval.
+- A **polc megmaradt**, és a lista szűrt eredményét mutatja.
+
 ### [3.0.0] — 2026-08-30
 
 **Az app mostantól mindenkinek szól**
@@ -68,68 +150,6 @@ követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint meg
 **Új nyelv hozzáadása**: másold a `res/values/strings.xml` fájlt egy új
 `res/values-<kód>/` mappába, fordítsd le az értékeket, és vedd fel a nyelvet
 a `data/AppLanguages.kt` listájába. Kódolás nem kell hozzá.
-
-### [3.0.0] — 2026-08-30
-
-**The app is now for everyone**
-
-- **The external catalogue is gone.** It used to be possible to load a database
-  built on a PC, which was tailored to one collection. From now on the app
-  **builds the catalogue itself** from the books on the phone — it works the
-  same for anyone who installs it.
-- **Scanning and catalogue building merged** into a single *Read the library*
-  operation that extracts metadata and writes the catalogue. Still incremental:
-  existing entries are left untouched.
-- **The catalogue stays a visible file**
-  (`Download/KonyvtarTTS/sajat_katalogus.db`), so it survives reinstalling the
-  app and can be opened on a PC.
-
-**The shelf is the start screen**
-
-- A pageable **cover view**: browse your books like standing in front of a
-  shelf. Under each cover a **progress bar** shows where you are; no bar means
-  you have not started the book.
-- Where no cover image is available a **typographic cover** is drawn from the
-  title and author, in a colour derived from the title so it stays constant.
-- **Reading counters** on top of the shelf (*Finished* / *In progress*);
-  tapping one opens the matching list.
-
-**Startup wizard**
-
-- Folder and catalogue present → straight to the shelf. Folder but no catalogue
-  → it offers the scan. Nothing set up → it asks for the folder first, then the
-  scan. No more empty screen you cannot do anything with.
-
-**Other**
-
-- **Progress bar in the reader's book info dialog** (it was missing).
-- **Remove missing files from the catalogue** — a manual button in settings; it
-  never deletes anything on its own.
-- New document: the **[roadmap](docs/ROADMAP.en.md)**, listing finished and
-  planned phases with the reasoning behind each decision.
-
-### [2.0.0] — 2026-08-30
-
-**The app now speaks ten languages**
-
-- The entire interface is translated: **Hungarian, English, German, French,
-  Spanish, Portuguese, Polish, Czech, Slovak and Russian**. All 237 strings
-  exist in every language — from buttons to error messages and the CSV export
-  column headers.
-- **Interface language and narration language are set separately.** Read an
-  English book with a Hungarian interface, or the other way round.
-- New setting: *Interface language* — follow the system or pick manually, each
-  language shown in its own name. The switch takes effect immediately.
-- On a phone with an unsupported system language the app falls back to
-  **English**, so it stays understandable anywhere.
-- From Android 13 the app also appears in the system language settings.
-- Chapter detection went international too: alongside Hungarian it now
-  recognises English, German, French, Spanish, Polish, Czech and Russian
-  chapter words.
-
-**Adding a language**: copy `res/values/strings.xml` into a new
-`res/values-<code>/` folder, translate the values, and add the language to the
-list in `data/AppLanguages.kt`. No coding required.
 
 ### [1.4.1] — 2026-08-29
 
@@ -307,6 +327,148 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.2.0] — 2026-09-01
+
+**Swiping between the views**
+
+- The **library** and the **file browser** became one swipeable surface: swipe
+  left or right to switch. Two dots next to the title show where you are.
+  System back goes from the second page to the first instead of leaving.
+- **The shelf stays out of the swipe**: there a swipe already means moving
+  between books, and the two gestures would fight each other.
+- **The context menu is the same in both views** and opens the same way, on
+  long press. Its first entry is the **details sheet**, followed by the note
+  and the file operations.
+
+### [4.1.0] — 2026-09-01
+
+**File operations and personal notes**
+
+- **Rename, move, copy, delete** from every view. The point is not moving
+  files but that **everything attached to the file follows it**: the catalogue
+  entry, the reading progress, the bookmarks, the note and the thumbnail.
+  Doing the same in a file manager would silently lose all of it.
+- **Deleting always asks first** and shows the file name.
+- **No file operations in the reader**: the book you are reading will not be
+  renamed or deleted from under you. You can still write a note there.
+- **Personal notes**: attach anything to a book. A mark in the list shows which
+  books have one, and **search looks inside the notes too**.
+- 7 new unit tests for file-name validation (55 in total).
+
+### [4.0.0] — 2026-08-31
+
+**Real covers**
+
+- **Cover extraction** from the book files themselves: **EPUB** (three OPF
+  conventions), **MOBI/AZW3** (EXTH record), **FB2** (base64), **PDF** (first
+  page rendered). Where there is no cover, the drawn one stays.
+- **Thumbnail store**: WebP, 320×480, about 20 KB each; its size is shown in
+  settings and it can be cleared.
+- **Two passes**: metadata runs through quickly, covers load afterwards in the
+  background. What was extracted once is never attempted again.
+- **Covers in the list** behind a toggle, off by default.
+- **A now-playing bar** at the bottom of every screen: the book's title and
+  progress, one tap back to it, and a button to silence it from anywhere.
+- 16 new unit tests, including the MOBI byte-exact offset arithmetic.
+
+### [3.2.0] — 2026-08-30
+
+- **A play/pause button on every screen.** Switching views while a book was
+  being read aloud left no way to silence it.
+- A full stop (notification → Stop) now clears the player state; a stopped
+  book used to stay "loaded".
+
+### [3.1.1] — 2026-08-30
+
+**Cleanup** — not a feature, putting the code in order.
+
+- **32 unit tests**; there were none. They cover the parsers and the text
+  handling — where a bug is most dangerous, because nothing crashes, a book is
+  just read out wrong.
+- **One details sheet instead of three**; the reader's 840-line function became
+  five files; the view model split in two (catalogue / file browser); the nine
+  settings cards became separate composables.
+- **Three real bugs** surfaced and were fixed: the file browser opened empty
+  after a cold start; the browser's current folder also counted as the library
+  root; the `&Otilde;` / `&odblac;` entities were not decoded.
+
+### [3.1.0] — 2026-08-30
+
+**The list became the start screen**
+
+- The shelf turned out to be unusable with three thousand books: flipping
+  through covers, you cannot find anything.
+- **Search** across the title, the author and the file name at once,
+  accent-insensitive. Filtering runs in memory.
+- **A letter bar** showing only the initials that actually have books.
+- **A format badge on every row**; formats that cannot be read aloud are grey.
+  **A format filter** with counts.
+- Taps: one = select, two = open and read aloud, long = details sheet, with the
+  cover on top.
+- **The shelf is still there**, showing whatever the list currently filters.
+
+### [3.0.0] — 2026-08-30
+
+**The app is now for everyone**
+
+- **The external catalogue is gone.** It used to be possible to load a database
+  built on a PC, which was tailored to one collection. From now on the app
+  **builds the catalogue itself** from the books on the phone — it works the
+  same for anyone who installs it.
+- **Scanning and catalogue building merged** into a single *Read the library*
+  operation that extracts metadata and writes the catalogue. Still incremental:
+  existing entries are left untouched.
+- **The catalogue stays a visible file**
+  (`Download/KonyvtarTTS/sajat_katalogus.db`), so it survives reinstalling the
+  app and can be opened on a PC.
+
+**The shelf is the start screen**
+
+- A pageable **cover view**: browse your books like standing in front of a
+  shelf. Under each cover a **progress bar** shows where you are; no bar means
+  you have not started the book.
+- Where no cover image is available a **typographic cover** is drawn from the
+  title and author, in a colour derived from the title so it stays constant.
+- **Reading counters** on top of the shelf (*Finished* / *In progress*);
+  tapping one opens the matching list.
+
+**Startup wizard**
+
+- Folder and catalogue present → straight to the shelf. Folder but no catalogue
+  → it offers the scan. Nothing set up → it asks for the folder first, then the
+  scan. No more empty screen you cannot do anything with.
+
+**Other**
+
+- **Progress bar in the reader's book info dialog** (it was missing).
+- **Remove missing files from the catalogue** — a manual button in settings; it
+  never deletes anything on its own.
+- New document: the **[roadmap](docs/ROADMAP.en.md)**, listing finished and
+  planned phases with the reasoning behind each decision.
+
+### [2.0.0] — 2026-08-30
+
+**The app now speaks ten languages**
+
+- The entire interface is translated: **Hungarian, English, German, French,
+  Spanish, Portuguese, Polish, Czech, Slovak and Russian**. All 237 strings
+  exist in every language — from buttons to error messages and the CSV export
+  column headers.
+- **Interface language and narration language are set separately.** Read an
+  English book with a Hungarian interface, or the other way round.
+- New setting: *Interface language* — follow the system or pick manually, each
+  language shown in its own name. The switch takes effect immediately.
+- On a phone with an unsupported system language the app falls back to
+  **English**, so it stays understandable anywhere.
+- From Android 13 the app also appears in the system language settings.
+- Chapter detection went international too: alongside Hungarian it now
+  recognises English, German, French, Spanish, Polish, Czech and Russian
+  chapter words.
+
+**Adding a language**: copy `res/values/strings.xml` into a new
+`res/values-<code>/` folder, translate the values, and add the language to the
+list in `data/AppLanguages.kt`. No coding required.
 
 ### [1.4.1] — 2026-08-29
 
