@@ -317,4 +317,31 @@
     <string name="note_save">Speichern</string>
     <string name="note_clear">Notiz löschen</string>
     <string name="note_edit">Notiz</string>
+
+    <!-- 3. fazis: muveletmenu, kiejtesi szotar, bionic -->
+    <string name="reader_bionic">Bionic Reading</string>
+    <string name="action_bookmark">Lesezeichen</string>
+    <string name="action_pronounce">Aussprache…</string>
+    <string name="action_wikipedia">Wikipedia…</string>
+    <string name="action_quote_card">Zitatkarte</string>
+    <string name="action_copy">Kopieren</string>
+    <string name="action_copied">In die Zwischenablage kopiert</string>
+    <string name="action_pick_word">Welches Wort?</string>
+    <string name="action_no_browser">Kein Browser zum Öffnen gefunden</string>
+    <string name="action_quote_failed">Die Zitatkarte konnte nicht erstellt werden</string>
+    <string name="pron_title">Aussprache: %1$s</string>
+    <string name="pron_explain">Schreib es so, wie die Stimme es sagen soll. Gilt für alle Bücher.</string>
+    <string name="pron_hint">z. B. Bree → Bri</string>
+    <string name="pron_word">Wort</string>
+    <string name="pron_say_as">So aussprechen</string>
+    <string name="pron_save">Speichern</string>
+    <string name="pron_saved">„%1$s“ wird jetzt „%2$s“ gesprochen</string>
+    <string name="set_reading_bionic">  Bionic Reading: Wortanfänge fett</string>
+    <string name="set_reading_longpress">  Langes Drücken setzt sofort ein Lesezeichen</string>
+    <string name="set_reading_longpress_desc">Ist dies an, öffnet ein einfacher Tipp das Aktionsmenü. Ist es aus, öffnet langes Drücken das Menü.</string>
+    <string name="set_pron_title">Aussprachewörterbuch</string>
+    <string name="set_pron_desc">Die Stimme spricht erfundene und fremde Namen oft falsch aus. Hier legst du fest, wie sie klingen sollen. Beim Lesen: langes Drücken auf einen Satz → Aussprache.</string>
+    <string name="set_pron_empty">Noch keine Regeln.</string>
+    <string name="set_pron_add">Regel hinzufügen</string>
+    <string name="set_pron_rule">%1$s → %2$s</string>
 </resources>

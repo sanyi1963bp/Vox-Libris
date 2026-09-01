@@ -317,4 +317,31 @@
     <string name="note_save">Zapisz</string>
     <string name="note_clear">Usuń notatkę</string>
     <string name="note_edit">Notatka</string>
+
+    <!-- 3. fazis: muveletmenu, kiejtesi szotar, bionic -->
+    <string name="reader_bionic">Bionic Reading</string>
+    <string name="action_bookmark">Zakładka</string>
+    <string name="action_pronounce">Wymowa…</string>
+    <string name="action_wikipedia">Wikipedia…</string>
+    <string name="action_quote_card">Karta cytatu</string>
+    <string name="action_copy">Kopiuj</string>
+    <string name="action_copied">Skopiowano do schowka</string>
+    <string name="action_pick_word">Które słowo?</string>
+    <string name="action_no_browser">Brak przeglądarki do otwarcia</string>
+    <string name="action_quote_failed">Nie udało się utworzyć karty cytatu</string>
+    <string name="pron_title">Wymowa: %1$s</string>
+    <string name="pron_explain">Zapisz tak, jak głos ma to wymówić. Działa we wszystkich książkach.</string>
+    <string name="pron_hint">np. Bree → Bri</string>
+    <string name="pron_word">Słowo</string>
+    <string name="pron_say_as">Wymawiaj jako</string>
+    <string name="pron_save">Zapisz</string>
+    <string name="pron_saved">„%1$s” jest teraz czytane jako „%2$s”</string>
+    <string name="set_reading_bionic">  Bionic Reading: pogrubione początki słów</string>
+    <string name="set_reading_longpress">  Długie przytrzymanie od razu dodaje zakładkę</string>
+    <string name="set_reading_longpress_desc">Gdy włączone, menu akcji otwiera pojedyncze dotknięcie. Gdy wyłączone, otwiera je długie przytrzymanie.</string>
+    <string name="set_pron_title">Słownik wymowy</string>
+    <string name="set_pron_desc">Głos przekręca wymyślone i obce nazwy. Tutaj ustalisz, jak ma je czytać. Podczas czytania: długie przytrzymanie zdania → Wymowa.</string>
+    <string name="set_pron_empty">Brak reguł.</string>
+    <string name="set_pron_add">Dodaj regułę</string>
+    <string name="set_pron_rule">%1$s → %2$s</string>
 </resources>

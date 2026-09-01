@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.FirstPage
+import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -77,6 +78,9 @@ fun ReaderControls(
     onToggleFollow: () -> Unit,
     fontSp: Float,
     onFontChange: (Float) -> Unit,
+    /** Bionic Reading: a szavak elejének félkövér szedése. */
+    bionic: Boolean,
+    onToggleBionic: () -> Unit,
     speed: Float,
     onSpeedChange: (Float) -> Unit,
     onSpeedDone: () -> Unit,
@@ -179,6 +183,16 @@ fun ReaderControls(
                         text = "${fontSp.roundToInt()} sp",
                         style = MaterialTheme.typography.labelSmall
                     )
+                    // A bionic szedés tipográfia, ezért a betűméret mellé
+                    // került: itt látszik rögtön, mit csinál a szöveggel.
+                    IconButton(onClick = onToggleBionic, modifier = Modifier.size(34.dp)) {
+                        Icon(
+                            Icons.Filled.FormatBold,
+                            contentDescription = stringResource(R.string.reader_bionic),
+                            tint = if (bionic) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 SliderRow(
                     label = stringResource(R.string.reader_speed),

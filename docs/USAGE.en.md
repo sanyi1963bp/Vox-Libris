@@ -295,10 +295,67 @@ transport:
 ### Gestures on the text
 
 - **Double tap** → narration starts **exactly from the sentence** you touched.
-- **Long press** → a bookmark on that paragraph (🔖 appears in front of it).
+- **Long press** → an **action menu** for the sentence you pressed on.
 
 The sentence being spoken is **highlighted**, and its paragraph faintly tinted
 — so you can follow along by eye.
+
+### The text's action menu
+
+The menu shows **which sentence** it applies to at the top — the same chunk
+the narrator speaks as one unit. It has five entries:
+
+| Entry | What it does |
+|---|---|
+| **Bookmark** | 🔖 on that paragraph |
+| **Pronunciation** | teach the voice how to say a word |
+| **Wikipedia** | opens the chosen word in the browser |
+| **Quote card** | draws an image from the sentence and shares it |
+| **Copy** | puts the sentence on the clipboard |
+
+**Pronunciation** and **Wikipedia** act on a single word, so the menu offers
+the sentence's words as tappable chips. You never have to select text — that
+is deliberate: selection would fight the double tap that starts narration.
+
+**If you would rather have the instant bookmark**, switch it under *Settings →
+Reading and controls*. Long press then bookmarks right away, and the action
+menu opens on a **single tap**.
+
+### The pronunciation dictionary
+
+Synthetic voices routinely mangle invented and foreign names, and changing the
+speech rate does not help. When you hear a name come out wrong:
+
+1. long-press that sentence,
+2. **Pronunciation**,
+3. tap the word,
+4. type how it should sound (e.g. `Bree` → `Bri`),
+5. **Save**.
+
+From then on **every book** says it that way. If narration was running, the
+sentence is re-spoken straight away, so you can hear whether it worked.
+
+Worth knowing:
+
+- The rule is **anchored to the start of a word but leaves the ending alone**.
+  A `Bree` rule therefore also catches "Breeben", "Breeből" and "Breevel" —
+  in Hungarian the suffix sits at the end and the stem at the front.
+- The price is that a short pattern can reach into a longer word. If you hit
+  that, write a longer pattern.
+- The substitution only touches **the text handed to the engine**. The book's
+  own text is untouched: the highlight does not shift, and search keeps
+  searching the original.
+- The rules can be reviewed, deleted and added under *Settings →
+  Pronunciation dictionary*.
+
+### Bionic Reading
+
+The first ~40% of every word is set in bold, so the eye can catch on word
+beginnings. The switch is in the bottom bar's **tuning** panel next to the
+font size (**B** icon), or under *Settings → Reading and controls*.
+
+It has an extra use here: if you follow the narration with your eyes, it is
+easier to stay with the voice.
 
 ### Search inside the text
 
@@ -308,9 +365,9 @@ them.
 
 ### Bookmarks
 
-Long press anywhere in the text, or the ⋮ menu's *Bookmark here*. While
-narration is running, the bookmark lands **on the spoken position**, not where
-you happen to be looking.
+From the text's action menu (*Bookmark*), or the ⋮ menu's *Bookmark here*.
+With the latter, while narration is running the bookmark lands **on the spoken
+position**, not where you happen to be looking.
 
 The list shows the paragraph number, the date and a snippet; tap to jump there,
 the bin icon deletes it.
@@ -400,7 +457,8 @@ Cards, one under the other:
 | **Interface language** | ten languages, or follow the system |
 | **Narration language** | any language of the installed TTS engine, plus a button to the voice downloader |
 | **Audio cues** | chapter cue on/off, its volume |
-| **Reading and controls** | follow, keep the screen on, how far the headset's double press jumps back |
+| **Reading and controls** | follow, keep the screen on, Bionic Reading, what the long press does, how far the headset's double press jumps back |
+| **Pronunciation dictionary** | the substitutions you have added, delete, add a new rule |
 | **Cache** | how much extracted text is stored, clearable (it does not touch your positions) |
 | **Text-to-speech engine** | jump to the system TTS settings |
 
@@ -453,3 +511,15 @@ list.
 If you renamed it outside the app, in a file manager, then yes — the app looks
 on the old path. Use the [context menu](#7-the-context-menu); it carries
 everything over.
+
+**The voice mispronounces a name**
+Long-press that sentence → *Pronunciation* → tap the word → type how it should
+sound. From then on every book says it that way.
+
+**Long press opens a menu, but I want the bookmark**
+Settings → Reading and controls → *Long press adds a bookmark right away*. The
+menu then opens on a single tap.
+
+**Wikipedia does not open**
+There is no browser on the device, or it cannot open a web address. The app
+itself never goes online — it only asks the system to open the address.

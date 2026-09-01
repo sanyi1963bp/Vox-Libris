@@ -141,15 +141,53 @@ közötti lapozást jelenti, a két gesztus ütné egymást.
 **A helyi menü mindkét nézetben ugyanaz**: hosszú nyomásra jön elő, és az első
 pontja az **adatlap**, utána a jegyzet és a fájlműveletek.
 
-## 3. fázis — Olvasási élmény
+## 3. fázis — Olvasási élmény ✅ *(kész)*
 
-- **Bionic Reading**: minden szó első ~40%-a félkövér, kapcsolható.
-- **Hosszú nyomás → műveletmenü** a mostani azonnali könyvjelző helyett:
-  *Könyvjelző · Wikipédia · Idézetkártya · Másolás*.
-- **Wikipédia**: a kijelölt szót átadja a böngészőnek — így az appnak
-  **továbbra sem kell internet-engedély**.
-- **Idézetkártya**: a kijelölt szövegből kép, az aktuális színsémával,
-  megosztható.
+- **Műveletmenü a szövegen**: *Könyvjelző · Kiejtés · Wikipédia ·
+  Idézetkártya · Másolás*. A menü a **megérintett mondattal** dolgozik, és
+  meg is mutatja, melyikkel — így nem kell találgatni, mire vonatkozik a
+  művelet. A mondat azért jó egység, mert a felolvasó is ezzel dolgozik:
+  amit a menü mutat, az pontosan az, amit hallasz.
+- **Kiejtési szótár**, ami eredetileg csak ötlet volt a lap alján, és
+  végül a fázis legfontosabb darabja lett. Hallod, hogy a hang elrontja a
+  nevet → hosszú nyomás → *Kiejtés* → beírod, hogyan mondja → **onnantól
+  minden könyvben jól mondja**. Ha épp szól a felolvasás, a mondatot
+  rögtön újra is mondja a javítással.
+- **Wikipédia**: a szót átadja a böngészőnek, tehát az appnak **továbbra
+  sincs internet-engedélye** — nem tölt le semmit, csak megkéri a
+  rendszert, hogy nyissa meg a címet. A szócikk nyelve a felület nyelvét
+  követi.
+- **Idézetkártya**: a mondatból kép a futó színsémával, megosztható. A
+  kártya a gyorsítótárba kerül, onnan adja tovább a FileProvider.
+- **Bionic Reading**: minden szó első ~40%-a félkövér, kapcsolható. Az
+  olvasó hangolósávjában van a kapcsoló, a betűméret mellett — ott látszik
+  rögtön, mit csinál a szöveggel.
+
+### Amiben eltértünk a tervtől, és miért
+
+- **Nincs szövegkijelölés.** A terv „a kijelölt szót" mondta, de a Compose
+  szövegkijelölése harcolna a dupla koppintással (az indítja a
+  felolvasást), nagy betűmérettel pedig egy kézzel amúgy is kínlódás.
+  Helyette a menü a mondat **szavait kínálja fel jelvényként**: ráböksz a
+  névre, és kész. Ez lett a kiejtési szótár felvitele is.
+- **A hosszú nyomás kapcsolható.** A terv szerint a menü egyszerűen
+  átvette volna a hosszú nyomást a könyvjelzőtől. Csakhogy a könyvjelzőzés
+  a leggyakoribb művelet a szövegben, és egy koppintással drágább lett
+  volna. Így most **beállítás**: alapból a hosszú nyomás nyitja a menüt;
+  átkapcsolva a hosszú nyomás könyvjelzőz, a menü pedig egyszeri
+  koppintásra jön. Mindkettő elérhető marad, csak cserélődik a két gesztus.
+- **A kiejtési szótár globális**, nem könyvenkénti. A félremondott nevek
+  többnyire sorozaton át és több fájlban is visszatérnek, így egyszer kell
+  megadni őket. A csere **szókezdethez kötött, de a végződést nem bántja**
+  (`Bree` → a „Breeben" is jó lesz), mert a magyarban a rag a szó végén
+  van, a szótő pedig elöl.
+- **A csere csak a felolvasandó szövegen történik**, a könyv szövegéhez nem
+  nyúlunk. Ez nem szépészeti kérdés: így a képernyőn kiemelt mondat
+  karakterpozíciói nem csúsznak el, és a keresés is az eredeti szövegben
+  keres tovább.
+
+A fázisra **24 új egységteszt** ügyel (kiejtés, mondathatárok,
+szóválasztás, bionic szedés), így összesen 79 teszt fut.
 
 ## 4. fázis — Tudás a könyvről
 
@@ -183,8 +221,6 @@ pontja az **adatlap**, utána a jegyzet és a fájlműveletek.
 
 ## Ötletek, amik menet közben jöttek
 
-- **Kiejtési szótár**: könyvenként vagy globálisan megadható átírások a TTS-nek
-  (`Bree → Brí`), mert a magyar hang a kitalált neveket rendre elrontja.
-  Teljesen helyi, apró munka, hosszú hallgatásnál nagy különbség.
+- ~~**Kiejtési szótár**~~ — megépült a 3. fázisban, globálisan.
 - **Sorköz és margó** állítása az olvasóban, a betűméret mellé.
 - **Lapozós mód** a mostani folyamatos görgetés alternatívájaként.

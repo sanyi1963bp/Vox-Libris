@@ -542,6 +542,8 @@ fun ReadingCard() {
     val context = LocalContext.current
     var follow by remember { mutableStateOf(Prefs.readerFollow(context)) }
     var keepScreen by remember { mutableStateOf(Prefs.keepScreenOn(context)) }
+    var bionic by remember { mutableStateOf(Prefs.bionic(context)) }
+    var longPress by remember { mutableStateOf(Prefs.longPressBookmark(context)) }
     var rewindSec by remember { mutableFloatStateOf(Prefs.rewindSeconds(context).toFloat()) }
 
     SettingsCard(stringResource(R.string.set_reading_title)) {
@@ -565,6 +567,31 @@ fun ReadingCard() {
                 style = MaterialTheme.typography.bodySmall
             )
         }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Switch(checked = bionic, onCheckedChange = {
+                bionic = it
+                Prefs.setBionic(context, it)
+            })
+            Text(
+                stringResource(R.string.set_reading_bionic),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Switch(checked = longPress, onCheckedChange = {
+                longPress = it
+                Prefs.setLongPressBookmark(context, it)
+            })
+            Text(
+                stringResource(R.string.set_reading_longpress),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        Text(
+            stringResource(R.string.set_reading_longpress_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Spacer(Modifier.height(4.dp))
         Text(
             text = stringResource(R.string.set_reading_rewind, rewindSec.toInt()),

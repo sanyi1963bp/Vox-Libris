@@ -27,6 +27,7 @@ import hu.konyvtar.tts.MainActivity
 import hu.konyvtar.tts.R
 import hu.konyvtar.tts.data.AppDb
 import hu.konyvtar.tts.data.Prefs
+import hu.konyvtar.tts.data.Pronounce
 import hu.konyvtar.tts.model.ProgressRow
 import hu.konyvtar.tts.reader.ExtractException
 import hu.konyvtar.tts.reader.Sentences
@@ -89,6 +90,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         const val ACTION_SET_PITCH = "hu.konyvtar.tts.SET_PITCH"
         const val ACTION_SET_LANGUAGE = "hu.konyvtar.tts.SET_LANGUAGE"
         const val ACTION_SEEK = "hu.konyvtar.tts.SEEK"
+        const val ACTION_PRONOUNCE_CHANGED = "hu.konyvtar.tts.PRONOUNCE_CHANGED"
 
         const val EXTRA_PATH = "path"
         const val EXTRA_TITLE = "title"
@@ -391,6 +393,12 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 _state.value = _state.value.copy(pitch = v)
                 if (_state.value.playing) restartCurrentUtterance()
             }
+            ACTION_PRONOUNCE_CHANGED -> {
+                // A szótár változott: az épp mondott mondatot újramondjuk, hogy
+                // rögtön hallható legyen a javítás.
+                Pronounce.invalidate()
+                if (_state.value.playing) restartCurrentUtterance()
+            }
             ACTION_SEEK -> {
                 val idx = intent.getIntExtra(EXTRA_INDEX, -1)
                 if (idx in paragraphs.indices) {
@@ -656,6 +664,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             speakCurrent()
             return
         }
+        // A kiejtési szótár csak azon a szövegen dolgozik, amit a motornak
+        // átadunk. A könyv szövegéhez nem nyúlunk, így a képernyőn kiemelt
+        // mondat karakterpoziciói nem csúsznak el.
+        val spoken = Pronounce.apply(text, Pronounce.rules())
         engine.setSpeechRate(_state.value.speed)
         engine.setPitch(_state.value.pitch)
         utteranceCounter++
@@ -672,7 +684,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
         val speakNow = {
             if (utteranceCounter == myCounter) {
-                engine.speak(text, TextToSpeech.QUEUE_FLUSH, Bundle(), id)
+                engine.speak(spoken, TextToSpeech.QUEUE_FLUSH, Bundle(), id)
             }
         }
         if (cueDelay > 0) {

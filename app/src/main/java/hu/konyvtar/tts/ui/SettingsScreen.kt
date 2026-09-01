@@ -104,6 +104,7 @@ fun SettingsScreen(
             NarrationLanguageCard()
             AudioCuesCard()
             ReadingCard()
+            PronounceCard()
             CacheCard()
             TtsEngineCard()
 

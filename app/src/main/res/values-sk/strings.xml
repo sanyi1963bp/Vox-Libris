@@ -317,4 +317,31 @@
     <string name="note_save">Uložiť</string>
     <string name="note_clear">Vymazať poznámku</string>
     <string name="note_edit">Poznámka</string>
+
+    <!-- 3. fazis: muveletmenu, kiejtesi szotar, bionic -->
+    <string name="reader_bionic">Bionic Reading</string>
+    <string name="action_bookmark">Záložka</string>
+    <string name="action_pronounce">Výslovnosť…</string>
+    <string name="action_wikipedia">Wikipédia…</string>
+    <string name="action_quote_card">Karta citátu</string>
+    <string name="action_copy">Kopírovať</string>
+    <string name="action_copied">Skopírované do schránky</string>
+    <string name="action_pick_word">Ktoré slovo?</string>
+    <string name="action_no_browser">Žiadny prehliadač na otvorenie</string>
+    <string name="action_quote_failed">Kartu citátu sa nepodarilo vytvoriť</string>
+    <string name="pron_title">Výslovnosť: %1$s</string>
+    <string name="pron_explain">Napíš to tak, ako to má hlas vysloviť. Platí pre všetky knihy.</string>
+    <string name="pron_hint">napr. Bree → Bri</string>
+    <string name="pron_word">Slovo</string>
+    <string name="pron_say_as">Vyslovovať ako</string>
+    <string name="pron_save">Uložiť</string>
+    <string name="pron_saved">„%1$s“ sa teraz číta ako „%2$s“</string>
+    <string name="set_reading_bionic">  Bionic Reading: začiatky slov tučne</string>
+    <string name="set_reading_longpress">  Dlhé stlačenie hneď pridá záložku</string>
+    <string name="set_reading_longpress_desc">Ak je zapnuté, ponuku akcií otvorí jedno ťuknutie. Ak je vypnuté, otvorí ju dlhé stlačenie.</string>
+    <string name="set_pron_title">Slovník výslovnosti</string>
+    <string name="set_pron_desc">Hlas komolí vymyslené a cudzie mená. Tu určíš, ako ich má čítať. Pri čítaní: dlhé stlačenie na vete → Výslovnosť.</string>
+    <string name="set_pron_empty">Zatiaľ žiadne pravidlá.</string>
+    <string name="set_pron_add">Pridať pravidlo</string>
+    <string name="set_pron_rule">%1$s → %2$s</string>
 </resources>

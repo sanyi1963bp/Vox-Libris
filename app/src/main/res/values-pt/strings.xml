@@ -317,4 +317,31 @@
     <string name="note_save">Guardar</string>
     <string name="note_clear">Apagar nota</string>
     <string name="note_edit">Nota</string>
+
+    <!-- 3. fazis: muveletmenu, kiejtesi szotar, bionic -->
+    <string name="reader_bionic">Bionic Reading</string>
+    <string name="action_bookmark">Marcador</string>
+    <string name="action_pronounce">Pronúncia…</string>
+    <string name="action_wikipedia">Wikipédia…</string>
+    <string name="action_quote_card">Cartão de citação</string>
+    <string name="action_copy">Copiar</string>
+    <string name="action_copied">Copiado para a área de transferência</string>
+    <string name="action_pick_word">Qual palavra?</string>
+    <string name="action_no_browser">Nenhum navegador para abrir</string>
+    <string name="action_quote_failed">Não foi possível criar o cartão de citação</string>
+    <string name="pron_title">Pronúncia: %1$s</string>
+    <string name="pron_explain">Escreva como a voz deve dizer. Vale para todos os livros.</string>
+    <string name="pron_hint">ex. Bree → Bri</string>
+    <string name="pron_word">Palavra</string>
+    <string name="pron_say_as">Dizer como</string>
+    <string name="pron_save">Guardar</string>
+    <string name="pron_saved">«%1$s» passa a ser dito «%2$s»</string>
+    <string name="set_reading_bionic">  Bionic Reading: início das palavras a negrito</string>
+    <string name="set_reading_longpress">  O toque longo adiciona marcador de imediato</string>
+    <string name="set_reading_longpress_desc">Se ligado, um toque simples abre o menu de ações. Se desligado, abre-o o toque longo.</string>
+    <string name="set_pron_title">Dicionário de pronúncia</string>
+    <string name="set_pron_desc">A voz erra nomes inventados e estrangeiros. Aqui indica como devem soar. Ao ler: toque longo numa frase → Pronúncia.</string>
+    <string name="set_pron_empty">Ainda sem regras.</string>
+    <string name="set_pron_add">Adicionar regra</string>
+    <string name="set_pron_rule">%1$s → %2$s</string>
 </resources>

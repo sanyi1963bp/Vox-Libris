@@ -37,6 +37,7 @@ import hu.konyvtar.tts.data.Normalizer
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.model.Bookmark
 import hu.konyvtar.tts.reader.ExtractException
+import hu.konyvtar.tts.reader.Sentences
 import hu.konyvtar.tts.reader.TextExtractor
 import hu.konyvtar.tts.tts.TtsService
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +57,9 @@ import kotlin.math.roundToInt
  *
  * Gesztusok a szövegen:
  *  - dupla koppintás: felolvasás pontosan a megérintett mondattól
- *  - hosszú nyomás: könyvjelző a bekezdéshez
+ *  - hosszú nyomás: műveletmenü a megérintett mondatra — vagy azonnali
+ *    könyvjelző, ha a beállításokban úgy kérted; olyankor a menü egyszeri
+ *    koppintásra jön elő
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,6 +82,11 @@ fun ReaderScreen(
 
     var fontSp by remember { mutableFloatStateOf(Prefs.readerFont(context)) }
     var follow by remember { mutableStateOf(Prefs.readerFollow(context)) }
+    var bionic by remember { mutableStateOf(Prefs.bionic(context)) }
+    val longPressBookmark = remember { Prefs.longPressBookmark(context) }
+
+    /** Melyik bekezdés melyik karakterére nyomtál — ebből lesz a mondat. */
+    var actionsAt by remember(path) { mutableStateOf<Pair<Int, Int>?>(null) }
 
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -305,6 +313,11 @@ fun ReaderScreen(
                     fontSp = it
                     Prefs.setReaderFont(context, it)
                 },
+                bionic = bionic,
+                onToggleBionic = {
+                    bionic = !bionic
+                    Prefs.setBionic(context, bionic)
+                },
                 speed = speed,
                 onSpeedChange = { speed = it },
                 onSpeedDone = {
@@ -386,11 +399,29 @@ fun ReaderScreen(
                     narrated = if (sameBook && tts.totalParas > 0) {
                         NarratedSentence(tts.paraIndex, tts.sentStart, tts.sentEnd)
                     } else NarratedSentence.NONE,
+                    bionic = bionic,
+                    longPressBookmark = longPressBookmark,
                     onPlayFrom = { idx, char -> playFrom(idx, char) },
-                    onBookmark = { addBookmarkAt(it) }
+                    onBookmark = { addBookmarkAt(it) },
+                    onActions = { idx, char -> actionsAt = idx to char }
                 )
             }
         }
+    }
+
+    // A műveletmenü a megérintett MONDATTAL dolgozik: ugyanazzal a darabbal,
+    // amit a felolvasó is egy egységként mond ki.
+    val at = actionsAt
+    val atPara = at?.let { paragraphs?.getOrNull(it.first) }
+    if (at != null && atPara != null) {
+        val (s, e) = Sentences.boundsAt(atPara, at.second)
+        ReaderActionsDialog(
+            sentence = atPara.substring(s, e),
+            title = title,
+            author = author,
+            onBookmark = { addBookmarkAt(at.first) },
+            onDismiss = { actionsAt = null }
+        )
     }
 
     if (bookmarksOpen) {

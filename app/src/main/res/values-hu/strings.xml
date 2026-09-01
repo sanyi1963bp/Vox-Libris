@@ -315,4 +315,31 @@
     <string name="note_save">Mentés</string>
     <string name="note_clear">Jegyzet törlése</string>
     <string name="note_edit">Jegyzet</string>
+
+    <!-- 3. fazis: muveletmenu, kiejtesi szotar, bionic -->
+    <string name="reader_bionic">Bionic Reading</string>
+    <string name="action_bookmark">Könyvjelző</string>
+    <string name="action_pronounce">Kiejtés…</string>
+    <string name="action_wikipedia">Wikipédia…</string>
+    <string name="action_quote_card">Idézetkártya</string>
+    <string name="action_copy">Másolás</string>
+    <string name="action_copied">A vágólapra másolva</string>
+    <string name="action_pick_word">Melyik szó?</string>
+    <string name="action_no_browser">Nincs böngésző, ami megnyitná</string>
+    <string name="action_quote_failed">Az idézetkártya nem készült el</string>
+    <string name="pron_title">Kiejtés: %1$s</string>
+    <string name="pron_explain">Írd le úgy, ahogy a hangnak mondania kellene. Minden könyvre érvényes.</string>
+    <string name="pron_hint">pl. Bree → Brí</string>
+    <string name="pron_word">Szó</string>
+    <string name="pron_say_as">Így mondja</string>
+    <string name="pron_save">Mentés</string>
+    <string name="pron_saved">A(z) „%1$s” mostantól: „%2$s”</string>
+    <string name="set_reading_bionic">  Bionic Reading: a szavak eleje félkövér</string>
+    <string name="set_reading_longpress">  A hosszú nyomás azonnal könyvjelzőt tesz</string>
+    <string name="set_reading_longpress_desc">Bekapcsolva a műveletmenü egyszeri koppintásra jön elő. Kikapcsolva a hosszú nyomás nyitja a menüt.</string>
+    <string name="set_pron_title">Kiejtési szótár</string>
+    <string name="set_pron_desc">A hang a kitalált és az idegen neveket rendre elrontja. Itt megadhatod, minek mondja őket. Olvasás közben: hosszú nyomás a mondaton → Kiejtés.</string>
+    <string name="set_pron_empty">Még nincs szabály.</string>
+    <string name="set_pron_add">Szabály hozzáadása</string>
+    <string name="set_pron_rule">%1$s → %2$s</string>
 </resources>

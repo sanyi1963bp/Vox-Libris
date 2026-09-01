@@ -317,4 +317,31 @@
     <string name="note_save">Enregistrer</string>
     <string name="note_clear">Supprimer la note</string>
     <string name="note_edit">Note</string>
+
+    <!-- 3. fazis: muveletmenu, kiejtesi szotar, bionic -->
+    <string name="reader_bionic">Bionic Reading</string>
+    <string name="action_bookmark">Signet</string>
+    <string name="action_pronounce">Prononciation…</string>
+    <string name="action_wikipedia">Wikipédia…</string>
+    <string name="action_quote_card">Carte de citation</string>
+    <string name="action_copy">Copier</string>
+    <string name="action_copied">Copié dans le presse-papiers</string>
+    <string name="action_pick_word">Quel mot ?</string>
+    <string name="action_no_browser">Aucun navigateur pour l\'ouvrir</string>
+    <string name="action_quote_failed">La carte de citation n\'a pas pu être créée</string>
+    <string name="pron_title">Prononciation : %1$s</string>
+    <string name="pron_explain">Écrivez-le comme la voix doit le prononcer. Valable pour tous les livres.</string>
+    <string name="pron_hint">ex. Bree → Bri</string>
+    <string name="pron_word">Mot</string>
+    <string name="pron_say_as">Prononcer comme</string>
+    <string name="pron_save">Enregistrer</string>
+    <string name="pron_saved">« %1$s » se dit maintenant « %2$s »</string>
+    <string name="set_reading_bionic">  Bionic Reading : début des mots en gras</string>
+    <string name="set_reading_longpress">  L\'appui long ajoute un signet aussitôt</string>
+    <string name="set_reading_longpress_desc">Si activé, une simple pression ouvre le menu d\'actions. Sinon, c\'est l\'appui long qui l\'ouvre.</string>
+    <string name="set_pron_title">Dictionnaire de prononciation</string>
+    <string name="set_pron_desc">La voix écorche les noms inventés et étrangers. Indiquez ici comment les dire. En lecture : appui long sur une phrase → Prononciation.</string>
+    <string name="set_pron_empty">Aucune règle pour l\'instant.</string>
+    <string name="set_pron_add">Ajouter une règle</string>
+    <string name="set_pron_rule">%1$s → %2$s</string>
 </resources>

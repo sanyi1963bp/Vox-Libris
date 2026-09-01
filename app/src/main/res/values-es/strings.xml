@@ -317,4 +317,31 @@
     <string name="note_save">Guardar</string>
     <string name="note_clear">Borrar nota</string>
     <string name="note_edit">Nota</string>
+
+    <!-- 3. fazis: muveletmenu, kiejtesi szotar, bionic -->
+    <string name="reader_bionic">Bionic Reading</string>
+    <string name="action_bookmark">Marcador</string>
+    <string name="action_pronounce">Pronunciación…</string>
+    <string name="action_wikipedia">Wikipedia…</string>
+    <string name="action_quote_card">Tarjeta de cita</string>
+    <string name="action_copy">Copiar</string>
+    <string name="action_copied">Copiado al portapapeles</string>
+    <string name="action_pick_word">¿Qué palabra?</string>
+    <string name="action_no_browser">No hay navegador para abrirlo</string>
+    <string name="action_quote_failed">No se pudo crear la tarjeta de cita</string>
+    <string name="pron_title">Pronunciación: %1$s</string>
+    <string name="pron_explain">Escríbelo como debería sonar. Se aplica a todos los libros.</string>
+    <string name="pron_hint">p. ej. Bree → Bri</string>
+    <string name="pron_word">Palabra</string>
+    <string name="pron_say_as">Pronunciar como</string>
+    <string name="pron_save">Guardar</string>
+    <string name="pron_saved">«%1$s» ahora se dice «%2$s»</string>
+    <string name="set_reading_bionic">  Bionic Reading: inicio de palabra en negrita</string>
+    <string name="set_reading_longpress">  La pulsación larga añade marcador al instante</string>
+    <string name="set_reading_longpress_desc">Si está activado, un solo toque abre el menú de acciones. Si no, lo abre la pulsación larga.</string>
+    <string name="set_pron_title">Diccionario de pronunciación</string>
+    <string name="set_pron_desc">La voz pronuncia mal los nombres inventados y extranjeros. Aquí puedes indicarle cómo decirlos. Al leer: pulsación larga en una frase → Pronunciación.</string>
+    <string name="set_pron_empty">Aún no hay reglas.</string>
+    <string name="set_pron_add">Añadir regla</string>
+    <string name="set_pron_rule">%1$s → %2$s</string>
 </resources>

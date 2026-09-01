@@ -142,15 +142,51 @@ means moving between books, and the two gestures would fight each other.
 its first entry is the **details sheet**, followed by the note and the file
 operations.
 
-## Phase 3 — Reading experience
+## Phase 3 — Reading experience ✅ *(done)*
 
-- **Bionic Reading**: the first ~40% of every word in bold, toggleable.
-- **Long press → action menu** instead of the current instant bookmark:
-  *Bookmark · Wikipedia · Quote card · Copy*.
-- **Wikipedia**: hands the selected word to the browser — so the app still
-  **needs no internet permission**.
-- **Quote card**: an image made from the selected text, in the current colour
-  scheme, ready to share.
+- **An action menu on the text**: *Bookmark · Pronunciation · Wikipedia ·
+  Quote card · Copy*. The menu works on the **sentence you touched**, and
+  shows it, so there is no guessing what the action applies to. The sentence
+  is the right unit because it is what the narrator works with too: what the
+  menu shows is exactly what you hear.
+- **A pronunciation dictionary**, which started as a stray idea at the bottom
+  of this page and ended up the most valuable part of the phase. You hear the
+  voice mangle a name → long press → *Pronunciation* → type how it should
+  sound → **every book says it properly from then on**. If narration is
+  running, the sentence is re-spoken straight away with the fix.
+- **Wikipedia**: hands the word to the browser, so the app still **has no
+  internet permission** — it downloads nothing, it only asks the system to
+  open an address. The article language follows the interface language.
+- **Quote card**: an image made from the sentence in the running colour
+  scheme, ready to share. It goes to the cache, and FileProvider hands it on.
+- **Bionic Reading**: the first ~40% of every word in bold, toggleable. The
+  switch sits in the reader's tuning row next to the font size — where you
+  can see at once what it does to the text.
+
+### Where we departed from the plan, and why
+
+- **No text selection.** The plan said "the selected word", but Compose text
+  selection would fight the double tap (which starts narration), and at a
+  large font size it is a struggle one-handed anyway. Instead the menu
+  **offers the sentence's words as chips**: tap the name and you are done.
+  That is also how a pronunciation rule gets entered.
+- **The long press is configurable.** The plan simply had the menu take the
+  long press away from bookmarking. But bookmarking is the most frequent
+  action in the text, and that would have cost a tap. So it is a **setting**:
+  by default long press opens the menu; switched over, long press bookmarks
+  and a single tap opens the menu. Both stay available, the two gestures just
+  swap.
+- **The pronunciation dictionary is global**, not per book. Mispronounced
+  names tend to recur across a series and across files, so they are worth
+  entering once. The substitution is **anchored to the start of a word but
+  leaves the ending alone** (`Bree` also fixes "Breeben"), because in
+  Hungarian the suffix is at the end and the stem is at the front.
+- **The substitution only touches the text handed to the engine**, never the
+  book's text. That is not cosmetic: it keeps the character positions of the
+  highlighted sentence from shifting, and search keeps searching the original.
+
+**24 new unit tests** cover this phase (pronunciation, sentence bounds, word
+picking, bionic weighting), bringing the total to 79.
 
 ## Phase 4 — Knowing the book
 
@@ -185,8 +221,6 @@ operations.
 
 ## Ideas that came up along the way
 
-- **Pronunciation dictionary**: per-book or global substitutions fed to the TTS
-  (`Bree → Bree` style), because synthetic voices routinely mangle invented
-  names. Entirely local, small effort, a big difference over long listening.
+- ~~**Pronunciation dictionary**~~ — built in phase 3, globally.
 - **Line spacing and margins** in the reader, next to the font size.
 - **Paged mode** as an alternative to the current continuous scrolling.

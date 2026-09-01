@@ -41,7 +41,11 @@ a **reader screen**, where the text and every control live together.
 |---|---|---|
 | **Single tap** | select / open folder | — |
 | **Double tap** | open **and read aloud** from the last position | read aloud **from the sentence you touched** |
-| **Long press** | context menu (details, note, file operations) | bookmark the paragraph |
+| **Long press** | context menu (details, note, file operations) | action menu for the sentence you touched |
+
+In the reader the long press is **configurable**: if you would rather have it
+bookmark right away, switch it in the settings, and the action menu then opens
+on a single tap.
 
 ## Main features
 
@@ -87,7 +91,21 @@ a **reader screen**, where the text and every control live together.
   **blood-red band**.
 - **Search inside the text.** Accent-insensitive, hits highlighted, ▲▼ to jump
   between them, with a counter.
-- **Bookmarks.** Long press anywhere in the text; list, jump, delete.
+- **Bookmarks.** From the text's action menu anywhere; list, jump, delete.
+- **A pronunciation dictionary.** Synthetic voices routinely mangle invented
+  and foreign names. Long-press a sentence → **Pronunciation** → type how it
+  should sound, and **every book says it properly from then on**; if
+  narration is running, the sentence is re-spoken straight away. The
+  substitution is anchored to the start of a word but leaves the ending
+  alone, so a `Bree` rule also catches "Breeben".
+- **An action menu on the text**: *Bookmark · Pronunciation · Wikipedia ·
+  Quote card · Copy*. It works on the **sentence you touched** and shows it —
+  the same chunk the narrator speaks as one unit. **Wikipedia** hands the
+  word to the browser, so the app itself still never goes online. The **quote
+  card** draws a shareable image from the sentence in the running colour
+  scheme.
+- **Bionic Reading.** The first ~40% of every word in bold, so the eye can
+  catch on word beginnings. Toggleable, from the reader's tuning row.
 - **Headset buttons** (Bluetooth and wired, over MediaSession):
   1 press = play/pause, 2 presses = ~5 seconds back.
 - **Appearance.** Light/dark theme or follow the system, **six colour
@@ -182,12 +200,15 @@ app/src/main/java/hu/konyvtar/tts/
 │   ├── CoverStore.kt          – thumbnail store (WebP + memory cache)
 │   ├── CoverScanner.kt        – the covers' background second pass
 │   ├── FileOps.kt             – rename, move, copy, delete
+│   ├── Pronounce.kt           – pronunciation dictionary for the narrator
+│   ├── QuoteCard.kt           – drawing and sharing the quote card
 │   ├── Normalizer.kt          – text normalisation, accent folding
 │   ├── Exporter.kt            – CSV + SQLite export to Downloads
 │   └── Prefs.kt               – settings
 ├── reader/                    – text extraction per format
 │   ├── TextExtractor.kt       – single entry point, chapters, text cache
-│   ├── Sentences.kt           – sentence boundary detection
+│   ├── Sentences.kt           – sentence bounds, word picking for the menu
+│   ├── Bionic.kt              – which word beginnings get bolded
 │   └── XmlReader.kt           – Android-free XML, so the parsers are testable
 ├── tts/TtsService.kt          – foreground service: TTS, position, MediaSession
 ├── vm/
@@ -202,9 +223,11 @@ app/src/main/java/hu/konyvtar/tts/
     │                            BookmarksDialog
     ├── BookDetails.kt         – the book's details sheet (for all three views)
     ├── FileActions.kt         – the context menu and its dialogs
+    ├── ReaderActions.kt       – the text's action menu, word picker, pronunciation
+    ├── PronounceCard.kt       – the pronunciation dictionary in the settings
     └── …                      – Settings, Stats, FilePicker, NowPlayingBar
 
-app/src/test/java/hu/konyvtar/tts/   – 55 unit tests, no emulator needed
+app/src/test/java/hu/konyvtar/tts/   – 79 unit tests, no emulator needed
 ```
 
 Notable design decisions:

@@ -47,4 +47,51 @@ object Sentences {
         }
         return best
     }
+
+    /**
+     * Annak a mondatnak a határai, amelyikbe az [offset] esik: [kezdet, vég).
+     * A műveletmenü ezzel tudja megmutatni, melyik mondatra nyomódott az ujj.
+     */
+    fun boundsAt(text: String, offset: Int): Pair<Int, Int> {
+        if (text.isEmpty()) return 0 to 0
+        val off = offset.coerceIn(0, text.length)
+        val s = starts(text)
+        var start = 0
+        var end = text.length
+        for (i in s.indices) {
+            if (s[i] <= off) {
+                start = s[i]
+                end = if (i + 1 < s.size) s[i + 1] else text.length
+            } else {
+                break
+            }
+        }
+        return start to end
+    }
+
+    /**
+     * A szöveg szavai, előfordulási sorrendben, ismétlés nélkül.
+     *
+     * A műveletmenü ezekből kínál választható szavakat a kiejtéshez és a
+     * Wikipédiához. Az egybetűs darabokat kihagyjuk: névelőre és kötőszóra
+     * sem kiejtési szabály, sem szócikk nem kell.
+     */
+    fun words(text: String): List<String> {
+        val out = ArrayList<String>()
+        val seen = HashSet<String>()
+        val sb = StringBuilder()
+        for (c in text) {
+            if (c.isLetterOrDigit()) sb.append(c) else take(sb, seen, out)
+        }
+        take(sb, seen, out)
+        return out
+    }
+
+    private fun take(sb: StringBuilder, seen: HashSet<String>, out: ArrayList<String>) {
+        if (sb.length >= 2) {
+            val w = sb.toString()
+            if (seen.add(w.lowercase())) out.add(w)
+        }
+        sb.setLength(0)
+    }
 }

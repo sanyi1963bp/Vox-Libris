@@ -40,7 +40,11 @@ egy **olvasó képernyő**, ahol a szöveg és minden vezérlő együtt van.
 |---|---|---|
 | **Szimpla koppintás** | kijelölés / mappa megnyitása | — |
 | **Dupla koppintás** | megnyitás **és felolvasás** az utolsó pozíciótól | felolvasás **a megérintett mondattól** |
-| **Hosszú nyomás** | helyi menü (adatlap, jegyzet, fájlműveletek) | könyvjelző a bekezdéshez |
+| **Hosszú nyomás** | helyi menü (adatlap, jegyzet, fájlműveletek) | műveletmenü a megérintett mondatra |
+
+Az olvasóban a hosszú nyomás **kapcsolható**: ha inkább azonnal könyvjelzőt
+tenne, a beállításokban átállítható, és akkor a műveletmenü egyszeri
+koppintásra jön elő.
 
 ## Fő funkciók
 
@@ -89,7 +93,20 @@ egy **olvasó képernyő**, ahol a szöveg és minden vezérlő együtt van.
   jelzi.
 - **Keresés a szövegben.** Ékezet-független, a találatok kiemelve, ▲▼
   gombokkal ugrálva, számlálóval.
-- **Könyvjelzők.** Hosszú nyomásra bárhol a szövegben; lista, ugrás, törlés.
+- **Könyvjelzők.** A szöveg műveletmenüjéből bárhol; lista, ugrás, törlés.
+- **Kiejtési szótár.** A gépi hang a kitalált és az idegen neveket rendre
+  elrontja. Hosszú nyomás a mondaton → **Kiejtés** → beírod, hogyan mondja,
+  és onnantól **minden könyvben jól mondja**; ha épp szól a felolvasás, a
+  mondatot rögtön újra is mondja. A csere a szó elejéhez kötött, de a
+  végződést nem bántja, így a `Bree` szabály a „Breeben" alakot is eltalálja.
+- **Műveletmenü a szövegen**: *Könyvjelző · Kiejtés · Wikipédia ·
+  Idézetkártya · Másolás*. A **megérintett mondattal** dolgozik, és meg is
+  mutatja, melyikkel — ugyanazzal a darabbal, amit a felolvasó egy egységként
+  mond ki. A **Wikipédia** a szót átadja a böngészőnek, tehát az app maga
+  továbbra sem megy internetre. Az **idézetkártya** a mondatból megosztható
+  képet rajzol a futó színsémával.
+- **Bionic Reading.** Minden szó első ~40%-a félkövér, hogy a szem a
+  szókezdetekbe kapaszkodhasson. Kapcsolható, az olvasó hangolósávjában.
 - **Fülhallgató-gombok** (Bluetooth és vezetékes, MediaSession-en át):
   1 nyomás = Start/Stop, 2 nyomás = ~5 másodperc vissza.
 - **Megjelenés.** Világos/sötét téma vagy rendszerkövetés, **hat színséma**
@@ -184,12 +201,15 @@ app/src/main/java/hu/konyvtar/tts/
 │   ├── CoverStore.kt          – bélyegkép-tár (WebP + memória-gyorstár)
 │   ├── CoverScanner.kt        – a borítók háttérben futó második menete
 │   ├── FileOps.kt             – átnevezés, áthelyezés, másolás, törlés
+│   ├── Pronounce.kt           – kiejtési szótár: átírások a felolvasónak
+│   ├── QuoteCard.kt           – idézetkártya rajzolása és megosztása
 │   ├── Normalizer.kt          – szövegnormalizálás, ékezetfolding
 │   ├── Exporter.kt            – CSV + SQLite export a Letöltések mappába
 │   └── Prefs.kt               – beállítások
 ├── reader/                    – szövegkinyerés formátumonként
 │   ├── TextExtractor.kt       – egységes belépési pont, fejezetek, szöveg-cache
-│   ├── Sentences.kt           – mondathatár-felismerés
+│   ├── Sentences.kt           – mondathatárok, szóválasztás a menühöz
+│   ├── Bionic.kt              – a félkövéren szedendő szókezdetek
 │   └── XmlReader.kt           – Android-független XML, hogy tesztelhető legyen
 ├── tts/TtsService.kt          – előtér-szolgáltatás: TTS, pozíció, MediaSession
 ├── vm/
@@ -204,9 +224,11 @@ app/src/main/java/hu/konyvtar/tts/
     │                            BookmarksDialog
     ├── BookDetails.kt         – a könyv adatlapja (mindhárom nézetnek)
     ├── FileActions.kt         – a helyi menü és ablakai
+    ├── ReaderActions.kt       – a szöveg műveletmenüje, szóválasztó, kiejtés
+    ├── PronounceCard.kt       – a kiejtési szótár a beállításokban
     └── …                      – Settings, Stats, FilePicker, NowPlayingBar
 
-app/src/test/java/hu/konyvtar/tts/   – 55 egységteszt, emulátor nélkül
+app/src/test/java/hu/konyvtar/tts/   – 79 egységteszt, emulátor nélkül
 ```
 
 Fontosabb tervezési döntések:

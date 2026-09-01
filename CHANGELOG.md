@@ -9,6 +9,41 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.3.0] — 2026-09-01
+
+**Műveletmenü a szövegen, és kiejtési szótár**
+
+- **Műveletmenü a könyv szövegén**: *Könyvjelző · Kiejtés · Wikipédia ·
+  Idézetkártya · Másolás*. A menü a **megérintett mondattal** dolgozik, és
+  meg is mutatja, melyikkel — ugyanazzal a darabbal, amit a felolvasó is
+  egy egységként mond ki.
+- **Kiejtési szótár.** Ha a hang elrontja egy név kiejtését: hosszú nyomás
+  → *Kiejtés* → beírod, hogyan mondja, és onnantól **minden könyvben jól
+  mondja**. Ha épp szól a felolvasás, a mondatot rögtön újra is mondja a
+  javítással. A szabályok a beállításokban áttekinthetők és törölhetők.
+  - A csere a **szó elejéhez kötött, de a végződést nem bántja**: a `Bree`
+    szabály a „Breeben" és a „Breevel" alakot is eltalálja, mert a magyarban
+    a rag a szó végén van.
+  - A csere **csak azon a szövegen történik, amit a motornak átadunk** — a
+    könyv szövegéhez nem nyúlunk, így a kiemelt mondat nem csúszik el, és a
+    keresés is az eredetiben keres tovább.
+- **Wikipédia**: a menüből választott szót átadja a böngészőnek. Az appnak
+  **továbbra sincs internet-engedélye** — nem tölt le semmit, csak megkéri a
+  rendszert, hogy nyissa meg a címet. A szócikk nyelve a felület nyelvét
+  követi.
+- **Idézetkártya**: a mondatból megosztható kép, a futó színsémával.
+- **Bionic Reading**: minden szó első ~40%-a félkövér, kapcsolható. A
+  kapcsoló az olvasó hangolósávjában van, a betűméret mellett.
+- **A hosszú nyomás kapcsolható** (Beállítások → Olvasás és vezérlés):
+  alapból a **menüt** nyitja; átkapcsolva **azonnal könyvjelzőt tesz**, a
+  menü pedig egyszeri koppintásra jön elő. Mindkettő elérhető marad, csak
+  cserélődik a két gesztus.
+- Szövegkijelölés nincs, és ez szándékos: harcolna a dupla koppintással,
+  ami a felolvasást indítja. Ahol szó kell, ott a menü a mondat szavait
+  kínálja fel koppintható jelvényként.
+- 24 új egységteszt (kiejtés, mondathatárok, szóválasztás, bionic szedés);
+  összesen 79 teszt fut.
+
 ### [4.2.0] — 2026-09-01
 
 **Pöccintés a nézetek között**
@@ -327,6 +362,42 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.3.0] — 2026-09-01
+
+**An action menu on the text, and a pronunciation dictionary**
+
+- **An action menu on the book's text**: *Bookmark · Pronunciation ·
+  Wikipedia · Quote card · Copy*. The menu works on the **sentence you
+  touched**, and shows it — the same chunk the narrator speaks as one unit.
+- **A pronunciation dictionary.** When the voice mangles a name: long press
+  → *Pronunciation* → type how it should sound, and **every book says it
+  properly from then on**. If narration is running, the sentence is
+  re-spoken straight away with the fix. The rules can be reviewed and
+  deleted in the settings.
+  - The substitution is **anchored to the start of a word but leaves the
+    ending alone**: a `Bree` rule also catches "Breeben" and "Breevel",
+    because in Hungarian the suffix sits at the end.
+  - It only touches **the text handed to the engine** — never the book's
+    text — so the highlighted sentence does not shift and search keeps
+    searching the original.
+- **Wikipedia**: hands the word picked in the menu to the browser. The app
+  still **has no internet permission** — it downloads nothing, it only asks
+  the system to open an address. The article language follows the interface
+  language.
+- **Quote card**: a shareable image made from the sentence, in the running
+  colour scheme.
+- **Bionic Reading**: the first ~40% of every word in bold, toggleable. The
+  switch is in the reader's tuning row, next to the font size.
+- **The long press is configurable** (Settings → Reading and controls): by
+  default it opens the **menu**; switched over it **bookmarks right away**
+  and the menu opens on a single tap. Both stay available, the two gestures
+  just swap.
+- There is no text selection, deliberately: it would fight the double tap
+  that starts narration. Where a word is needed, the menu offers the
+  sentence's words as tappable chips.
+- 24 new unit tests (pronunciation, sentence bounds, word picking, bionic
+  weighting); 79 tests in total.
 
 ### [4.2.0] — 2026-09-01
 

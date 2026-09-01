@@ -340,4 +340,31 @@
     <string name="note_save">Save</string>
     <string name="note_clear">Delete note</string>
     <string name="note_edit">Note</string>
+
+    <!-- 3. fazis: muveletmenu, kiejtesi szotar, bionic -->
+    <string name="reader_bionic">Bionic Reading</string>
+    <string name="action_bookmark">Bookmark</string>
+    <string name="action_pronounce">Pronunciation…</string>
+    <string name="action_wikipedia">Wikipedia…</string>
+    <string name="action_quote_card">Quote card</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_copied">Copied to the clipboard</string>
+    <string name="action_pick_word">Which word?</string>
+    <string name="action_no_browser">No browser to open it with</string>
+    <string name="action_quote_failed">The quote card could not be created</string>
+    <string name="pron_title">Pronunciation: %1$s</string>
+    <string name="pron_explain">Write it the way the voice should say it. It applies to every book.</string>
+    <string name="pron_hint">e.g. Bree → Bri</string>
+    <string name="pron_word">Word</string>
+    <string name="pron_say_as">Say it as</string>
+    <string name="pron_save">Save</string>
+    <string name="pron_saved">“%1$s” is now said as “%2$s”</string>
+    <string name="set_reading_bionic">  Bionic Reading: bold word beginnings</string>
+    <string name="set_reading_longpress">  Long press adds a bookmark right away</string>
+    <string name="set_reading_longpress_desc">When on, a single tap opens the action menu. When off, long press opens it.</string>
+    <string name="set_pron_title">Pronunciation dictionary</string>
+    <string name="set_pron_desc">The voice mangles invented and foreign names. Here you can tell it how to say them. While reading: long-press a sentence → Pronunciation.</string>
+    <string name="set_pron_empty">No rules yet.</string>
+    <string name="set_pron_add">Add a rule</string>
+    <string name="set_pron_rule">%1$s → %2$s</string>
 </resources>

@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.AnnotatedString
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hu.konyvtar.tts.data.Normalizer
+import hu.konyvtar.tts.reader.Bionic
 import hu.konyvtar.tts.reader.Sentences
 import hu.konyvtar.tts.ui.theme.ChapterBandColor
 
@@ -49,8 +51,11 @@ data class NarratedSentence(
 /**
  * A könyv szövege: bekezdéslista fejezetsávokkal, kiemelésekkel.
  *
- * Gesztusok: dupla koppintás a megérintett mondattól indítja a felolvasást,
- * hosszú nyomás könyvjelzőt tesz a bekezdéshez.
+ * Gesztusok: a dupla koppintás a megérintett mondattól indítja a felolvasást.
+ * A hosszú nyomás alapból a **műveletmenüt** nyitja meg (könyvjelző, kiejtés,
+ * Wikipédia, idézetkártya, másolás); ha a beállításokban átkapcsoltad, akkor
+ * azonnal könyvjelzőt tesz, a menü pedig egyszeri koppintásra jön elő. Így
+ * mindkettő elérhető marad, csak cserélődik a két gesztus.
  */
 @Composable
 fun ReaderText(
@@ -63,8 +68,13 @@ fun ReaderText(
     /** A keresés éppen kiemelt találata; -1, ha nincs. */
     currentMatch: Int,
     narrated: NarratedSentence,
+    /** Bionic Reading: a szavak elejének félkövér szedése. */
+    bionic: Boolean,
+    /** Igaz esetén a hosszú nyomás könyvjelzőz, a menü koppintásra jön. */
+    longPressBookmark: Boolean,
     onPlayFrom: (paraIndex: Int, startChar: Int) -> Unit,
     onBookmark: (paraIndex: Int) -> Unit,
+    onActions: (paraIndex: Int, charOffset: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val searchColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.45f)
@@ -81,6 +91,12 @@ fun ReaderText(
                 val isBookmarked = idx in bookmarked
                 var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
                 val prefixLen = if (isBookmarked) BOOKMARK_PREFIX.length else 0
+
+                /** A koppintás helyéből a bekezdésen belüli karakterindex. */
+                fun charAt(pos: Offset): Int {
+                    val raw = layout?.getOffsetForPosition(pos) ?: 0
+                    return (raw - prefixLen).coerceIn(0, text.length)
+                }
 
                 Column(
                     modifier = Modifier
@@ -112,7 +128,8 @@ fun ReaderText(
                             searchColor = searchColor,
                             ttsStart = if (isNarrated) narrated.start else -1,
                             ttsEnd = if (isNarrated) narrated.end else -1,
-                            ttsColor = sentenceColor
+                            ttsColor = sentenceColor,
+                            bionic = bionic
                         ),
                         fontSize = fontSp.sp,
                         lineHeight = (fontSp * 1.45f).sp,
@@ -121,14 +138,21 @@ fun ReaderText(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 14.dp, vertical = 4.dp)
-                            .pointerInput(idx) {
+                            .pointerInput(idx, longPressBookmark) {
                                 detectTapGestures(
+                                    // Az egyszeri koppintást csak akkor figyeljük, ha a
+                                    // hosszú nyomást elvitte a könyvjelző — különben a
+                                    // menü görgetés közben is felugrálna.
+                                    onTap = if (longPressBookmark) {
+                                        { pos -> onActions(idx, charAt(pos)) }
+                                    } else null,
                                     onDoubleTap = { pos ->
-                                        val raw = layout?.getOffsetForPosition(pos) ?: 0
-                                        val inText = (raw - prefixLen).coerceIn(0, text.length)
-                                        onPlayFrom(idx, Sentences.startAt(text, inText))
+                                        onPlayFrom(idx, Sentences.startAt(text, charAt(pos)))
                                     },
-                                    onLongPress = { onBookmark(idx) }
+                                    onLongPress = { pos ->
+                                        if (longPressBookmark) onBookmark(idx)
+                                        else onActions(idx, charAt(pos))
+                                    }
                                 )
                             }
                     )
@@ -153,7 +177,8 @@ private fun paraText(
     searchColor: Color,
     ttsStart: Int = -1,
     ttsEnd: Int = -1,
-    ttsColor: Color = Color.Transparent
+    ttsColor: Color = Color.Transparent,
+    bionic: Boolean = false
 ): AnnotatedString {
     val prefix = if (bookmarked) BOOKMARK_PREFIX else ""
     return buildAnnotatedString {
@@ -181,6 +206,18 @@ private fun paraText(
                     prefix.length + i + fq.length
                 )
                 i = ft.indexOf(fq, i + fq.length)
+            }
+        }
+        // A szókezdetek kiemelése MINDIG utoljára megy fel: a háttérszínt nem
+        // bántja (az más tulajdonság), a félkövérséget viszont megtartja a
+        // felolvasott mondaton belül is.
+        if (bionic) {
+            for ((s, e) in Bionic.boldRanges(text)) {
+                addStyle(
+                    SpanStyle(fontWeight = FontWeight.Bold),
+                    prefix.length + s,
+                    prefix.length + e
+                )
             }
         }
     }

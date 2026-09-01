@@ -16,7 +16,7 @@ import hu.konyvtar.tts.model.displayPercent
 object AppDb {
 
     private const val DB_NAME = "app_local.db"
-    private const val DB_VERSION = 5
+    private const val DB_VERSION = 6
 
     @Volatile
     private var helper: Helper? = null
@@ -54,6 +54,7 @@ object AppDb {
             )
             createBookmarks(db)
             createNotes(db)
+            createPronounce(db)
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -71,6 +72,31 @@ object AppDb {
             if (oldVersion < 5) {
                 createNotes(db)
             }
+            if (oldVersion < 6) {
+                createPronounce(db)
+            }
+        }
+
+        /**
+         * Kiejtési szótár. Szándékosan globális, nem könyvhöz kötött: a
+         * félremondott nevek többnyire sorozaton át és több fájlban is
+         * visszatérnek, így egyszer kell megadni őket.
+         */
+        private fun createPronounce(db: SQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS pronounce (
+                    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                    pattern TEXT NOT NULL,
+                    say_as  TEXT NOT NULL,
+                    created INTEGER NOT NULL DEFAULT 0
+                )
+                """.trimIndent()
+            )
+            db.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_pron_pattern " +
+                    "ON pronounce(pattern COLLATE NOCASE)"
+            )
         }
 
         /** Saját jegyzet a könyvhöz — a fájl útvonalához kötve. */
@@ -213,6 +239,62 @@ object AppDb {
         } catch (_: Exception) {
         }
         return out
+    }
+
+    // ---------------------------------------------------------------- kiejtés
+
+    /** A kiejtési szabályok, mintával betűrendben. */
+    fun pronounceRules(): List<Pronounce.Rule> {
+        val out = ArrayList<Pronounce.Rule>()
+        try {
+            db().rawQuery(
+                "SELECT id, pattern, say_as FROM pronounce ORDER BY pattern COLLATE NOCASE",
+                null
+            ).use { c ->
+                while (c.moveToNext()) {
+                    out.add(Pronounce.Rule(c.getLong(0), c.getString(1), c.getString(2)))
+                }
+            }
+        } catch (_: Exception) {
+        }
+        return out
+    }
+
+    /**
+     * Szabály felvétele vagy felülírása. Ugyanarra a mintára két szabály
+     * értelmetlen lenne, ezért a mintára egyedi index van: az újabb felülírja
+     * a régit.
+     */
+    fun setPronounce(pattern: String, sayAs: String) {
+        val p = pattern.trim()
+        val s = sayAs.trim()
+        if (p.isEmpty() || s.isEmpty()) return
+        try {
+            db().execSQL(
+                "INSERT INTO pronounce(pattern, say_as, created) VALUES(?, ?, ?) " +
+                    "ON CONFLICT(pattern) DO UPDATE SET say_as = excluded.say_as, " +
+                    "created = excluded.created",
+                arrayOf<Any>(p, s, System.currentTimeMillis())
+            )
+        } catch (_: Exception) {
+        }
+    }
+
+    fun deletePronounce(id: Long) {
+        try {
+            db().delete("pronounce", "id = ?", arrayOf(id.toString()))
+        } catch (_: Exception) {
+        }
+    }
+
+    /** Az adott mintához tartozó kiejtés, ha van (a szerkesztő tölti fel vele). */
+    fun pronounceFor(pattern: String): String? = try {
+        db().rawQuery(
+            "SELECT say_as FROM pronounce WHERE pattern = ? COLLATE NOCASE",
+            arrayOf(pattern.trim())
+        ).use { if (it.moveToNext()) it.getString(0) else null }
+    } catch (e: Exception) {
+        null
     }
 
     // ---------------------------------------------------------------- útvonalak

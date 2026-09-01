@@ -293,10 +293,68 @@ Alatta a **pozíció-csúszka** százalékkijelzéssel, legalul pedig a léptet�
 
 - **Dupla koppintás** → a felolvasás **pontosan attól a mondattól** indul,
   amelyikre böktél.
-- **Hosszú nyomás** → könyvjelző az adott bekezdéshez (🔖 jelenik meg előtte).
+- **Hosszú nyomás** → **műveletmenü** arra a mondatra, amelyikre nyomtál.
 
 Az éppen felolvasott mondat **kiemelve** látszik, a bekezdése halványan
 színezett — így szemmel is követheted.
+
+### A szöveg műveletmenüje
+
+A menü legfelül megmutatja, **melyik mondatra** vonatkozik — ugyanaz a darab,
+amit a felolvasó egy egységként mond ki. Öt pont van benne:
+
+| Pont | Mit csinál |
+|---|---|
+| **Könyvjelző** | 🔖 az adott bekezdéshez |
+| **Kiejtés** | megtanítod a hangnak, hogyan mondjon egy szót |
+| **Wikipédia** | a választott szót megnyitja a böngészőben |
+| **Idézetkártya** | képet rajzol a mondatból, és megosztja |
+| **Másolás** | a mondat a vágólapra kerül |
+
+A **Kiejtés** és a **Wikipédia** egy szóra vonatkozik, ezért a menü a mondat
+szavait koppintható jelvényként kínálja fel. Szöveget nem kell kijelölnöd —
+ez szándékos: a kijelölés harcolna a dupla koppintással, ami a felolvasást
+indítja.
+
+**Ha inkább az azonnali könyvjelzőt szeretnéd**, a *Beállítások → Olvasás és
+vezérlés* alatt átkapcsolhatod. Akkor a hosszú nyomás rögtön könyvjelzőt
+tesz, a műveletmenü pedig **egyszeri koppintásra** jön elő.
+
+### Kiejtési szótár
+
+A gépi hang a kitalált és az idegen neveket rendre elrontja, és ezen a
+beszédsebesség állítgatása nem segít. Ha hallod, hogy elront egy nevet:
+
+1. hosszú nyomás azon a mondaton,
+2. **Kiejtés**,
+3. koppints a szóra,
+4. írd be, ahogy mondania kellene (pl. `Bree` → `Brí`),
+5. **Mentés**.
+
+Onnantól **minden könyvben** így mondja. Ha épp szólt a felolvasás, a mondatot
+rögtön újra is mondja — hallod, hogy sikerült-e.
+
+Amit érdemes tudni:
+
+- A szabály a **szó elejéhez van kötve, de a végződést nem bántja**. A `Bree`
+  szabály ezért a „Breeben", „Breeből", „Breevel" alakot is eltalálja — a
+  magyarban a rag a szó végén van, a szótő elöl.
+- Ennek az ára, hogy egy rövid minta belelóghat egy hosszabb szóba. Ha ilyet
+  tapasztalsz, írj hosszabb mintát.
+- A csere **csak azon a szövegen történik, amit a motornak átadunk**. A könyv
+  szövege érintetlen: a kiemelés nem csúszik el, és a keresés is az eredetiben
+  keres tovább.
+- A szabályok a *Beállítások → Kiejtési szótár* alatt áttekinthetők és
+  törölhetők, és ott újat is felvehetsz.
+
+### Bionic Reading
+
+Minden szó első ~40%-a félkövér, hogy a szem a szókezdetekbe kapaszkodhasson.
+A kapcsoló az alsó vezérlősáv **hangoló** paneljében van, a betűméret mellett
+(**B** ikon) — vagy a *Beállítások → Olvasás és vezérlés* alatt.
+
+Itt külön haszna is van: aki a felolvasást a szemével követi, annak könnyebb
+együtt maradni a hanggal.
 
 ### Keresés a szövegben
 
@@ -306,9 +364,9 @@ számláló mutatja, hányadiknál jársz (pl. `3/17`), a ▲▼ gombokkal ugrá
 
 ### Könyvjelzők
 
-Hosszú nyomás bárhol a szövegen, vagy a ⋮ menü *Könyvjelző ide* pontja. Ha
-épp szól a felolvasás, a jelző **a felolvasott helyre** kerül, nem oda, ahol
-nézelődsz.
+A szöveg műveletmenüjéből (*Könyvjelző*), vagy a ⋮ menü *Könyvjelző ide*
+pontjából. Ez utóbbinál, ha épp szól a felolvasás, a jelző **a felolvasott
+helyre** kerül, nem oda, ahol nézelődsz.
 
 A listában látod a bekezdés számát, a dátumot és egy részletet; koppintásra
 odaugrik, a kuka ikonnal törölhető.
@@ -398,7 +456,8 @@ Kártyák egymás alatt:
 | **Felület nyelve** | tíz nyelv, vagy rendszerkövetés |
 | **Felolvasás nyelve** | a telepített TTS motor bármelyik nyelve, és egy gomb a hangletöltőhöz |
 | **Hangjelzések** | fejezetjelző hang be/ki, hangereje |
-| **Olvasás és vezérlés** | követés, képernyő ébren tartása, a fülhallgató dupla nyomásának ugrása |
+| **Olvasás és vezérlés** | követés, képernyő ébren tartása, Bionic Reading, a hosszú nyomás szerepe, a fülhallgató dupla nyomásának ugrása |
+| **Kiejtési szótár** | a felvett átírások listája, törlés, új szabály |
 | **Gyorsítótár** | mennyi kinyert szöveg van tárolva, törölhető (a pozícióidat nem bántja) |
 | **Szövegfelolvasó motor** | ugrás a rendszer TTS-beállításaihoz |
 
@@ -423,6 +482,18 @@ rendszer nem csatolta fel.
 **„Ez a könyv DRM-védett"**
 A Mobipocket-titkosítású fájlokat nem tudja megnyitni. Konvertáld (pl.
 Calibre-vel) egy szabad formátumra.
+
+**A hang elrontja egy név kiejtését**
+Hosszú nyomás azon a mondaton → *Kiejtés* → koppints a szóra → írd be, ahogy
+mondania kellene. Onnantól minden könyvben így mondja.
+
+**Hosszú nyomásra menü jön, de nekem a könyvjelző kellene**
+Beállítások → Olvasás és vezérlés → *A hosszú nyomás azonnal könyvjelzőt
+tesz*. Onnantól a menü egyszeri koppintásra jön elő.
+
+**A Wikipédia nem nyílik meg**
+Nincs böngésző a készüléken, vagy nem tud megnyitni webcímet. Az app maga nem
+megy internetre — csak megkéri a rendszert, hogy nyissa meg a címet.
 
 **„A PDF nem tartalmaz szövegréteget"**
 Szkennelt, képalapú PDF. OCR-rel kell szöveget csinálni belőle, utána `.txt`

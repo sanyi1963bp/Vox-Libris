@@ -107,6 +107,33 @@ object Prefs {
         sp(context).edit().putFloat("reader_font_sp", value).apply()
     }
 
+    /**
+     * Bionic Reading: minden szó elejét félkövéren szedjük, hogy a szem
+     * gyorsabban kapja el a szókezdeteket. Alapból ki, mert erősen ízlés
+     * kérdése.
+     */
+    fun bionic(context: Context): Boolean = sp(context).getBoolean("bionic", false)
+
+    fun setBionic(context: Context, value: Boolean) {
+        sp(context).edit().putBoolean("bionic", value).apply()
+    }
+
+    /**
+     * Mit csináljon a hosszú nyomás a könyv szövegén.
+     *
+     * Alapból a műveletmenü jön elő (könyvjelző, kiejtés, Wikipédia,
+     * idézetkártya, másolás). Bekapcsolva a hosszú nyomás azonnal
+     * könyvjelzőt tesz — ez a gyorsabb, ha sokat könyvjelzőzol —, a menü
+     * pedig egyszeri koppintásra jön elő. Így mindkettő elérhető marad,
+     * csak cserélődik a két gesztus.
+     */
+    fun longPressBookmark(context: Context): Boolean =
+        sp(context).getBoolean("long_press_bookmark", false)
+
+    fun setLongPressBookmark(context: Context, value: Boolean) {
+        sp(context).edit().putBoolean("long_press_bookmark", value).apply()
+    }
+
     /** A szöveg kövesse-e automatikusan a felolvasást az olvasó képernyőn. */
     fun readerFollow(context: Context): Boolean = sp(context).getBoolean("reader_follow", true)
 
