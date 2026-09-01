@@ -267,7 +267,7 @@
     <string name="lib_sort_title">Cím szerint</string>
     <string name="lib_sort_author">Szerző szerint</string>
     <string name="lib_sort_format">Formátum szerint</string>
-    <string name="lib_hint_gestures">Dupla koppintás: megnyitás és felolvasás · Hosszú nyomás: adatlap</string>
+    <string name="lib_hint_gestures">Dupla koppintás: megnyitás és felolvasás · Hosszú nyomás: menü</string>
     <string name="lib_shelf">Polc</string>
     <string name="lib_formats">Formátumok</string>
     <string name="info_format">Formátum</string>

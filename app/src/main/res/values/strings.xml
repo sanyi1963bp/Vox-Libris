@@ -292,7 +292,7 @@
     <string name="lib_sort_title">By title</string>
     <string name="lib_sort_author">By author</string>
     <string name="lib_sort_format">By format</string>
-    <string name="lib_hint_gestures">Double tap: open and read aloud · Long press: details</string>
+    <string name="lib_hint_gestures">Double tap: open and read aloud · Long press: menu</string>
     <string name="lib_shelf">Shelf</string>
     <string name="lib_formats">Formats</string>
     <string name="info_format">Format</string>

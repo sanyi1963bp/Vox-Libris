@@ -19,6 +19,8 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DriveFileRenameOutline
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
@@ -72,6 +74,8 @@ fun FileActionsMenu(
     expanded: Boolean,
     onDismiss: () -> Unit,
     onDone: (newPath: String?) -> Unit,
+    /** Ha meg van adva, a menü első pontja a könyv adatlapját nyitja. */
+    onOpenDetails: (() -> Unit)? = null,
     /**
      * Az olvasóban `false`: a könyvet, amit épp olvasol, nem nevezzük át és
      * nem töröljük ki magad alól — jegyzetet viszont ott is írhatsz hozzá.
@@ -104,7 +108,12 @@ fun FileActionsMenu(
             modifier = Modifier.padding(start = 12.dp, top = 6.dp, bottom = 2.dp)
         )
         HorizontalDivider()
-        MenuAction(R.string.note_edit, Icons.Filled.DriveFileRenameOutline) {
+        if (onOpenDetails != null) {
+            MenuAction(R.string.row_info, Icons.Filled.Info) {
+                onDismiss(); onOpenDetails()
+            }
+        }
+        MenuAction(R.string.note_edit, Icons.Filled.EditNote) {
             onDismiss(); op = Op.NOTE
         }
         if (allowFileOps) {

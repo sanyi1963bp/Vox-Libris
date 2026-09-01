@@ -269,7 +269,7 @@
     <string name="lib_sort_title">Nach Titel</string>
     <string name="lib_sort_author">Nach Autor</string>
     <string name="lib_sort_format">Nach Format</string>
-    <string name="lib_hint_gestures">Doppeltippen: öffnen und vorlesen · Lang drücken: Details</string>
+    <string name="lib_hint_gestures">Doppeltippen: öffnen und vorlesen · Lang drücken: Menü</string>
     <string name="lib_shelf">Regal</string>
     <string name="lib_formats">Formate</string>
     <string name="info_format">Format</string>

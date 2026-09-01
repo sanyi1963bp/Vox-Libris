@@ -269,7 +269,7 @@
     <string name="lib_sort_title">Według tytułu</string>
     <string name="lib_sort_author">Według autora</string>
     <string name="lib_sort_format">Według formatu</string>
-    <string name="lib_hint_gestures">Podwójne dotknięcie: otwórz i czytaj na głos · Długie przytrzymanie: szczegóły</string>
+    <string name="lib_hint_gestures">Podwójne dotknięcie: otwórz i czytaj na głos · Długie przytrzymanie: menu</string>
     <string name="lib_shelf">Półka</string>
     <string name="lib_formats">Formaty</string>
     <string name="info_format">Format</string>

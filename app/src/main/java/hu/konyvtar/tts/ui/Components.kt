@@ -3,6 +3,11 @@ package hu.konyvtar.tts.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
@@ -98,6 +103,33 @@ fun FastScrollbar(
                     RoundedCornerShape(3.dp)
                 )
         )
+    }
+}
+
+/**
+ * Lapjelző pöttyök: melyik nézetnél tartasz a kettő közül.
+ *
+ * A pöccintés magától nem látszik semmin — ez a két pötty mondja meg, hogy
+ * van hova lapozni, és hogy éppen hol vagy.
+ */
+@Composable
+fun PageDots(current: Int, total: Int, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(total) { i ->
+            Box(
+                modifier = Modifier
+                    .size(if (i == current) 7.dp else 5.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (i == current) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+                    )
+            )
+        }
     }
 }
 

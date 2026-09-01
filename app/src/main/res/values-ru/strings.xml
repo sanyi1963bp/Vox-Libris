@@ -269,7 +269,7 @@
     <string name="lib_sort_title">По названию</string>
     <string name="lib_sort_author">По автору</string>
     <string name="lib_sort_format">По формату</string>
-    <string name="lib_hint_gestures">Двойное касание: открыть и читать вслух · Долгое нажатие: карточка</string>
+    <string name="lib_hint_gestures">Двойное касание: открыть и читать вслух · Долгое нажатие: меню</string>
     <string name="lib_shelf">Полка</string>
     <string name="lib_formats">Форматы</string>
     <string name="info_format">Формат</string>

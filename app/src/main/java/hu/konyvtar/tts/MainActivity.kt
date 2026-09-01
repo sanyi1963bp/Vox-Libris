@@ -9,9 +9,12 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.launch
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -148,19 +153,48 @@ fun AppRoot(startInPlayer: Boolean) {
 
     NavHost(
         navController = nav,
-        startDestination = "library"
+        startDestination = "main"
     ) {
-        composable("library") {
-            LibraryScreen(
-                vm = vm,
-                onOpenBook = { row -> openReaderFor(row) },
-                onOpenNowPlaying = { openNowPlayingReader() },
-                onOpenShelf = { nav.navigate("shelf") },
-                onOpenFiles = { nav.navigate("explorer") },
-                onOpenStats = { nav.navigate("stats") },
-                onOpenSettings = { nav.navigate("settings") },
-                onPickRoot = { nav.navigate("pick_root") }
-            )
+        // A könyvtár és a fájlböngésző egyetlen lapozható felület: jobbra-balra
+        // pöccintve váltasz köztük. A polc külön marad, mert ott a lapozás már
+        // a könyvek közti mozgást jelenti.
+        composable("main") {
+            val pagerState = rememberPagerState(pageCount = { 2 })
+            val scope = rememberCoroutineScope()
+
+            // A második lapon a rendszer-vissza az első lapra visz, nem kilép
+            BackHandler(enabled = pagerState.currentPage != 0) {
+                scope.launch { pagerState.animateScrollToPage(0) }
+            }
+
+            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+                if (page == 0) {
+                    LibraryScreen(
+                        vm = vm,
+                        onOpenBook = { row -> openReaderFor(row) },
+                        onOpenNowPlaying = { openNowPlayingReader() },
+                        onOpenShelf = { nav.navigate("shelf") },
+                        onOpenFiles = { scope.launch { pagerState.animateScrollToPage(1) } },
+                        onOpenStats = { nav.navigate("stats") },
+                        onOpenSettings = { nav.navigate("settings") },
+                        onPickRoot = { nav.navigate("pick_root") },
+                        pageIndex = pagerState.currentPage,
+                        pageCount = 2
+                    )
+                } else {
+                    ExplorerScreen(
+                        vm = vm,
+                        browser = browser,
+                        onOpenPlayer = { openNowPlayingReader() },
+                        onOpenStats = { nav.navigate("stats") },
+                        onOpenSettings = { nav.navigate("settings") },
+                        onOpenReader = { row -> openReaderFor(row) },
+                        onOpenLibrary = { scope.launch { pagerState.animateScrollToPage(0) } },
+                        pageIndex = pagerState.currentPage,
+                        pageCount = 2
+                    )
+                }
+            }
         }
         composable("shelf") {
             ShelfScreen(
@@ -168,16 +202,6 @@ fun AppRoot(startInPlayer: Boolean) {
                 onOpenBook = { row -> openReaderFor(row) },
                 onOpenNowPlaying = { openNowPlayingReader() },
                 onBack = { nav.popBackStack() }
-            )
-        }
-        composable("explorer") {
-            ExplorerScreen(
-                vm = vm,
-                browser = browser,
-                onOpenPlayer = { openNowPlayingReader() },
-                onOpenStats = { nav.navigate("stats") },
-                onOpenSettings = { nav.navigate("settings") },
-                onOpenReader = { row -> openReaderFor(row) }
             )
         }
         composable("reader") {

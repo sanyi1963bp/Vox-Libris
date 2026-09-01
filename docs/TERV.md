@@ -127,6 +127,20 @@ könyv újként jelenne meg, nulláról.
 **Saját jegyzetek**: bármit hozzáfűzhetsz egy könyvhöz. A listában kis jel
 mutatja, melyikhez van jegyzet, és a **kereső a jegyzetekben is keres**.
 
+## Pöccintés a nézetek között ✅ *(kész)*
+
+A **könyvtár** és a **fájlböngésző** egyetlen lapozható felület lett: jobbra-balra
+pöccintve váltasz köztük. A cím mellett két pötty mutatja, hol állsz — e nélkül a
+pöccintés láthatatlan lenne.
+
+A rendszer-vissza a második lapról az elsőre visz, nem lép ki az appból.
+
+**A polc kimarad a lapozásból**, és ez szándékos: ott a pöccintés már a könyvek
+közötti lapozást jelenti, a két gesztus ütné egymást.
+
+**A helyi menü mindkét nézetben ugyanaz**: hosszú nyomásra jön elő, és az első
+pontja az **adatlap**, utána a jegyzet és a fájlműveletek.
+
 ## 3. fázis — Olvasási élmény
 
 - **Bionic Reading**: minden szó első ~40%-a félkövér, kapcsolható.

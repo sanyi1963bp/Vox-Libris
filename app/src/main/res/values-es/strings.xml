@@ -269,7 +269,7 @@
     <string name="lib_sort_title">Por título</string>
     <string name="lib_sort_author">Por autor</string>
     <string name="lib_sort_format">Por formato</string>
-    <string name="lib_hint_gestures">Doble toque: abrir y leer en voz alta · Pulsación larga: ficha</string>
+    <string name="lib_hint_gestures">Doble toque: abrir y leer en voz alta · Pulsación larga: menú</string>
     <string name="lib_shelf">Estantería</string>
     <string name="lib_formats">Formatos</string>
     <string name="info_format">Formato</string>

@@ -127,6 +127,21 @@ as new, from zero.
 **Personal notes**: attach anything to a book. A small mark in the list shows
 which books have one, and **search looks inside the notes too**.
 
+## Swiping between the views ✅ *(done)*
+
+The **library** and the **file browser** became one swipeable surface: swipe
+left or right to switch. Two dots next to the title show where you are —
+without them the gesture would be invisible.
+
+System back goes from the second page to the first instead of leaving the app.
+
+**The shelf stays out of the swipe**, deliberately: there a swipe already
+means moving between books, and the two gestures would fight each other.
+
+**The context menu is the same in both views**: it opens on long press, and
+its first entry is the **details sheet**, followed by the note and the file
+operations.
+
 ## Phase 3 — Reading experience
 
 - **Bionic Reading**: the first ~40% of every word in bold, toggleable.

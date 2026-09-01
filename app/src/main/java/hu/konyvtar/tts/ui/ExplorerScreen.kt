@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Close
@@ -80,7 +81,10 @@ fun ExplorerScreen(
     onOpenPlayer: () -> Unit,
     onOpenStats: () -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenReader: (FileRow) -> Unit
+    onOpenReader: (FileRow) -> Unit,
+    onOpenLibrary: () -> Unit = {},
+    pageIndex: Int = 1,
+    pageCount: Int = 1
 ) {
     val ui by vm.ui.collectAsState()
     val br by browser.ui.collectAsState()
@@ -139,9 +143,13 @@ fun ExplorerScreen(
                     Text(
                         text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                        fontWeight = FontWeight.Bold
                     )
+                    if (pageCount > 1) {
+                        Spacer(Modifier.width(10.dp))
+                        PageDots(pageIndex, pageCount)
+                    }
+                    Spacer(Modifier.weight(1f))
                     Text(
                         text = stringResource(
                             R.string.catalog_stats, ui.catalogBooks, ui.catalogFiles
@@ -149,6 +157,14 @@ fun ExplorerScreen(
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
+                    if (pageCount > 1) {
+                        IconButton(onClick = onOpenLibrary) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.MenuBook,
+                                contentDescription = stringResource(R.string.lib_title)
+                            )
+                        }
+                    }
                     IconButton(onClick = { vm.startScan() }) {
                         Icon(
                             Icons.Filled.Radar,
@@ -534,6 +550,7 @@ private fun FileRowItem(
                     path = row.path,
                     expanded = menuOpen,
                     onDismiss = { menuOpen = false },
+                    onOpenDetails = onInfo,
                     onDone = onFileChanged
                 )
             }

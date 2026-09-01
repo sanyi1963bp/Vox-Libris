@@ -269,7 +269,7 @@
     <string name="lib_sort_title">Podľa názvu</string>
     <string name="lib_sort_author">Podľa autora</string>
     <string name="lib_sort_format">Podľa formátu</string>
-    <string name="lib_hint_gestures">Dvojité ťuknutie: otvoriť a čítať nahlas · Dlhé podržanie: podrobnosti</string>
+    <string name="lib_hint_gestures">Dvojité ťuknutie: otvoriť a čítať nahlas · Dlhé podržanie: ponuka</string>
     <string name="lib_shelf">Polica</string>
     <string name="lib_formats">Formáty</string>
     <string name="info_format">Formát</string>

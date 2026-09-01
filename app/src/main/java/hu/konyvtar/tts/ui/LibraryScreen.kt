@@ -103,7 +103,10 @@ fun LibraryScreen(
     onOpenFiles: () -> Unit,
     onOpenStats: () -> Unit,
     onOpenSettings: () -> Unit,
-    onPickRoot: () -> Unit
+    onPickRoot: () -> Unit,
+    /** Hányadik lapon állunk a pöccinthető nézetek közül. */
+    pageIndex: Int = 0,
+    pageCount: Int = 1
 ) {
     val ui by vm.ui.collectAsState()
     val context = LocalContext.current
@@ -162,11 +165,17 @@ fun LibraryScreen(
             Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
                 TopAppBar(
                     title = {
-                        Text(
-                            stringResource(R.string.lib_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                stringResource(R.string.lib_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (pageCount > 1) {
+                                Spacer(Modifier.width(10.dp))
+                                PageDots(pageIndex, pageCount)
+                            }
+                        }
                     },
                     actions = {
                         IconButton(onClick = onOpenShelf) {
@@ -488,13 +497,14 @@ fun LibraryScreen(
                                 percent = ui.progress[book.path],
                                 onSingleTap = { selected = book.path },
                                 onDoubleTap = { openAndPlay(book) },
-                                onLongPress = {
+                                onOpenDetails = {
                                     infoBook = book
                                     if (!hintSeen) {
                                         Prefs.setGestureHintSeen(context)
                                         hintSeen = true
                                     }
-                                }
+                                },
+                                onFileChanged = { vm.reloadAfterFileChange() }
                             )
                         }
                     }
@@ -542,8 +552,12 @@ private fun LibraryRow(
     percent: Double?,
     onSingleTap: () -> Unit,
     onDoubleTap: () -> Unit,
-    onLongPress: () -> Unit
+    onOpenDetails: () -> Unit,
+    onFileChanged: (newPath: String?) -> Unit
 ) {
+    // Hosszú nyomásra ugyanaz a menü jön elő, mint a fájlböngészőben —
+    // benne az adatlappal és a fájlműveletekkel
+    var menuOpen by remember { mutableStateOf(false) }
     val bg = when {
         selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
         stripe -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
@@ -557,7 +571,7 @@ private fun LibraryRow(
                 detectTapGestures(
                     onTap = { onSingleTap() },
                     onDoubleTap = { onDoubleTap() },
-                    onLongPress = { onLongPress() }
+                    onLongPress = { menuOpen = true }
                 )
             }
             .padding(start = 8.dp, end = 26.dp, top = 4.dp, bottom = 4.dp),
@@ -575,6 +589,15 @@ private fun LibraryRow(
                     .aspectRatio(2f / 3f)
             )
             Spacer(Modifier.width(8.dp))
+        }
+        Box {
+            FileActionsMenu(
+                path = book.path,
+                expanded = menuOpen,
+                onDismiss = { menuOpen = false },
+                onOpenDetails = onOpenDetails,
+                onDone = onFileChanged
+            )
         }
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
