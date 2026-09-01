@@ -1,3 +1,6 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vox Libris tesztelőknek</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,6 +147,23 @@
     flex-wrap: wrap;
     gap: 0.9rem;
   }
+
+  /* A gomb és mellette a letöltésszámláló egy sorban, telefonon tördelve. */
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+
+  .dlcount {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+
+  .dlcount[hidden] { display: none; }
 
   .btn {
     display: inline-block;
@@ -419,9 +439,13 @@
       <span>9,8 MB</span>
       <span>Android 11+</span>
     </div>
-    <a class="btn" href="https://github.com/sanyi1963bp/Vox-Libris/releases/download/v4.2.0/vox-libris-4.2.0.apk">
-      Alkalmazás letöltése
-    </a>
+    <div class="btn-row">
+      <a class="btn" href="https://github.com/sanyi1963bp/Vox-Libris/releases/download/v4.2.0/vox-libris-4.2.0.apk">
+        Alkalmazás letöltése
+      </a>
+      <span class="dlcount" id="dlcount" hidden
+            title="A GitHubról eddig letöltött APK-fájlok száma"></span>
+    </div>
     <p class="alt">
       Telefonról nyisd meg ezt az oldalt, és a gomb egyből a telefonra tölti.
       A telepítés lépései lentebb.
@@ -730,3 +754,36 @@
   </footer>
 
 </div>
+
+<script>
+  /*
+   * Letöltésszámláló. A GitHub nyilvános API-ja minden kiadási fájlnál
+   * megmondja, hányszor töltötték le; ezeket adjuk össze az összes kiadáson,
+   * hogy a szám új verziónál se induljon nulláról.
+   *
+   * Bejelentkezés nem kell, de óránként és IP-nként 60 kérés a keret. Ha
+   * bármi nem sikerül, a számláló egyszerűen rejtve marad — az oldal
+   * hibaüzenet nélkül működik tovább.
+   */
+  (function () {
+    var el = document.getElementById('dlcount');
+    if (!el || !window.fetch) return;
+
+    fetch('https://api.github.com/repos/sanyi1963bp/Vox-Libris/releases?per_page=100', {
+      headers: { 'Accept': 'application/vnd.github+json' }
+    })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (releases) {
+        var total = 0;
+        releases.forEach(function (rel) {
+          (rel.assets || []).forEach(function (a) {
+            if (/\.apk$/i.test(a.name)) total += a.download_count || 0;
+          });
+        });
+        if (total <= 0) return;
+        el.textContent = total.toLocaleString('hu-HU') + ' letöltés eddig';
+        el.hidden = false;
+      })
+      .catch(function () { /* nincs net vagy elfogyott az órás keret */ });
+  })();
+</script>
