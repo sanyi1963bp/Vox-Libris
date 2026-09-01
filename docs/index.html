@@ -426,7 +426,7 @@
       könyveket, katalógust épít belőlük, és felolvassa őket.
     </p>
     <div class="badges">
-      <span class="badge">4.2.0</span>
+      <span class="badge" id="ver-badge">4.2.0</span>
       <span class="badge">Android 11+</span>
       <span class="badge">10 nyelv</span>
       <span class="badge is-key">Nincs internet-engedélye</span>
@@ -435,12 +435,13 @@
 
   <div class="download">
     <div class="download-meta">
-      <span>vox-libris-4.2.0.apk</span>
-      <span>9,8 MB</span>
+      <span id="apk-name">vox-libris-4.2.0.apk</span>
+      <span id="apk-size">9,8 MB</span>
       <span>Android 11+</span>
     </div>
     <div class="btn-row">
-      <a class="btn" href="https://github.com/sanyi1963bp/Vox-Libris/releases/download/v4.2.0/vox-libris-4.2.0.apk">
+      <a class="btn" id="apk-link"
+         href="https://github.com/sanyi1963bp/Vox-Libris/releases/download/v4.2.0/vox-libris-4.2.0.apk">
         Alkalmazás letöltése
       </a>
       <span class="dlcount" id="dlcount" hidden
@@ -747,7 +748,7 @@
       fiók, nincs regisztráció, nincs szerver.
     </p>
     <p>
-      Vox Libris 4.2.0 · a felület magyar, angol, német, francia, spanyol,
+      Vox Libris <span id="ver-footer">4.2.0</span> · a felület magyar, angol, német, francia, spanyol,
       portugál, lengyel, cseh, szlovák és orosz nyelven ·
       <a href="https://github.com/sanyi1963bp/Vox-Libris">forráskód a GitHubon</a>
     </p>
@@ -757,33 +758,68 @@
 
 <script>
   /*
-   * Letöltésszámláló. A GitHub nyilvános API-ja minden kiadási fájlnál
-   * megmondja, hányszor töltötték le; ezeket adjuk össze az összes kiadáson,
-   * hogy a szám új verziónál se induljon nulláról.
+   * Az oldal a GitHub nyilvános API-jából frissíti magát:
+   *
+   *   1. a letöltésszámláló a gomb mellett — az összes kiadás APK-fájljain
+   *      összegezve, hogy új verziónál se induljon nulláról,
+   *   2. a legfrissebb kiadás verziószáma, fájlneve, mérete és a letöltési
+   *      link — így új kiadásnál nem kell hozzányúlni ehhez a laphoz.
    *
    * Bejelentkezés nem kell, de óránként és IP-nként 60 kérés a keret. Ha
-   * bármi nem sikerül, a számláló egyszerűen rejtve marad — az oldal
-   * hibaüzenet nélkül működik tovább.
+   * bármi nem sikerül, marad az, ami a HTML-be kézzel be van írva, és a
+   * számláló rejtve marad — az oldal hibaüzenet nélkül működik tovább.
    */
   (function () {
-    var el = document.getElementById('dlcount');
-    if (!el || !window.fetch) return;
+    if (!window.fetch) return;
 
-    fetch('https://api.github.com/repos/sanyi1963bp/Vox-Libris/releases?per_page=100', {
-      headers: { 'Accept': 'application/vnd.github+json' }
-    })
+    var API = 'https://api.github.com/repos/sanyi1963bp/Vox-Libris/releases?per_page=100';
+
+    function isApk(a) { return /\.apk$/i.test(a.name); }
+    function setText(id, text) {
+      var el = document.getElementById(id);
+      if (el && text) el.textContent = text;
+    }
+    /** Bájt → "9,8 MB", magyar tizedesvesszővel. */
+    function megabytes(bytes) {
+      return (bytes / 1048576).toFixed(1).replace('.', ',') + ' MB';
+    }
+
+    fetch(API, { headers: { 'Accept': 'application/vnd.github+json' } })
       .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-      .then(function (releases) {
+      .then(function (all) {
+        var releases = all.filter(function (r) { return !r.draft; });
+
+        // 1. Letöltésszámláló: minden kiadás minden APK-ja összeadva.
         var total = 0;
         releases.forEach(function (rel) {
           (rel.assets || []).forEach(function (a) {
-            if (/\.apk$/i.test(a.name)) total += a.download_count || 0;
+            if (isApk(a)) total += a.download_count || 0;
           });
         });
-        if (total <= 0) return;
-        el.textContent = total.toLocaleString('hu-HU') + ' letöltés eddig';
-        el.hidden = false;
+        var counter = document.getElementById('dlcount');
+        if (counter && total > 0) {
+          counter.textContent = total.toLocaleString('hu-HU') + ' letöltés eddig';
+          counter.hidden = false;
+        }
+
+        // 2. A legfrissebb kiadás, amiben egyáltalán van APK. A lista már
+        //    időrendben jön, a legújabb elöl; az előzetes kiadás is beleszámít.
+        var newest = null, apk = null;
+        for (var i = 0; i < releases.length && !apk; i++) {
+          var found = (releases[i].assets || []).filter(isApk)[0];
+          if (found) { newest = releases[i]; apk = found; }
+        }
+        if (!apk) return;
+
+        var link = document.getElementById('apk-link');
+        if (link) link.href = apk.browser_download_url;
+        setText('apk-name', apk.name);
+        setText('apk-size', megabytes(apk.size));
+
+        var version = String(newest.tag_name || '').replace(/^v/i, '');
+        setText('ver-badge', version);
+        setText('ver-footer', version);
       })
-      .catch(function () { /* nincs net vagy elfogyott az órás keret */ });
+      .catch(function () { /* marad a HTML-be írt kiadás */ });
   })();
 </script>
