@@ -290,4 +290,31 @@
     <string name="set_covers_in_list_hint">Standardmäßig aus: höhere Zeilen zeigen weniger Bücher.</string>
     <string name="covers_done_title">Cover geladen</string>
     <string name="covers_done">%1$d Cover aus %2$d Büchern gefunden.</string>
+
+    <!-- Fajlmuveletek es jegyzetek -->
+    <string name="fileops_title">Datei</string>
+    <string name="fileops_rename">Umbenennen</string>
+    <string name="fileops_move">Verschieben</string>
+    <string name="fileops_copy">Kopieren</string>
+    <string name="fileops_delete">Löschen</string>
+    <string name="fileops_rename_title">Neuer Name</string>
+    <string name="fileops_rename_hint">Dateiname mit Endung</string>
+    <string name="fileops_pick_folder">Ordner wählen</string>
+    <string name="fileops_here">Hierher</string>
+    <string name="fileops_delete_title">Endgültig löschen?</string>
+    <string name="fileops_delete_text">%1$s\n\nDie Datei wird vom Telefon gelöscht, zusammen mit Lesefortschritt, Lesezeichen und Notiz. Das lässt sich nicht rückgängig machen.</string>
+    <string name="fileops_done_rename">Umbenannt.</string>
+    <string name="fileops_done_move">Verschoben.</string>
+    <string name="fileops_done_copy">Kopiert.</string>
+    <string name="fileops_done_delete">Gelöscht.</string>
+    <string name="fileops_err_exists">In diesem Ordner gibt es bereits eine Datei mit diesem Namen.</string>
+    <string name="fileops_err_failed">Der Vorgang ist fehlgeschlagen.</string>
+    <string name="fileops_err_name">Der Name darf nicht leer sein und keine / \ : * ? \" &lt; &gt; | enthalten.</string>
+    <string name="fileops_err_missing">Die Datei ist nicht mehr da.</string>
+    <string name="fileops_err_folder">Das ist kein Ordner.</string>
+    <string name="note_title">Notiz</string>
+    <string name="note_hint">Alles, was du dir zu diesem Buch merken willst…</string>
+    <string name="note_save">Speichern</string>
+    <string name="note_clear">Notiz löschen</string>
+    <string name="note_edit">Notiz</string>
 </resources>

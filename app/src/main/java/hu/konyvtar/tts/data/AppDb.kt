@@ -16,7 +16,7 @@ import hu.konyvtar.tts.model.displayPercent
 object AppDb {
 
     private const val DB_NAME = "app_local.db"
-    private const val DB_VERSION = 4
+    private const val DB_VERSION = 5
 
     @Volatile
     private var helper: Helper? = null
@@ -53,6 +53,7 @@ object AppDb {
                 """.trimIndent()
             )
             createBookmarks(db)
+            createNotes(db)
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -67,6 +68,22 @@ object AppDb {
                 // A szkennelési gyorsítótár megszűnt: a katalógus az egyetlen forrás
                 db.execSQL("DROP TABLE IF EXISTS scan_cache")
             }
+            if (oldVersion < 5) {
+                createNotes(db)
+            }
+        }
+
+        /** Saját jegyzet a könyvhöz — a fájl útvonalához kötve. */
+        private fun createNotes(db: SQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS notes (
+                    path    TEXT PRIMARY KEY,
+                    note    TEXT NOT NULL DEFAULT '',
+                    updated INTEGER NOT NULL DEFAULT 0
+                )
+                """.trimIndent()
+            )
         }
 
         private fun createBookmarks(db: SQLiteDatabase) {
@@ -153,6 +170,86 @@ object AppDb {
             """.trimIndent(),
             arrayOf<Any?>(path, totalParas, System.currentTimeMillis(), title, author, readPara)
         )
+    }
+
+    // ---------------------------------------------------------------- jegyzetek
+
+    /** A könyvhöz fűzött saját jegyzet, ha van. */
+    fun noteFor(path: String): String? = try {
+        db().rawQuery("SELECT note FROM notes WHERE path = ?", arrayOf(path)).use {
+            if (it.moveToNext()) it.getString(0)?.takeIf { s -> s.isNotBlank() } else null
+        }
+    } catch (e: Exception) {
+        null
+    }
+
+    /** Üres szöveg törli a jegyzetet. */
+    fun setNote(path: String, text: String) {
+        try {
+            if (text.isBlank()) {
+                db().delete("notes", "path = ?", arrayOf(path))
+                return
+            }
+            db().execSQL(
+                "INSERT INTO notes(path, note, updated) VALUES(?, ?, ?) " +
+                    "ON CONFLICT(path) DO UPDATE SET note = excluded.note, " +
+                    "updated = excluded.updated",
+                arrayOf<Any>(path, text.trim(), System.currentTimeMillis())
+            )
+        } catch (_: Exception) {
+        }
+    }
+
+    /** Útvonal -> jegyzet; a listához, ahol csak a jelenlétük számít. */
+    fun notesByPath(): Map<String, String> {
+        val out = HashMap<String, String>()
+        try {
+            db().rawQuery("SELECT path, note FROM notes", null).use { c ->
+                while (c.moveToNext()) {
+                    val n = c.getString(1)
+                    if (!n.isNullOrBlank()) out[c.getString(0)] = n
+                }
+            }
+        } catch (_: Exception) {
+        }
+        return out
+    }
+
+    // ---------------------------------------------------------------- útvonalak
+
+    /**
+     * A fájl elmozdult vagy nevet kapott: minden hozzá kötött adat kövesse.
+     * Enélkül egy átnevezés csendben elvinné az olvasási haladást, a
+     * könyvjelzőket és a jegyzetet — ezért nem mindegy, hogy a műveletet az
+     * appban vagy egy fájlkezelőben végzed el.
+     */
+    fun movePath(from: String, to: String) {
+        try {
+            db().beginTransaction()
+            try {
+                // A cél már létezhet (pl. korábbi bejegyzés): előbb szabaddá tesszük
+                db().delete("progress", "path = ?", arrayOf(to))
+                db().delete("notes", "path = ?", arrayOf(to))
+                val v = ContentValues().apply { put("path", to) }
+                db().update("progress", v, "path = ?", arrayOf(from))
+                db().update("bookmarks", v, "path = ?", arrayOf(from))
+                db().update("notes", v, "path = ?", arrayOf(from))
+                db().setTransactionSuccessful()
+            } finally {
+                db().endTransaction()
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    /** A fájl megszűnt: minden hozzá kötött adat is menjen vele. */
+    fun forgetPath(path: String) {
+        try {
+            db().delete("progress", "path = ?", arrayOf(path))
+            db().delete("bookmarks", "path = ?", arrayOf(path))
+            db().delete("notes", "path = ?", arrayOf(path))
+        } catch (_: Exception) {
+        }
     }
 
     /**

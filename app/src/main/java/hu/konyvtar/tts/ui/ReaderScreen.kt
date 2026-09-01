@@ -414,6 +414,10 @@ fun ReaderScreen(
         BookDetailsDialog(
             book = BookRef(path, title, author),
             onDismiss = { infoOpen = false },
+            // Az épp olvasott könyvhöz jegyzetet írhatsz, de átnevezni vagy
+            // törölni magad alól nem engedjük
+            onFileChanged = { },
+            allowFileOps = false,
             // Csak az olvasó tudja, hány bekezdésre és fejezetre bomlott a könyv
             extraLines = listOf(
                 stringResource(R.string.info_paragraphs) to paragraphs?.size?.toString(),

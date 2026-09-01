@@ -290,4 +290,31 @@
     <string name="set_covers_in_list_hint">Désactivé par défaut : des lignes plus hautes montrent moins de livres.</string>
     <string name="covers_done_title">Couvertures chargées</string>
     <string name="covers_done">%1$d couvertures trouvées sur %2$d livres.</string>
+
+    <!-- Fajlmuveletek es jegyzetek -->
+    <string name="fileops_title">Fichier</string>
+    <string name="fileops_rename">Renommer</string>
+    <string name="fileops_move">Déplacer</string>
+    <string name="fileops_copy">Copier</string>
+    <string name="fileops_delete">Supprimer</string>
+    <string name="fileops_rename_title">Nouveau nom</string>
+    <string name="fileops_rename_hint">Nom du fichier avec extension</string>
+    <string name="fileops_pick_folder">Choisir un dossier</string>
+    <string name="fileops_here">Ici</string>
+    <string name="fileops_delete_title">Supprimer définitivement ?</string>
+    <string name="fileops_delete_text">%1$s\n\nLe fichier sera supprimé du téléphone, avec la progression de lecture, les signets et la note. Cette action est irréversible.</string>
+    <string name="fileops_done_rename">Renommé.</string>
+    <string name="fileops_done_move">Déplacé.</string>
+    <string name="fileops_done_copy">Copié.</string>
+    <string name="fileops_done_delete">Supprimé.</string>
+    <string name="fileops_err_exists">Un fichier de ce nom existe déjà dans le dossier.</string>
+    <string name="fileops_err_failed">L’opération a échoué.</string>
+    <string name="fileops_err_name">Le nom ne peut pas être vide ni contenir / \ : * ? \" &lt; &gt; |</string>
+    <string name="fileops_err_missing">Le fichier n’est plus là.</string>
+    <string name="fileops_err_folder">Ce n’est pas un dossier.</string>
+    <string name="note_title">Note</string>
+    <string name="note_hint">Tout ce que vous voulez retenir de ce livre…</string>
+    <string name="note_save">Enregistrer</string>
+    <string name="note_clear">Supprimer la note</string>
+    <string name="note_edit">Note</string>
 </resources>

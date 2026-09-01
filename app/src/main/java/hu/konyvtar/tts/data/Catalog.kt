@@ -337,6 +337,65 @@ object Catalog {
         }
     }
 
+    /** A fájl új helyre került: a katalógus is kövesse. */
+    fun updatePath(from: String, to: String): Boolean {
+        val d = open() ?: return false
+        return try {
+            val v = ContentValues().apply {
+                put("fajl_utvonal", to)
+                put("fajl_nev", to.substringAfterLast('/'))
+                put("formatum", to.substringAfterLast('.', "").uppercase())
+            }
+            d.update("fizikai_fajlok", v, "fajl_utvonal = ?", arrayOf(from)) > 0
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * A másolat felvétele a katalógusba, ugyanahhoz a műhöz. A séma eleve
+     * megengedi, hogy egy könyvhöz több fájl tartozzon, így a másolat sem
+     * lesz külön mű.
+     */
+    fun addCopy(from: String, to: String): Boolean {
+        val d = open() ?: return false
+        return try {
+            val bookId = d.rawQuery(
+                "SELECT konyv_id FROM fizikai_fajlok WHERE fajl_utvonal = ?", arrayOf(from)
+            ).use { if (it.moveToNext() && !it.isNull(0)) it.getLong(0) else null }
+            val v = ContentValues().apply {
+                put("fajl_utvonal", to)
+                put("fajl_nev", to.substringAfterLast('/'))
+                put("formatum", to.substringAfterLast('.', "").uppercase())
+                if (bookId != null) put("konyv_id", bookId)
+                put("egyezes_szint", "masolat")
+            }
+            d.insertWithOnConflict(
+                "fizikai_fajlok", null, v, SQLiteDatabase.CONFLICT_REPLACE
+            ) > 0
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * A fájl bejegyzésének törlése. Ha a művöz nem marad fájl, a mű is
+     * megszűnik — különben árván maradna a katalógusban.
+     */
+    fun deleteFile(path: String): Boolean {
+        val d = open() ?: return false
+        return try {
+            d.delete("fizikai_fajlok", "fajl_utvonal = ?", arrayOf(path))
+            d.execSQL(
+                "DELETE FROM konyvek WHERE id NOT IN " +
+                    "(SELECT konyv_id FROM fizikai_fajlok WHERE konyv_id IS NOT NULL)"
+            )
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     /**
      * Kitörli a katalógusból azokat a bejegyzéseket, amelyek fájlja már nem
      * létezik. Csak kézzel indítva fut — magától soha nem töröl semmit.

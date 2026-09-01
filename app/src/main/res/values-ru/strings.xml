@@ -290,4 +290,31 @@
     <string name="set_covers_in_list_hint">По умолчанию выключено: в более высокие строки влезает меньше книг.</string>
     <string name="covers_done_title">Обложки загружены</string>
     <string name="covers_done">Найдено %1$d обложек из %2$d книг.</string>
+
+    <!-- Fajlmuveletek es jegyzetek -->
+    <string name="fileops_title">Файл</string>
+    <string name="fileops_rename">Переименовать</string>
+    <string name="fileops_move">Переместить</string>
+    <string name="fileops_copy">Копировать</string>
+    <string name="fileops_delete">Удалить</string>
+    <string name="fileops_rename_title">Новое имя</string>
+    <string name="fileops_rename_hint">Имя файла с расширением</string>
+    <string name="fileops_pick_folder">Выберите папку</string>
+    <string name="fileops_here">Сюда</string>
+    <string name="fileops_delete_title">Удалить навсегда?</string>
+    <string name="fileops_delete_text">%1$s\n\nФайл будет удалён с телефона вместе с прогрессом чтения, закладками и заметкой. Отменить нельзя.</string>
+    <string name="fileops_done_rename">Переименовано.</string>
+    <string name="fileops_done_move">Перемещено.</string>
+    <string name="fileops_done_copy">Скопировано.</string>
+    <string name="fileops_done_delete">Удалено.</string>
+    <string name="fileops_err_exists">В папке уже есть файл с таким именем.</string>
+    <string name="fileops_err_failed">Не удалось выполнить действие.</string>
+    <string name="fileops_err_name">Имя не может быть пустым и содержать / \ : * ? \" &lt; &gt; |</string>
+    <string name="fileops_err_missing">Файла больше нет.</string>
+    <string name="fileops_err_folder">Это не папка.</string>
+    <string name="note_title">Заметка</string>
+    <string name="note_hint">Всё, что хотите запомнить об этой книге…</string>
+    <string name="note_save">Сохранить</string>
+    <string name="note_clear">Удалить заметку</string>
+    <string name="note_edit">Заметка</string>
 </resources>

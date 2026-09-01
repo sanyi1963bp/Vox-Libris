@@ -1,5 +1,6 @@
 package hu.konyvtar.tts.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -65,6 +66,8 @@ data class BookRef(
  * katalóguson kívüli könyvek is megmutatják, amit tudnak magukról.
  *
  * @param onOpen ha meg van adva, megjelenik a „megnyitás” gomb is
+ * @param onFileChanged ha meg van adva, megjelenik a fájlműveletek menü is;
+ *   a művelet után az új útvonallal hívjuk, törlésnél `null`-lal
  * @param extraLines képernyőnként eltérő sorok (az olvasó pl. a bekezdések
  *   és fejezetek számát teszi ide)
  */
@@ -73,12 +76,21 @@ fun BookDetailsDialog(
     book: BookRef,
     onDismiss: () -> Unit,
     onOpen: (() -> Unit)? = null,
+    onFileChanged: ((newPath: String?) -> Unit)? = null,
+    allowFileOps: Boolean = true,
     extraLines: List<Pair<String, String?>> = emptyList()
 ) {
     val context = LocalContext.current
     var entry by remember(book.path) { mutableStateOf<CatalogBook?>(null) }
     var fileMeta by remember(book.path) { mutableStateOf<BookMeta?>(null) }
     var percent by remember(book.path) { mutableStateOf<Double?>(null) }
+    var note by remember(book.path) { mutableStateOf<String?>(null) }
+    // A jegyzet szerkesztése után újratöltjük, hogy rögtön látszódjon
+    var noteReload by remember(book.path) { mutableStateOf(0) }
+
+    LaunchedEffect(book.path, noteReload) {
+        note = withContext(Dispatchers.IO) { AppDb.noteFor(book.path) }
+    }
 
     LaunchedEffect(book.path) {
         withContext(Dispatchers.IO) {
@@ -100,6 +112,18 @@ fun BookDetailsDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                if (onFileChanged != null) {
+                    FileActionsButton(
+                        path = book.path,
+                        onDone = { newPath ->
+                            noteReload++
+                            onFileChanged(newPath)
+                        },
+                        allowFileOps = allowFileOps,
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    )
+                }
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -127,6 +151,7 @@ fun BookDetailsDialog(
                         textAlign = TextAlign.Center
                     )
                 }
+            }
             }
         },
         text = {
@@ -191,6 +216,17 @@ fun BookDetailsDialog(
                     book.path.substringBeforeLast('/')
                 )
                 for ((label, value) in extraLines) DetailLine(label, value)
+
+                note?.let { n ->
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(R.string.note_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(n, style = MaterialTheme.typography.bodySmall)
+                }
 
                 val desc = (entry?.leiras ?: fileMeta?.description)?.clean()
                 if (!desc.isNullOrBlank()) {

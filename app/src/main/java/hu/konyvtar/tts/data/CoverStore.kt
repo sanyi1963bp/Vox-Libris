@@ -88,6 +88,42 @@ object CoverStore {
         }
     }
 
+    /** A bélyegkép kövesse a fájlt, ha az elmozdult vagy nevet kapott. */
+    fun movePath(context: Context, from: String, to: String) {
+        try {
+            val src = fileFor(context, from)
+            if (!src.exists()) return
+            val dst = fileFor(context, to)
+            if (dst.exists()) dst.delete()
+            src.renameTo(dst)
+            synchronized(known) {
+                known.remove(keyOf(to))
+                known.add(keyOf(from))
+            }
+            memory.remove(keyOf(from))
+        } catch (_: Exception) {
+        }
+    }
+
+    /** Bélyegkép másolása: a másolat is rögtön borítóval jelenik meg. */
+    fun copyPath(context: Context, from: String, to: String) {
+        try {
+            val src = fileFor(context, from)
+            if (src.exists()) src.copyTo(fileFor(context, to), overwrite = true)
+            synchronized(known) { known.remove(keyOf(to)) }
+        } catch (_: Exception) {
+        }
+    }
+
+    fun remove(context: Context, path: String) {
+        try {
+            fileFor(context, path).delete()
+            memory.remove(keyOf(path))
+            synchronized(known) { known.add(keyOf(path)) }
+        } catch (_: Exception) {
+        }
+    }
+
     fun count(context: Context): Int = dir(context).listFiles()?.size ?: 0
 
     fun sizeBytes(context: Context): Long =

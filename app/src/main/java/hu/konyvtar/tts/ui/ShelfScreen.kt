@@ -153,6 +153,10 @@ fun ShelfScreen(
                 infoBook = null
                 onOpenBook(b.toFileRow())
             },
+            onFileChanged = { newPath ->
+                if (newPath == null) infoBook = null
+                vm.reloadAfterFileChange()
+            },
             onDismiss = { infoBook = null }
         )
     }

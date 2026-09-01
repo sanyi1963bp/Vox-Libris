@@ -290,4 +290,31 @@
     <string name="set_covers_in_list_hint">Desligado por omissão: linhas mais altas mostram menos livros.</string>
     <string name="covers_done_title">Capas carregadas</string>
     <string name="covers_done">Encontradas %1$d capas em %2$d livros.</string>
+
+    <!-- Fajlmuveletek es jegyzetek -->
+    <string name="fileops_title">Ficheiro</string>
+    <string name="fileops_rename">Mudar o nome</string>
+    <string name="fileops_move">Mover</string>
+    <string name="fileops_copy">Copiar</string>
+    <string name="fileops_delete">Apagar</string>
+    <string name="fileops_rename_title">Novo nome</string>
+    <string name="fileops_rename_hint">Nome do ficheiro com extensão</string>
+    <string name="fileops_pick_folder">Escolher pasta</string>
+    <string name="fileops_here">Aqui</string>
+    <string name="fileops_delete_title">Apagar definitivamente?</string>
+    <string name="fileops_delete_text">%1$s\n\nO ficheiro será apagado do telefone, juntamente com o progresso de leitura, os marcadores e a nota. Isto não pode ser desfeito.</string>
+    <string name="fileops_done_rename">Nome alterado.</string>
+    <string name="fileops_done_move">Movido.</string>
+    <string name="fileops_done_copy">Copiado.</string>
+    <string name="fileops_done_delete">Apagado.</string>
+    <string name="fileops_err_exists">Já existe um ficheiro com esse nome na pasta.</string>
+    <string name="fileops_err_failed">A operação falhou.</string>
+    <string name="fileops_err_name">O nome não pode estar vazio nem conter / \ : * ? \" &lt; &gt; |</string>
+    <string name="fileops_err_missing">O ficheiro já não existe.</string>
+    <string name="fileops_err_folder">Isso não é uma pasta.</string>
+    <string name="note_title">Nota</string>
+    <string name="note_hint">O que quiser recordar sobre este livro…</string>
+    <string name="note_save">Guardar</string>
+    <string name="note_clear">Apagar nota</string>
+    <string name="note_edit">Nota</string>
 </resources>

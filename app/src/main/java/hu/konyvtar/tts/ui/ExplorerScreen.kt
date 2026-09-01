@@ -359,19 +359,7 @@ fun ExplorerScreen(
                         onDoubleTap = {
                             if (!row.isDir) playRow(row)
                         },
-                        onLongPress = {
-                            if (!row.isDir) {
-                                if (TextExtractor.isSupported(row.ext)) {
-                                    onOpenReader(row)
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        TextExtractor.unsupportedHint(context, row.ext),
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            }
-                        }
+                        onFileChanged = { browser.refresh() }
                     )
                 }
             }
@@ -395,6 +383,7 @@ fun ExplorerScreen(
                 infoRow = null
                 playRow(r)
             },
+            onFileChanged = { browser.refresh() },
             onDismiss = { infoRow = null }
         )
     }
@@ -441,8 +430,11 @@ private fun FileRowItem(
     onInfo: () -> Unit,
     onSingleTap: () -> Unit,
     onDoubleTap: () -> Unit,
-    onLongPress: () -> Unit
+    onFileChanged: (newPath: String?) -> Unit
 ) {
+    // Hosszú nyomásra a fájlműveletek menüje nyílik — itt, a fájlok között
+    // ez a természetes hely rá. A menü a sorhoz igazodik.
+    var menuOpen by remember { mutableStateOf(false) }
     val bg = if (stripe) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
     else MaterialTheme.colorScheme.surface
 
@@ -459,7 +451,7 @@ private fun FileRowItem(
                     detectTapGestures(
                         onTap = { onSingleTap() },
                         onDoubleTap = { onDoubleTap() },
-                        onLongPress = { onLongPress() }
+                        onLongPress = { if (!row.isDir) menuOpen = true }
                     )
                 }
                 .padding(start = 8.dp, top = 3.dp, bottom = 3.dp)
@@ -529,12 +521,20 @@ private fun FileRowItem(
             }
         }
         if (!row.isDir) {
-            IconButton(onClick = onInfo, modifier = Modifier.size(38.dp)) {
-                Icon(
-                    Icons.Filled.Info,
-                    contentDescription = stringResource(R.string.row_info),
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+            Box {
+                IconButton(onClick = onInfo, modifier = Modifier.size(38.dp)) {
+                    Icon(
+                        Icons.Filled.Info,
+                        contentDescription = stringResource(R.string.row_info),
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                FileActionsMenu(
+                    path = row.path,
+                    expanded = menuOpen,
+                    onDismiss = { menuOpen = false },
+                    onDone = onFileChanged
                 )
             }
         } else {

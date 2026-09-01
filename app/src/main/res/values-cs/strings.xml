@@ -290,4 +290,31 @@
     <string name="set_covers_in_list_hint">Ve výchozím stavu vypnuto: vyšší řádky pojmou méně knih.</string>
     <string name="covers_done_title">Obálky načteny</string>
     <string name="covers_done">Nalezeno %1$d obálek z %2$d knih.</string>
+
+    <!-- Fajlmuveletek es jegyzetek -->
+    <string name="fileops_title">Soubor</string>
+    <string name="fileops_rename">Přejmenovat</string>
+    <string name="fileops_move">Přesunout</string>
+    <string name="fileops_copy">Kopírovat</string>
+    <string name="fileops_delete">Smazat</string>
+    <string name="fileops_rename_title">Nový název</string>
+    <string name="fileops_rename_hint">Název souboru s příponou</string>
+    <string name="fileops_pick_folder">Vybrat složku</string>
+    <string name="fileops_here">Sem</string>
+    <string name="fileops_delete_title">Smazat natrvalo?</string>
+    <string name="fileops_delete_text">%1$s\n\nSoubor bude smazán z telefonu spolu s postupem čtení, záložkami a poznámkou. Tuto akci nelze vrátit.</string>
+    <string name="fileops_done_rename">Přejmenováno.</string>
+    <string name="fileops_done_move">Přesunuto.</string>
+    <string name="fileops_done_copy">Zkopírováno.</string>
+    <string name="fileops_done_delete">Smazáno.</string>
+    <string name="fileops_err_exists">Ve složce už soubor s tímto názvem je.</string>
+    <string name="fileops_err_failed">Operace se nezdařila.</string>
+    <string name="fileops_err_name">Název nesmí být prázdný ani obsahovat / \ : * ? \" &lt; &gt; |</string>
+    <string name="fileops_err_missing">Soubor už neexistuje.</string>
+    <string name="fileops_err_folder">To není složka.</string>
+    <string name="note_title">Poznámka</string>
+    <string name="note_hint">Cokoli, co si chceš o této knize zapamatovat…</string>
+    <string name="note_save">Uložit</string>
+    <string name="note_clear">Smazat poznámku</string>
+    <string name="note_edit">Poznámka</string>
 </resources>

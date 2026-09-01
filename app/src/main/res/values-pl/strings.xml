@@ -290,4 +290,31 @@
     <string name="set_covers_in_list_hint">Domyślnie wyłączone: wyższe wiersze mieszczą mniej książek.</string>
     <string name="covers_done_title">Okładki wczytane</string>
     <string name="covers_done">Znaleziono %1$d okładek w %2$d książkach.</string>
+
+    <!-- Fajlmuveletek es jegyzetek -->
+    <string name="fileops_title">Plik</string>
+    <string name="fileops_rename">Zmień nazwę</string>
+    <string name="fileops_move">Przenieś</string>
+    <string name="fileops_copy">Kopiuj</string>
+    <string name="fileops_delete">Usuń</string>
+    <string name="fileops_rename_title">Nowa nazwa</string>
+    <string name="fileops_rename_hint">Nazwa pliku z rozszerzeniem</string>
+    <string name="fileops_pick_folder">Wybierz folder</string>
+    <string name="fileops_here">Tutaj</string>
+    <string name="fileops_delete_title">Usunąć na zawsze?</string>
+    <string name="fileops_delete_text">%1$s\n\nPlik zostanie usunięty z telefonu razem z postępem czytania, zakładkami i notatką. Tego nie da się cofnąć.</string>
+    <string name="fileops_done_rename">Nazwa zmieniona.</string>
+    <string name="fileops_done_move">Przeniesiono.</string>
+    <string name="fileops_done_copy">Skopiowano.</string>
+    <string name="fileops_done_delete">Usunięto.</string>
+    <string name="fileops_err_exists">W tym folderze jest już plik o takiej nazwie.</string>
+    <string name="fileops_err_failed">Operacja się nie powiodła.</string>
+    <string name="fileops_err_name">Nazwa nie może być pusta ani zawierać / \ : * ? \" &lt; &gt; |</string>
+    <string name="fileops_err_missing">Pliku już nie ma.</string>
+    <string name="fileops_err_folder">To nie jest folder.</string>
+    <string name="note_title">Notatka</string>
+    <string name="note_hint">Cokolwiek chcesz zapamiętać o tej książce…</string>
+    <string name="note_save">Zapisz</string>
+    <string name="note_clear">Usuń notatkę</string>
+    <string name="note_edit">Notatka</string>
 </resources>

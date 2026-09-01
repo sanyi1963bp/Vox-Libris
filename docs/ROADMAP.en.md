@@ -107,6 +107,26 @@ library root; and the `&Otilde;` / `&odblac;` entities were not decoded.
 Cover extraction is guarded by **16 new unit tests** (including the MOBI
 byte-exact offset arithmetic), for 48 tests in total.
 
+## File operations and personal notes ✅ *(done)*
+
+**Rename, move, copy, delete** — the same menu from every view.
+
+The point is not moving files; a file manager does that too. The point is
+that **everything attached to the file follows it**: the catalogue entry, the
+reading progress, the bookmarks, the note and the thumbnail. Doing the same
+in a file manager would silently lose all of it, and the book would come back
+as new, from zero.
+
+- **Deleting always asks first** and shows the file name — it is the one
+  irreversible operation.
+- **No file operations in the reader**: the book you are reading will not be
+  renamed or deleted from under you. You can still write a note there.
+- A copy becomes another file of the same work in the catalogue — the schema
+  has always allowed several files per book.
+
+**Personal notes**: attach anything to a book. A small mark in the list shows
+which books have one, and **search looks inside the notes too**.
+
 ## Phase 3 — Reading experience
 
 - **Bionic Reading**: the first ~40% of every word in bold, toggleable.

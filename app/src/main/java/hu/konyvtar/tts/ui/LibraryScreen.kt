@@ -482,6 +482,7 @@ fun LibraryScreen(
                             LibraryRow(
                                 book = book,
                                 showCover = showCovers,
+                                hasNote = ui.notes.containsKey(book.path),
                                 stripe = index % 2 == 1,
                                 selected = selected == book.path,
                                 percent = ui.progress[book.path],
@@ -514,6 +515,11 @@ fun LibraryScreen(
                 infoBook = null
                 openAndPlay(b)
             },
+            onFileChanged = { newPath ->
+                // Törléskor az adatlap tárgya megszűnt, be is zárjuk
+                if (newPath == null) infoBook = null
+                vm.reloadAfterFileChange()
+            },
             onDismiss = { infoBook = null }
         )
     }
@@ -530,6 +536,7 @@ fun LibraryScreen(
 private fun LibraryRow(
     book: ShelfBook,
     showCover: Boolean,
+    hasNote: Boolean,
     stripe: Boolean,
     selected: Boolean,
     percent: Double?,
@@ -580,6 +587,14 @@ private fun LibraryRow(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
+                // Van saját jegyzeted ehhez a könyvhöz
+                if (hasNote) {
+                    Text(
+                        text = "  ✎",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
             Text(
                 text = if (book.author.isNotBlank()) book.author + "  ·  " + book.fileName

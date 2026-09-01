@@ -313,4 +313,31 @@
     <string name="set_covers_in_list_hint">Off by default: taller rows fit fewer books on screen.</string>
     <string name="covers_done_title">Covers loaded</string>
     <string name="covers_done">%1$d covers found out of %2$d books.</string>
+
+    <!-- Fajlmuveletek es jegyzetek -->
+    <string name="fileops_title">File</string>
+    <string name="fileops_rename">Rename</string>
+    <string name="fileops_move">Move</string>
+    <string name="fileops_copy">Copy</string>
+    <string name="fileops_delete">Delete</string>
+    <string name="fileops_rename_title">New name</string>
+    <string name="fileops_rename_hint">File name with extension</string>
+    <string name="fileops_pick_folder">Choose a folder</string>
+    <string name="fileops_here">Move here</string>
+    <string name="fileops_delete_title">Delete for good?</string>
+    <string name="fileops_delete_text">%1$s\n\nThe file is deleted from the phone, together with its reading progress, bookmarks and note. This cannot be undone.</string>
+    <string name="fileops_done_rename">Renamed.</string>
+    <string name="fileops_done_move">Moved.</string>
+    <string name="fileops_done_copy">Copied.</string>
+    <string name="fileops_done_delete">Deleted.</string>
+    <string name="fileops_err_exists">There is already a file with this name in the folder.</string>
+    <string name="fileops_err_failed">The operation failed.</string>
+    <string name="fileops_err_name">The name cannot be empty and cannot contain / \ : * ? \" &lt; &gt; |</string>
+    <string name="fileops_err_missing">The file is no longer there.</string>
+    <string name="fileops_err_folder">That is not a folder.</string>
+    <string name="note_title">Note</string>
+    <string name="note_hint">Anything you want to remember about this book…</string>
+    <string name="note_save">Save</string>
+    <string name="note_clear">Delete note</string>
+    <string name="note_edit">Note</string>
 </resources>

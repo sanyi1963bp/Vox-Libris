@@ -107,6 +107,26 @@ gyökerének is; és a `&Otilde;` / `&odblac;` entitások nem oldódtak fel.
 A borítókinyerésre **16 új egységteszt** ügyel (a MOBI bájtpontos
 offset-számolására is), így összesen 48 teszt fut.
 
+## Fájlműveletek és saját jegyzetek ✅ *(kész)*
+
+**Átnevezés, áthelyezés, másolás, törlés** — minden nézetből ugyanaz a menü.
+
+Az érdemi rész nem a fájlmozgatás, azt egy fájlkezelő is tudja. Az érdemi
+rész, hogy **minden hozzá kötött adat is követi a fájlt**: a
+katalógusbejegyzés, az olvasási haladás, a könyvjelzők, a jegyzet és a
+bélyegkép. Ugyanez fájlkezelőben elvégezve mindez csendben elveszne, és a
+könyv újként jelenne meg, nulláról.
+
+- A **törlés** mindig rákérdez, és a fájl nevét is megmutatja — ez az
+  egyetlen visszafordíthatatlan művelet.
+- Az **olvasóban nincs fájlművelet**: az épp olvasott könyvet nem nevezzük át
+  és nem töröljük magad alól. Jegyzetet viszont ott is írhatsz hozzá.
+- A másolat ugyanannak a műnek egy másik fájlja lesz a katalógusban — a séma
+  eleve megengedi, hogy egy könyvhöz több fájl tartozzon.
+
+**Saját jegyzetek**: bármit hozzáfűzhetsz egy könyvhöz. A listában kis jel
+mutatja, melyikhez van jegyzet, és a **kereső a jegyzetekben is keres**.
+
 ## 3. fázis — Olvasási élmény
 
 - **Bionic Reading**: minden szó első ~40%-a félkövér, kapcsolható.

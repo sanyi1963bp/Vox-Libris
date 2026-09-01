@@ -72,6 +72,8 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         val libLetters: List<String> = emptyList(),
         /** Formátum -> darabszám: ebből látszik, milyen fájlok vannak. */
         val libFormats: List<FormatCount> = emptyList(),
+        /** Útvonal -> a jegyzet ékezet nélküli alakja; a kereséshez és a jelöléshez. */
+        val notes: Map<String, String> = emptyMap(),
         val setup: Setup = Setup.NONE,
         val message: String? = null
     )
@@ -137,6 +139,9 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             _ui.value = _ui.value.copy(libLoading = true)
             val all = withContext(Dispatchers.IO) { Catalog.allBooks() }
             val prog = withContext(Dispatchers.IO) { AppDb.progressByPath() }
+            val notes = withContext(Dispatchers.IO) {
+                AppDb.notesByPath().mapValues { Normalizer.foldAll(it.value) }
+            }
             val formats = withContext(Dispatchers.Default) {
                 all.groupingBy { it.ext }.eachCount()
                     .map { FormatCount(it.key, it.value) }
@@ -145,6 +150,7 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
             _ui.value = _ui.value.copy(
                 books = all,
                 progress = prog,
+                notes = notes,
                 libFormats = formats,
                 libLetters = lettersOf(all, _ui.value.libSort),
                 libLoading = false
@@ -210,7 +216,12 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
                 val q = Normalizer.foldAll(s.libQuery.trim())
                 val byAuthor = s.libSort == SortKey.AUTHOR
                 var list = s.books.asSequence()
-                if (q.isNotEmpty()) list = list.filter { it.matches(q) }
+                // A keresés a saját jegyzetekben is talál
+                if (q.isNotEmpty()) {
+                    list = list.filter { b ->
+                        b.matches(q) || s.notes[b.path]?.contains(q) == true
+                    }
+                }
                 if (s.libFormat.isNotEmpty()) list = list.filter { it.ext == s.libFormat }
                 if (s.libLetter.isNotEmpty()) {
                     list = list.filter { it.letterFor(byAuthor) == s.libLetter }
@@ -241,6 +252,11 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
      * Csak a haladás újratöltése — a felolvasóból visszatérve ettől mozdul
      * a lista zöld csíkja, anélkül hogy az egész katalógust újraolvasnánk.
      */
+    /** Fájlművelet után: a katalógus, a haladás és a jegyzetek újratöltése. */
+    fun reloadAfterFileChange() {
+        loadLibrary()
+    }
+
     fun refreshProgress() {
         viewModelScope.launch(Dispatchers.IO) {
             val prog = AppDb.progressByPath()

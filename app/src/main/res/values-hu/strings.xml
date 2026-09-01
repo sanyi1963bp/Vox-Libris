@@ -288,4 +288,31 @@
     <string name="set_covers_in_list_hint">Alapból kikapcsolva: a magasabb sorokba kevesebb könyv fér.</string>
     <string name="covers_done_title">Borítók betöltve</string>
     <string name="covers_done">%2$d könyvből %1$d borító lett meg.</string>
+
+    <!-- Fajlmuveletek es jegyzetek -->
+    <string name="fileops_title">Fájl</string>
+    <string name="fileops_rename">Átnevezés</string>
+    <string name="fileops_move">Áthelyezés</string>
+    <string name="fileops_copy">Másolás</string>
+    <string name="fileops_delete">Törlés</string>
+    <string name="fileops_rename_title">Új név</string>
+    <string name="fileops_rename_hint">Fájlnév a kiterjesztéssel</string>
+    <string name="fileops_pick_folder">Válassz mappát</string>
+    <string name="fileops_here">Ide</string>
+    <string name="fileops_delete_title">Véglegesen törlöd?</string>
+    <string name="fileops_delete_text">%1$s\n\nA fájl törlődik a telefonról, az olvasási haladással, a könyvjelzőkkel és a jegyzettel együtt. Ez nem vonható vissza.</string>
+    <string name="fileops_done_rename">Átnevezve.</string>
+    <string name="fileops_done_move">Áthelyezve.</string>
+    <string name="fileops_done_copy">Lemásolva.</string>
+    <string name="fileops_done_delete">Törölve.</string>
+    <string name="fileops_err_exists">Már van ilyen nevű fájl a mappában.</string>
+    <string name="fileops_err_failed">A művelet nem sikerült.</string>
+    <string name="fileops_err_name">A név nem lehet üres, és nem tartalmazhat / \ : * ? \" &lt; &gt; | jeleket.</string>
+    <string name="fileops_err_missing">A fájl már nincs meg.</string>
+    <string name="fileops_err_folder">Ez nem mappa.</string>
+    <string name="note_title">Jegyzet</string>
+    <string name="note_hint">Ide írhatsz bármit, amit meg akarsz jegyezni a könyvről…</string>
+    <string name="note_save">Mentés</string>
+    <string name="note_clear">Jegyzet törlése</string>
+    <string name="note_edit">Jegyzet</string>
 </resources>
