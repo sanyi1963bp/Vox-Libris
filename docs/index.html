@@ -1,0 +1,732 @@
+<title>Vox Libris tesztelőknek</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:      #f7f8f6;
+    --surface:    #ffffff;
+    --surface-2:  #eef1ee;
+    --ink:        #15201c;
+    --muted:      #5d6b63;
+    --edge:       #dde3de;
+    --accent:     #2d6a4f;
+    --accent-ink: #1b4332;
+    --warn:       #9d0208;
+    --warn-bg:    #fbf0ef;
+
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    --serif: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101512;
+      --surface:    #171e1a;
+      --surface-2:  #1e2721;
+      --ink:        #e4eae5;
+      --muted:      #9aa9a0;
+      --edge:       #2a342e;
+      --accent:     #74c69d;
+      --accent-ink: #a7dcc0;
+      --warn:       #f0908c;
+      --warn-bg:    #2a1a1a;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101512;
+    --surface:    #171e1a;
+    --surface-2:  #1e2721;
+    --ink:        #e4eae5;
+    --muted:      #9aa9a0;
+    --edge:       #2a342e;
+    --accent:     #74c69d;
+    --accent-ink: #a7dcc0;
+    --warn:       #f0908c;
+    --warn-bg:    #2a1a1a;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16.5px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 43rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------------------------------------------------------- fejléc */
+
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: 4rem 0 2.2rem;
+    border-bottom: 1px solid var(--edge);
+  }
+
+  .wordmark {
+    font-family: var(--serif);
+    font-size: clamp(2.6rem, 8vw, 3.9rem);
+    line-height: 1.02;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .wordmark em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  .standfirst {
+    font-family: var(--serif);
+    font-size: 1.22rem;
+    line-height: 1.5;
+    color: var(--muted);
+    max-width: 34rem;
+    margin: 0;
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.3rem;
+  }
+
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    padding: 0.28rem 0.6rem;
+    border: 1px solid var(--edge);
+    background: var(--surface);
+    color: var(--muted);
+  }
+
+  .badge.is-key {
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    background: transparent;
+  }
+
+  /* ---------------------------------------------------------- letöltés */
+
+  .download {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 2.4rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--edge);
+  }
+
+  .download-meta {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+  }
+
+  .btn {
+    display: inline-block;
+    align-self: flex-start;
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--paper);
+    background: var(--accent-ink);
+    padding: 0.72rem 1.5rem;
+    border: 1px solid var(--accent-ink);
+    transition: background 120ms ease, color 120ms ease;
+  }
+
+  .btn:hover, .btn:focus-visible { background: var(--accent); border-color: var(--accent); }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .btn { color: #0d1310; background: var(--accent); border-color: var(--accent); }
+    :root:not([data-theme="light"]) .btn:hover,
+    :root:not([data-theme="light"]) .btn:focus-visible { background: var(--accent-ink); border-color: var(--accent-ink); }
+  }
+  :root[data-theme="dark"] .btn { color: #0d1310; background: var(--accent); border-color: var(--accent); }
+  :root[data-theme="dark"] .btn:hover,
+  :root[data-theme="dark"] .btn:focus-visible { background: var(--accent-ink); border-color: var(--accent-ink); }
+
+  .download .alt {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  /* ---------------------------------------------------------- szakaszok */
+
+  section {
+    padding-top: 3.1rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.5rem;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 1.72rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+    margin: 0 0 0.9rem;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.8rem 0 0.4rem;
+  }
+
+  p { margin: 0 0 0.95rem; max-width: 38rem; }
+  p:last-child { margin-bottom: 0; }
+
+  a {
+    color: var(--accent-ink);
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1px;
+  }
+
+  strong { font-weight: 600; }
+
+  code, .path {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-2);
+    padding: 0.12em 0.36em;
+    border-radius: 2px;
+    word-break: break-all;
+  }
+
+  .path-block {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.84rem;
+    line-height: 1.55;
+    background: var(--surface-2);
+    border-left: 2px solid var(--accent);
+    padding: 0.7rem 0.9rem;
+    margin: 0 0 1rem;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  ul.plain {
+    margin: 0 0 1rem;
+    padding-left: 1.1rem;
+    max-width: 38rem;
+  }
+
+  ul.plain li { margin-bottom: 0.4rem; }
+
+  /* ---------------------------------------------------------- telepítés */
+
+  ol.steps {
+    list-style: none;
+    counter-reset: step;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  ol.steps > li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 2.1rem 1fr;
+    gap: 0 0.9rem;
+    align-items: start;
+  }
+
+  ol.steps > li::before {
+    content: counter(step);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.9rem;
+    text-align: center;
+    color: var(--accent-ink);
+    border: 1px solid var(--accent);
+    height: 1.9rem;
+    border-radius: 50%;
+  }
+
+  ol.steps h3 { margin: 0.2rem 0 0.3rem; }
+  ol.steps p { margin-bottom: 0.5rem; }
+
+  /* ---------------------------------------------------------- táblázat */
+
+  .scroller { overflow-x: auto; margin: 0 0 1rem; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 30rem;
+    font-size: 0.94rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.8rem 0.6rem 0;
+    border-bottom: 1px solid var(--edge);
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+    border-bottom-color: var(--ink);
+  }
+
+  td:first-child { font-weight: 600; white-space: nowrap; padding-right: 1.4rem; }
+
+  /* ---------------------------------------------------------- figyelmeztetések */
+
+  .notes {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+    margin-top: 0.4rem;
+  }
+
+  .note-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .note.is-danger .note-label { color: var(--warn); }
+
+  .note.is-danger {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn);
+    padding: 1rem 1.1rem;
+  }
+
+  .note.is-danger p { margin-bottom: 0; }
+
+  /* ---------------------------------------------------------- formátumok */
+
+  .formats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.2rem 0 1.1rem;
+  }
+
+  .fmt {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.03em;
+    padding: 0.26rem 0.55rem;
+    color: var(--surface);
+    background: var(--accent-ink);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .fmt { color: #0d1310; background: var(--accent); }
+  }
+  :root[data-theme="dark"] .fmt { color: #0d1310; background: var(--accent); }
+
+  .fmt.is-off { background: transparent; color: var(--muted); border: 1px solid var(--edge); }
+
+  /* ---------------------------------------------------------- lábléc */
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--edge);
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  footer p { max-width: 38rem; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 30rem) {
+    .wrap { padding: 0 1.15rem 4rem; }
+    .masthead { padding-top: 2.6rem; }
+    ol.steps > li { grid-template-columns: 1.7rem 1fr; gap: 0 0.7rem; }
+    ol.steps > li::before { height: 1.6rem; line-height: 1.6rem; font-size: 0.75rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <h1 class="wordmark">Vox&nbsp;Libris<br><em>tesztelőknek</em></h1>
+    <p class="standfirst">
+      Helyi könyvtár és felolvasó Androidra. Megkeresi a telefonodon lévő
+      könyveket, katalógust épít belőlük, és felolvassa őket.
+    </p>
+    <div class="badges">
+      <span class="badge">4.2.0</span>
+      <span class="badge">Android 11+</span>
+      <span class="badge">10 nyelv</span>
+      <span class="badge is-key">Nincs internet-engedélye</span>
+    </div>
+  </header>
+
+  <div class="download">
+    <div class="download-meta">
+      <span>vox-libris-4.2.0.apk</span>
+      <span>9,8 MB</span>
+      <span>Android 11+</span>
+    </div>
+    <a class="btn" href="https://github.com/sanyi1963bp/Vox-Libris/releases/latest/download/vox-libris-4.2.0.apk">
+      Alkalmazás letöltése
+    </a>
+    <p class="alt">
+      Telefonról nyisd meg ezt az oldalt, és a gomb egyből a telefonra tölti.
+      A telepítés lépései lentebb.
+      <a href="https://github.com/sanyi1963bp/Vox-Libris/releases">Minden verzió</a>
+    </p>
+  </div>
+
+  <section>
+    <p class="eyebrow">Mi ez</p>
+    <h2>Egy hangoskönyv-lejátszó, ami a saját könyveidből dolgozik</h2>
+    <p>
+      Nem tölt le semmit, és nem is tud: az alkalmazásnak <strong>nincs
+      internet-engedélye</strong>. Ami a telefonodon van — EPUB, PDF, MOBI és
+      társaik —, azt olvassa fel a rendszer szövegfelolvasójával, mondatról
+      mondatra, ott folytatva, ahol abbahagytad.
+    </p>
+    <p>
+      Ehhez először végigjárja a könyvmappádat, és a fájlokból kiolvasott
+      címekből, szerzőkből, borítókból <strong>saját katalógust épít</strong>.
+      Utána már keresni tudsz benne — cím, szerző vagy fájlnév szerint —, ami
+      több ezer könyvnél az egyetlen használható módszer.
+    </p>
+    <p>
+      A telefonon <strong>Könyvtár TTS</strong> néven jelenik meg (más nyelveken
+      Vox Libris).
+    </p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Mire jó</p>
+    <h2>Amikor a kezed foglalt, a füled nem</h2>
+    <p>
+      Vezetés, munka, mosogatás, séta. Elindítod a könyvet, a fejhallgató
+      gombjával megállítod és folytatod, és a program megjegyzi, hol tartottál.
+      Este pedig ugyanonnan olvashatod tovább a képernyőn — a két pozíció
+      összeér.
+    </p>
+    <p>
+      A második haszna a rendrakás: ha sok száz vagy sok ezer könyv van a
+      telefonodon, ez az alkalmazás megtalálja köztük azt az egyet, és
+      rendezni is tudod őket anélkül, hogy fájlkezelőt nyitnál.
+    </p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Mire lesz szükséged</p>
+    <h2>Három dolog a kezdéshez</h2>
+    <ul class="plain">
+      <li><strong>Android 11 vagy újabb</strong> telefon.</li>
+      <li><strong>Könyvek a telefonon</strong>, egy mappában (almappákkal együtt jó).</li>
+      <li>
+        <strong>Egy magyar beszédhang</strong> a rendszerben. A legtöbb telefonon
+        eleve van; ha nincs, az alkalmazás Beállításaiból egy gombbal
+        letölthető.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">Telepítés</p>
+    <h2>Öt lépés, körülbelül két perc</h2>
+    <ol class="steps">
+      <li>
+        <div>
+          <h3>Töltsd le az APK-fájlt</h3>
+          <p>
+            A legegyszerűbb, ha ezt az oldalt <strong>a telefonon</strong> nyitod
+            meg, és a fenti gombra koppintasz. Ha számítógépen töltötted le,
+            másold át a telefonra bármilyen módon.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Nyisd meg a fájlt</h3>
+          <p>
+            A telefon figyelmeztetni fog, hogy ismeretlen forrásból származó
+            alkalmazás. Ez normális: ez a program nem a Play Áruházból jön.
+            Engedélyezned kell a telepítést annak az alkalmazásnak, amivel
+            megnyitottad (fájlkezelő vagy böngésző).
+          </p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Adj hozzáférést a fájlokhoz</h3>
+          <p>
+            Első indításkor egyetlen engedélyt kér: <strong>hozzáférés az összes
+            fájlhoz</strong>. Enélkül nem látja a könyveidet. A gombra koppintva
+            a rendszer beállításai nyílnak meg, ott kell bekapcsolni.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Engedélyezd az értesítéseket</h3>
+          <p>
+            Ettől lesz vezérlősáv a lezárt képernyőn és a legördülő sávban.
+            Enélkül is működik minden, csak kényelmetlenebb.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <h3>Mutasd meg, hol vannak a könyveid</h3>
+          <p>
+            Az alkalmazás rákérdez a mappára, majd felajánlja a beolvasást.
+            Ezer könyv körülbelül egy perc. Utána a borítók a háttérben
+            töltődnek — közben nyugodtan használhatod.
+          </p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="eyebrow">Kezelés</p>
+    <h2>Két nézet, három koppintás</h2>
+    <p>
+      A nyitóképernyő a <strong>könyvtár</strong>: az összes könyved egy
+      listában, kereséssel és betűsávval. Jobbra-balra <strong>pöccintve</strong>
+      átvált a <strong>fájlböngészőre</strong>, ahol mappák szerint nézheted
+      ugyanezt. A cím mellett két pötty mutatja, melyik nézetnél állsz.
+    </p>
+    <p>
+      A felső sáv ikonjával elérhető még a <strong>polc</strong> (borítókat
+      lapozva), a <strong>statisztika</strong> és a <strong>beállítások</strong>.
+    </p>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Gesztus</th>
+            <th scope="col">Listában és böngészőben</th>
+            <th scope="col">Olvasás közben</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Egy koppintás</td>
+            <td>kijelölés, mappa megnyitása</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Dupla koppintás</td>
+            <td>megnyitás <strong>és felolvasás</strong></td>
+            <td>felolvasás <strong>a megérintett mondattól</strong></td>
+          </tr>
+          <tr>
+            <td>Hosszú nyomás</td>
+            <td>helyi menü</td>
+            <td>könyvjelző a bekezdéshez</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>A helyi menü</h3>
+    <p>
+      Hosszú nyomásra jön elő, bármelyik nézetben ugyanaz:
+      <strong>adatlap</strong> (borító, leírás, hol tartasz benne),
+      <strong>jegyzet</strong>, <strong>átnevezés</strong>,
+      <strong>áthelyezés</strong>, <strong>másolás</strong> és
+      <strong>törlés</strong>.
+    </p>
+
+    <h3>Fejhallgató-gombok</h3>
+    <p>
+      Egy nyomás: indítás vagy szünet. Két nyomás: ugrás vissza öt
+      másodpercet — pontosabban a legutóbbi mondat elejére.
+    </p>
+
+    <h3>„Most szól" sáv</h3>
+    <p>
+      Amíg felolvasás megy, minden képernyő alján ott a könyv címe és a
+      haladás. A gombbal bárhonnan elnémítható, a sávra koppintva pedig
+      visszaugrasz a könyvhöz.
+    </p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Formátumok</p>
+    <h2>Mit tud felolvasni</h2>
+    <div class="formats">
+      <span class="fmt">EPUB</span>
+      <span class="fmt">PDF</span>
+      <span class="fmt">MOBI</span>
+      <span class="fmt">AZW3</span>
+      <span class="fmt">FB2</span>
+      <span class="fmt">TXT</span>
+      <span class="fmt">RTF</span>
+      <span class="fmt">DOCX</span>
+      <span class="fmt">HTML</span>
+      <span class="fmt is-off">DOC</span>
+      <span class="fmt is-off">DJVU</span>
+    </div>
+    <p>
+      A szürke kettőből nem tud szöveget kinyerni. Ezt a listában is látod: a
+      cím előtti kis formátumjelvény <strong>szürke</strong>, ha az a könyv nem
+      fog megszólalni.
+    </p>
+    <p>
+      Az <strong>EPUB</strong> a legjobb: tagolt szöveg, pontos fejezetekkel. A
+      <strong>PDF</strong> a leggyengébb, mert oldalakra van tördelve, és a
+      sortörések meg az oldalszámok néha beleszólnak a felolvasásba. Ez nem
+      hiba, hanem a formátum természete — az alkalmazás az adatlapon meg is
+      mondja, mire számíthatsz.
+    </p>
+  </section>
+
+  <section>
+    <p class="eyebrow">Amire figyelj</p>
+    <h2>Négy dolog, mielőtt belevágsz</h2>
+
+    <div class="notes">
+      <div class="note is-danger">
+        <span class="note-label">A törlés végleges</span>
+        <p>
+          A helyi menü törlés pontja tényleg letörli a fájlt a telefonról, a
+          hozzá tartozó olvasási haladással és jegyzetekkel együtt. Rákérdez, és
+          megmutatja a fájl nevét — de nincs visszavonás és nincs kuka. Először
+          próbáld ki egy fölösleges fájlon.
+        </p>
+      </div>
+
+      <div class="note">
+        <span class="note-label">Felolvasás közben ne mozgasd a fájlt</span>
+        <p>
+          Ha éppen szól egy könyv, azt ne nevezd át és ne helyezd át. Az
+          olvasóban ezért nincs is fájlművelet, de a listából elvileg
+          megtehetnéd.
+        </p>
+      </div>
+
+      <div class="note">
+        <span class="note-label">A katalógus látható fájl</span>
+        <p>
+          Itt lakik, és szándékosan nem az alkalmazás rejtett mappájában — így
+          túléli az újratelepítést, és számítógépen is megnyitható:
+        </p>
+        <code class="path-block">Letöltések/KonyvtarTTS/sajat_katalogus.db</code>
+        <p>
+          Ha törlöd, csak egy új beolvasás kell. Az olvasási haladásod nem
+          ebben van, azt nem viszi magával.
+        </p>
+      </div>
+
+      <div class="note">
+        <span class="note-label">A betűsávnál nem lapoz a pöccintés</span>
+        <p>
+          A kezdőbetűk sávja maga is vízszintesen görgethető, tehát ott az ujjad
+          először azt mozdítja. Ha nézetet akarsz váltani, a lista területén
+          pöccints.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Visszajelzés</p>
+    <h2>Mi az, ami tényleg segít</h2>
+    <p>
+      Ez a változat napi használatban van, de csak egyetlen telefonon. A
+      leghasznosabb az, amit másképp csinálsz, mint amire számítottunk.
+    </p>
+    <ul class="plain">
+      <li>
+        <strong>Ha valami nem szólal meg</strong>: melyik könyv, milyen
+        formátum, mit írt ki az alkalmazás.
+      </li>
+      <li>
+        <strong>Ha rosszul olvas fel</strong>: melyik könyv melyik részénél,
+        és mi a baj — kihagy, kétszer mond valamit, rossz helyen áll meg.
+      </li>
+      <li>
+        <strong>Ha lassú</strong>: hány könyved van, és mi volt lassú — a
+        beolvasás, a görgetés, a keresés vagy a könyv megnyitása.
+      </li>
+      <li>
+        <strong>Ha nem találsz meg valamit</strong> a felületen. Ez a
+        legértékesebb: azt jelenti, hogy rossz helyre tettük.
+      </li>
+      <li>
+        <strong>A telefonod típusa és az Android verziója</strong>, mert eddig
+        egyetlen készüléken futott.
+      </li>
+    </ul>
+    <p>
+      Küldd annak, akitől az alkalmazást kaptad. Képernyőkép sokat segít.
+    </p>
+  </section>
+
+  <footer>
+    <p>
+      <strong>Az adataid a telefonon maradnak.</strong> Az alkalmazásnak nincs
+      internet-engedélye, tehát technikailag képtelen bárhová adatot küldeni:
+      se a könyveidet, se azt, hogy mit olvasol, se semmilyen statisztikát. Nincs
+      fiók, nincs regisztráció, nincs szerver.
+    </p>
+    <p>
+      Vox Libris 4.2.0 · a felület magyar, angol, német, francia, spanyol,
+      portugál, lengyel, cseh, szlovák és orosz nyelven ·
+      <a href="https://github.com/sanyi1963bp/Vox-Libris">forráskód a GitHubon</a>
+    </p>
+  </footer>
+
+</div>
