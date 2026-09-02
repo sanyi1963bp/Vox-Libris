@@ -9,6 +9,33 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.3.1] — 2026-09-02
+
+**Fülhallgató-gombok: négy hiba javítva**
+
+Éjszakai tesztelésen derült ki, hogy a Bluetooth-fülhallgató gombjai csak
+akkor működtek, ha az app a képernyőn volt, és minden más lejátszó ki volt
+lőve. Négy külön hiba játszott össze; mind javítva:
+
+- **Szünetben visszaadtuk a hangfókuszt.** A rendszer a fülhallgató-gombokat
+  ahhoz az apphoz irányítja, aki a fókuszt tartja; aki elengedi, azt kihagyja
+  az osztásból. Ezért indított el a következő gombnyomás egy másik lejátszót.
+  Mostantól a fókusz szünetben is nálunk marad, és csak teljes leállításkor
+  kerül vissza.
+- **Szünetben kiléptünk az előtérből.** Emiatt a rendszer bármikor eldobhatta
+  a szolgáltatást — és vele a MediaSessiont, aminek a gombokat kézbesíteni
+  kellett volna. Innen jött az, hogy „csak akkor működik, ha a képernyőn van".
+  Mostantól betöltött könyv mellett előtérben maradunk; a leállítás az
+  értesítés gombjával történik.
+- **Az átmeneti fókuszvesztést véglegesnek vettük.** Egyetlen értesítéshang
+  megállította a felolvasást, és onnantól magától nem indult újra. Most
+  megkülönböztetjük a kettőt: átmeneti veszteség után **magától folytatja**,
+  amint visszakapja a hangot. Beszédnél a halkítás nem járható út, ezért
+  ilyenkor is szünetelünk — de már visszatérünk belőle.
+- **Hiányzott a `MediaButtonReceiver`.** Ha a szolgáltatás mégis leállt, a
+  gombnyomásnak nem volt hová megérkeznie. Most a rendszer fel tudja
+  ébreszteni vele az appot.
+
 ### [4.3.0] — 2026-09-01
 
 **Műveletmenü a szövegen, és kiejtési szótár**
@@ -362,6 +389,29 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.3.1] — 2026-09-02
+
+**Headset buttons: four bugs fixed**
+
+Night-shift testing revealed that the Bluetooth headset's buttons only worked
+while the app was on screen and every other player had been killed. Four
+separate bugs were compounding; all fixed:
+
+- **We gave up audio focus while paused.** The system routes headset buttons
+  to the app holding focus, and skips whoever lets go — which is why the next
+  button press started a different player. Focus now stays with us while
+  paused, and is only released on a full stop.
+- **We left the foreground while paused.** That let the system drop the
+  service at any time, and with it the MediaSession the buttons needed to
+  reach. Hence "it only works while it's on screen". We now stay in the
+  foreground while a book is loaded; stopping is done from the notification.
+- **We treated transient focus loss as permanent.** A single notification
+  sound stopped narration for good. The two are now told apart: after a
+  transient loss it **resumes by itself** once it gets the audio back.
+  Ducking is not viable for speech, so we still pause — but we come back.
+- **The `MediaButtonReceiver` was missing.** If the service did stop, a button
+  press had nowhere to land. The system can now wake the app with it.
 
 ### [4.3.0] — 2026-09-01
 

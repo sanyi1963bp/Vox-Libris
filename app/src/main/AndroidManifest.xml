@@ -46,7 +46,24 @@
         <service
             android:name=".tts.TtsService"
             android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
+            android:foregroundServiceType="mediaPlayback">
+            <!-- A fülhallgató gombjai ide futnak be, ha a rendszernek kell
+                 kézbesítenie őket (pl. a szolgáltatás épp nem futott) -->
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </service>
+
+        <!-- Enélkül a gombnyomásnak nincs hová megérkeznie, amint a
+             szolgáltatás leállt: a rendszer ezt a vevőt keresi, és ő adja
+             tovább a fenti szolgáltatásnak. -->
+        <receiver
+            android:name="androidx.media.session.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -26,6 +26,7 @@ import androidx.core.app.NotificationCompat
 import hu.konyvtar.tts.MainActivity
 import hu.konyvtar.tts.R
 import hu.konyvtar.tts.data.AppDb
+import androidx.media.session.MediaButtonReceiver
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.data.Pronounce
 import hu.konyvtar.tts.model.ProgressRow
@@ -393,6 +394,20 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 _state.value = _state.value.copy(pitch = v)
                 if (_state.value.playing) restartCurrentUtterance()
             }
+            Intent.ACTION_MEDIA_BUTTON -> {
+                // Idejut a gombnyomás, ha a rendszer kézbesítette (a
+                // MediaButtonReceiveren át). Ilyenkor a szolgáltatás akár
+                // frissen is indulhatott, ezért ELŐBB előtérbe lépünk:
+                // különben az Android öt másodperc után megöl minket.
+                startForeground(NOTIF_ID, buildNotification())
+                MediaButtonReceiver.handleIntent(mediaSession, intent)
+                if (paragraphs.isEmpty()) {
+                    // Nincs betöltött könyv, nincs mit kezdeni a gombbal —
+                    // ne maradjunk itt előtérben a semmiért.
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    stopSelf()
+                }
+            }
             ACTION_PRONOUNCE_CHANGED -> {
                 // A szótár változott: az épp mondott mondatot újramondjuk, hogy
                 // rögtön hallható legyen a javítás.
@@ -545,6 +560,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     private fun resume() {
         if (paragraphs.isEmpty() || !ttsReady) return
         if (!requestFocus()) return
+        pausedByFocusLoss = false
         registerNoisy()
         acquireWakeLock()
         playStartedAt = SystemClock.elapsedRealtime()
@@ -556,15 +572,20 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     private fun pause() {
         if (!_state.value.playing) return
+        pausedByFocusLoss = false
         stopSpeaking()
         accumulateListened()
         _state.value = _state.value.copy(playing = false)
         saveProgress()
         releaseWakeLock()
-        abandonFocus()
         updateMediaSessionState()
         updateNotification()
-        stopForeground(STOP_FOREGROUND_DETACH)
+        // Szünetben SEM adjuk vissza a hangfókuszt, és NEM lépünk ki az
+        // előtérből. Mindkettő azzal járna, hogy a fülhallgató gombjai
+        // elvesznek: a fókuszt elengedő appot a rendszer kihagyja a
+        // gombok osztásából, az előtérből kilépő szolgáltatást pedig
+        // bármikor eldobhatja — és vele a MediaSessiont is.
+        // A teljes leállítás a stopPlayback() dolga; oda tartozik mindkettő.
     }
 
     private fun stopPlayback() {
@@ -778,29 +799,63 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     // ---------------------------------------------------------------- audio fókusz, wake lock
 
+    /**
+     * Azért szünetelünk-e, mert valaki elvette a hangfókuszt (egy értesítés,
+     * egy navigációs utasítás), és nem azért, mert a felhasználó megnyomta a
+     * szünetet. Csak az előbbi esetben folytatjuk magunktól.
+     */
+    private var pausedByFocusLoss = false
+
     private val focusListener = AudioManager.OnAudioFocusChangeListener { change ->
         when (change) {
-            AudioManager.AUDIOFOCUS_LOSS,
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> pause()
+            // Végleges elvesztés: más vette át a lejátszást. Nem térünk vissza
+            // magunktól, mert az belebeszélne a másik appba.
+            AudioManager.AUDIOFOCUS_LOSS -> pause()
+
+            // Átmeneti: egy értesítés hangja, egy navigációs mondat. Beszédnél
+            // a halkítás (ducking) használhatatlan — a felolvasás alá keveredve
+            // érthetetlen lesz —, ezért itt is szünetelünk, de megjegyezzük.
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                if (_state.value.playing) {
+                    pause()
+                    pausedByFocusLoss = true
+                }
+            }
+
+            // Visszakaptuk: ha mi magunktól hallgattunk el, folytatjuk.
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                if (pausedByFocusLoss) {
+                    pausedByFocusLoss = false
+                    resume()
+                }
+            }
         }
     }
 
+    /**
+     * A fókuszkérést egyszer építjük meg, és újrahasználjuk. Minden kéréshez
+     * új objektumot gyártani azt jelentené, hogy a régi regisztráció ottmarad
+     * a rendszerben, és nem tudnánk rendesen visszaadni.
+     */
     private fun requestFocus(): Boolean {
         val am = audioManager ?: return true
-        val attrs = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_MEDIA)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-            .build()
-        val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-            .setAudioAttributes(attrs)
+        val req = focusRequest ?: AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
+            )
             .setOnAudioFocusChangeListener(focusListener)
             .build()
-        focusRequest = req
+            .also { focusRequest = it }
         return am.requestAudioFocus(req) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     }
 
     private fun abandonFocus() {
         val am = audioManager ?: return
+        pausedByFocusLoss = false
         focusRequest?.let { am.abandonAudioFocusRequest(it) }
         focusRequest = null
     }
