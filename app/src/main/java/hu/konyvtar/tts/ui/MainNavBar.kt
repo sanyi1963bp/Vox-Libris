@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import hu.konyvtar.tts.R
 
@@ -81,7 +83,7 @@ fun MainNavBar(nav: MainNav) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(54.dp)
                     .padding(horizontal = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -109,6 +111,14 @@ fun MainNavBar(nav: MainNav) {
     }
 }
 
+/**
+ * Egy gomb: ikon, alatta a felirat.
+ *
+ * Az ikon és a szöveg szándékosan egymás alatt van, nem egymás mellett. A
+ * felület betűmérete a beállításokban 1,6-szeresig nagyítható, és fekvő
+ * elrendezésben a leghosszabb felirat („Könyvtár") ilyenkor kilógna a
+ * harmadnyi helyről. Így viszont a szónak a gomb teljes szélessége jut.
+ */
 @Composable
 private fun RowScope.NavItem(
     icon: ImageVector,
@@ -122,27 +132,29 @@ private fun RowScope.NavItem(
         selected -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
-    Row(
+    Column(
         modifier = Modifier
             .weight(1f)
-            .height(42.dp)
-            .padding(horizontal = 3.dp)
+            .fillMaxHeight()
+            .padding(horizontal = 3.dp, vertical = 3.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(
                 if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
                 else Color.Transparent
             )
             .clickable(enabled = enabled, onClick = onClick),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(19.dp))
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(19.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelSmall,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             color = tint,
-            modifier = Modifier.padding(start = 6.dp)
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 1.dp)
         )
     }
 }
