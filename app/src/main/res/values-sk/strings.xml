@@ -344,4 +344,9 @@
     <string name="set_pron_empty">Zatiaľ žiadne pravidlá.</string>
     <string name="set_pron_add">Pridať pravidlo</string>
     <string name="set_pron_rule">%1$s → %2$s</string>
+
+    <!-- also navigacios sav -->
+    <string name="nav_view_library">Knižnica</string>
+    <string name="nav_view_files">Súbory</string>
+    <string name="nav_view_reader">Čítanie</string>
 </resources>

@@ -342,4 +342,9 @@
     <string name="set_pron_empty">Még nincs szabály.</string>
     <string name="set_pron_add">Szabály hozzáadása</string>
     <string name="set_pron_rule">%1$s → %2$s</string>
+
+    <!-- also navigacios sav -->
+    <string name="nav_view_library">Könyvtár</string>
+    <string name="nav_view_files">Fájlok</string>
+    <string name="nav_view_reader">Olvasó</string>
 </resources>

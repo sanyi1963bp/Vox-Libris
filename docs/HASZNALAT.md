@@ -298,6 +298,33 @@ Alatta a **pozíció-csúszka** százalékkijelzéssel, legalul pedig a léptet�
 Az éppen felolvasott mondat **kiemelve** látszik, a bekezdése halványan
 színezett — így szemmel is követheted.
 
+Amikor az alsó sávból ideugrasz, **az aktuális mondat pár másodpercig
+erősebben világít**, aztán visszahalványul. Így nem kell keresgélned a
+szemeddel, hogy hol tartunk.
+
+### Az alsó navigációs sáv
+
+A képernyő alján **minden nézetben** ott egy sáv három gombbal:
+
+| Gomb | Hová visz |
+|---|---|
+| **Könyvtár** | a lista nyitóképernyő |
+| **Fájlok** | a mappák szerinti böngésző |
+| **Olvasó** | az éppen hallgatott könyv szövege |
+
+Az aktív nézet ki van emelve, tehát nemcsak azt látod, hova mehetsz, hanem
+azt is, hol vagy éppen.
+
+Az **Olvasó** gomb akkor is működik, ha nem szól semmi: ilyenkor a legutóbb
+hallgatott könyvet nyitja meg. Csak addig halvány, amíg egyetlen könyvet sem
+nyitottál meg.
+
+A pöccintés a könyvtár és a fájlböngésző között **változatlanul működik** — a
+sáv gombjai ugyanazt a lapozót mozgatják, tehát a kettő nem üti egymást.
+
+A **mappaválasztóban nincs sáv**, és ez szándékos: az egy befejezendő
+művelet, nem nézet.
+
 ### A szöveg műveletmenüje
 
 A menü legfelül megmutatja, **melyik mondatra** vonatkozik — ugyanaz a darab,

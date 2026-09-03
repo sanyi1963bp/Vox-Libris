@@ -9,6 +9,29 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.4.0] — 2026-09-02
+
+**Állandó navigációs sáv minden nézetben**
+
+- **Alsó sáv mindenhol**, három gombbal: **Könyvtár · Fájlok · Olvasó**.
+  Bármelyik nézetből egy koppintással bármelyik másikra. Az éppen aktív
+  nézet ki van emelve, tehát az is látszik, hol vagy — nem csak az, hova
+  mehetsz.
+- **Az Olvasó gomb akkor is él, ha épp nem szól semmi**: ilyenkor a
+  legutóbb hallgatott könyvre ugrik. Csak akkor halvány, ha még egyetlen
+  könyvet sem nyitottál meg.
+- **Az olvasóba érkezve az aktuális mondat pár másodpercig erősebben
+  világít**, aztán visszahalványul a szokásos kiemelésre. Az alsó sávból
+  bármikor ide lehet ugrani, és ilyenkor az első kérdés mindig ugyanaz:
+  „hol is tartunk?" — ez egy pillantással megválaszolja.
+- A **„most szól" csík** nem külön sáv többé: közvetlenül a navigáció
+  fölött ül, egy egységként. Két külön sáv egymáson elvette volna a helyet
+  a szövegtől, pont az olvasóban.
+- A pöccintés a könyvtár és a fájlböngésző között **változatlanul működik**;
+  a sáv gombjai ugyanarra a lapozóra hatnak, tehát a kettő nem üti egymást.
+- A **mappaválasztóból kimarad** a sáv, és ez szándékos: az egy befejezendő
+  művelet, nem nézet.
+
 ### [4.3.1] — 2026-09-02
 
 **Fülhallgató-gombok: négy hiba javítva**
@@ -389,6 +412,28 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.4.0] — 2026-09-02
+
+**A permanent navigation bar in every view**
+
+- **A bottom bar everywhere**, with three buttons: **Library · Files ·
+  Reading**. One tap from any view to any other. The active view is
+  highlighted, so you can see where you are — not just where you can go.
+- **The Reading button works even when nothing is playing**: it opens the
+  book you listened to last. It only greys out before you have opened any
+  book at all.
+- **On arriving at the reader, the current sentence glows brighter for a
+  few seconds**, then settles back to the usual highlight. You can jump
+  here from anywhere now, and the first question is always the same —
+  "where were we?" — which this answers at a glance.
+- The **now-playing strip** is no longer a separate bar: it sits directly
+  above the navigation, as one unit. Two stacked bars would have taken
+  space away from the text, precisely in the reader.
+- Swiping between the library and the file browser **still works**; the
+  bar's buttons drive the same pager, so the two do not fight.
+- The **folder picker leaves the bar out**, deliberately: that is a task to
+  finish, not a view.
 
 ### [4.3.1] — 2026-09-02
 

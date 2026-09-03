@@ -300,6 +300,33 @@ transport:
 The sentence being spoken is **highlighted**, and its paragraph faintly tinted
 — so you can follow along by eye.
 
+When you jump here from the bottom bar, **the current sentence glows brighter
+for a few seconds** before settling back. You never have to hunt for where you
+are.
+
+### The bottom navigation bar
+
+**Every view** carries a bar at the bottom with three buttons:
+
+| Button | Where it goes |
+|---|---|
+| **Library** | the list start screen |
+| **Files** | the folder browser |
+| **Reading** | the text of the book you are listening to |
+
+The active view is highlighted, so you can see where you are, not just where
+you can go.
+
+The **Reading** button works even when nothing is playing: it opens the book
+you listened to last. It stays greyed out only until you have opened a book
+for the first time.
+
+Swiping between the library and the file browser **still works** — the bar's
+buttons drive the same pager, so the two do not fight.
+
+The **folder picker has no bar**, deliberately: that is a task to finish, not
+a view.
+
 ### The text's action menu
 
 The menu shows **which sentence** it applies to at the top — the same chunk

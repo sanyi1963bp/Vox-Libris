@@ -71,7 +71,8 @@ import hu.konyvtar.tts.R
 @Composable
 fun StatsScreen(
     onBack: () -> Unit,
-    onOpenNowPlaying: () -> Unit,
+    /** A minden nézetben jelen lévő alsó sáv adatai. */
+    mainNav: MainNav,
     onOpenReader: (ProgressRow) -> Unit
 ) {
     val context = LocalContext.current
@@ -200,7 +201,7 @@ fun StatsScreen(
                 }
             )
         },
-        bottomBar = { NowPlayingBar(onOpen = onOpenNowPlaying) }
+        bottomBar = { MainBottomBars(mainNav) }
     ) { padding ->
         Column(
             modifier = Modifier

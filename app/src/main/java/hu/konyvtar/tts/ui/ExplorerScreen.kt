@@ -78,7 +78,8 @@ import hu.konyvtar.tts.R
 fun ExplorerScreen(
     vm: LibraryViewModel,
     browser: BrowserViewModel,
-    onOpenPlayer: () -> Unit,
+    /** A minden nézetben jelen lévő alsó sáv adatai. */
+    mainNav: MainNav,
     onOpenStats: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenReader: (FileRow) -> Unit,
@@ -329,7 +330,7 @@ fun ExplorerScreen(
                 HorizontalDivider()
             }
         },
-        bottomBar = { NowPlayingBar(onOpen = onOpenPlayer) }
+        bottomBar = { MainBottomBars(mainNav) }
     ) { padding ->
         Box(
             modifier = Modifier

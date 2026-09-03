@@ -60,7 +60,8 @@ import hu.konyvtar.tts.vm.LibraryViewModel
 fun ShelfScreen(
     vm: LibraryViewModel,
     onOpenBook: (FileRow) -> Unit,
-    onOpenNowPlaying: () -> Unit,
+    /** A minden nézetben jelen lévő alsó sáv adatai. */
+    mainNav: MainNav,
     onBack: () -> Unit
 ) {
     val ui by vm.ui.collectAsState()
@@ -88,7 +89,7 @@ fun ShelfScreen(
                 },
             )
         },
-        bottomBar = { NowPlayingBar(onOpen = onOpenNowPlaying) }
+        bottomBar = { MainBottomBars(mainNav) }
     ) { padding ->
         Box(
             modifier = Modifier

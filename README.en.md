@@ -35,6 +35,11 @@ title show which view you are on.
 There is also a **shelf** (flipping through covers, from the top bar icon) and
 a **reader screen**, where the text and every control live together.
 
+**Every view carries a bar at the bottom** with three buttons — **Library ·
+Files · Reading** — so it is one tap from anywhere to anywhere. The active
+view is highlighted, so you can see where you are. The now-playing strip sits
+just above it whenever a book is loaded.
+
 ## Gestures at a glance
 
 | Gesture | Library and browser | While reading |

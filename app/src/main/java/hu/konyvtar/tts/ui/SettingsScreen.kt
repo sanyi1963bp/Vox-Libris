@@ -40,7 +40,8 @@ import hu.konyvtar.tts.vm.LibraryViewModel
 fun SettingsScreen(
     vm: LibraryViewModel,
     onBack: () -> Unit,
-    onOpenNowPlaying: () -> Unit,
+    /** A minden nézetben jelen lévő alsó sáv adatai. */
+    mainNav: MainNav,
     onPickRoot: () -> Unit
 ) {
     val context = LocalContext.current
@@ -65,7 +66,7 @@ fun SettingsScreen(
                 },
             )
         },
-        bottomBar = { NowPlayingBar(onOpen = onOpenNowPlaying) }
+        bottomBar = { MainBottomBars(mainNav) }
     ) { padding ->
         Column(
             modifier = Modifier

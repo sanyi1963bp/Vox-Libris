@@ -1,5 +1,7 @@
 package hu.konyvtar.tts.ui
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -70,6 +72,8 @@ fun ReaderText(
     narrated: NarratedSentence,
     /** Bionic Reading: a szavak elejének félkövér szedése. */
     bionic: Boolean,
+    /** Ideérkezéskor az aktuális mondat erősebben világít pár másodpercig. */
+    spotlight: Boolean,
     /** Igaz esetén a hosszú nyomás könyvjelzőz, a menü koppintásra jön. */
     longPressBookmark: Boolean,
     onPlayFrom: (paraIndex: Int, startChar: Int) -> Unit,
@@ -78,8 +82,22 @@ fun ReaderText(
     modifier: Modifier = Modifier
 ) {
     val searchColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.45f)
-    val sentenceColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
-    val paraColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f)
+
+    // Ideérkezéskor erősebb kiemelés, ami lassan visszahalványul. Az ugrás
+    // helyett átmenet: a hirtelen színváltás zavaróbb lenne, mint amennyit
+    // segít.
+    val sentenceAlpha by animateFloatAsState(
+        targetValue = if (spotlight) 0.62f else 0.30f,
+        animationSpec = tween(durationMillis = 700),
+        label = "sentenceHighlight"
+    )
+    val paraAlpha by animateFloatAsState(
+        targetValue = if (spotlight) 0.50f else 0.28f,
+        animationSpec = tween(durationMillis = 700),
+        label = "paragraphHighlight"
+    )
+    val sentenceColor = MaterialTheme.colorScheme.primary.copy(alpha = sentenceAlpha)
+    val paraColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = paraAlpha)
     val matchColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.45f)
 
     Box(modifier = modifier.fillMaxSize()) {

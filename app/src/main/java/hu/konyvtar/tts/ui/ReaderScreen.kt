@@ -3,6 +3,7 @@ package hu.konyvtar.tts.ui
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -67,6 +68,8 @@ fun ReaderScreen(
     path: String,
     title: String,
     author: String,
+    /** A minden nézetben jelen lévő alsó sáv adatai. */
+    mainNav: MainNav,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
@@ -87,6 +90,22 @@ fun ReaderScreen(
 
     /** Melyik bekezdés melyik karakterére nyomtál — ebből lesz a mondat. */
     var actionsAt by remember(path) { mutableStateOf<Pair<Int, Int>?>(null) }
+
+    /**
+     * Ideérkezéskor az aktuális mondat pár másodpercig erősebben világít,
+     * aztán visszahalványul a szokásos kiemelésre.
+     *
+     * Az alsó sávból bármikor ide lehet ugrani, és ilyenkor a legelső kérdés
+     * mindig ugyanaz: „hol is tartunk?". Ez a felvillanás egy pillantással
+     * megválaszolja, anélkül hogy a szemnek végig kellene pásztáznia az
+     * oldalt.
+     */
+    var spotlight by remember(path) { mutableStateOf(true) }
+    LaunchedEffect(path) {
+        spotlight = true
+        delay(2500)
+        spotlight = false
+    }
 
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -289,76 +308,81 @@ fun ReaderScreen(
         },
         bottomBar = {
             val paras = paragraphs
-            ReaderControls(
-                status = ReaderStatus(
-                    paraIndex = listState.firstVisibleItemIndex,
-                    paraCount = paras?.size ?: 0,
-                    chapterIndex = tts.chapterIndex,
-                    chapterCount = tts.totalChapters,
-                    percent = tts.percent,
-                    listenedMs = tts.listenedMs,
-                    narrating = sameBook && tts.totalParas > 0
-                ),
-                playing = playingHere,
-                follow = follow,
-                onToggleFollow = {
-                    follow = !follow
-                    Prefs.setReaderFollow(context, follow)
-                    if (follow && sameBook && tts.totalParas > 0) {
-                        scope.launch { listState.animateScrollToItem(tts.paraIndex) }
-                    }
-                },
-                fontSp = fontSp,
-                onFontChange = {
-                    fontSp = it
-                    Prefs.setReaderFont(context, it)
-                },
-                bionic = bionic,
-                onToggleBionic = {
-                    bionic = !bionic
-                    Prefs.setBionic(context, bionic)
-                },
-                speed = speed,
-                onSpeedChange = { speed = it },
-                onSpeedDone = {
-                    if (sameBook) {
-                        TtsService.send(context, TtsService.ACTION_SET_SPEED) {
-                            putExtra(TtsService.EXTRA_VALUE, speed)
+            // A vezérlősáv alatt ott a navigáció is: az olvasóból is egy
+            // koppintással át lehessen menni a másik két nézetre.
+            Column {
+                ReaderControls(
+                    status = ReaderStatus(
+                        paraIndex = listState.firstVisibleItemIndex,
+                        paraCount = paras?.size ?: 0,
+                        chapterIndex = tts.chapterIndex,
+                        chapterCount = tts.totalChapters,
+                        percent = tts.percent,
+                        listenedMs = tts.listenedMs,
+                        narrating = sameBook && tts.totalParas > 0
+                    ),
+                    playing = playingHere,
+                    follow = follow,
+                    onToggleFollow = {
+                        follow = !follow
+                        Prefs.setReaderFollow(context, follow)
+                        if (follow && sameBook && tts.totalParas > 0) {
+                            scope.launch { listState.animateScrollToItem(tts.paraIndex) }
                         }
-                    } else {
-                        Prefs.setSpeed(context, speed)
-                    }
-                },
-                pitch = pitch,
-                onPitchChange = { pitch = it },
-                onPitchDone = {
-                    if (sameBook) {
-                        TtsService.send(context, TtsService.ACTION_SET_PITCH) {
-                            putExtra(TtsService.EXTRA_VALUE, pitch)
+                    },
+                    fontSp = fontSp,
+                    onFontChange = {
+                        fontSp = it
+                        Prefs.setReaderFont(context, it)
+                    },
+                    bionic = bionic,
+                    onToggleBionic = {
+                        bionic = !bionic
+                        Prefs.setBionic(context, bionic)
+                    },
+                    speed = speed,
+                    onSpeedChange = { speed = it },
+                    onSpeedDone = {
+                        if (sameBook) {
+                            TtsService.send(context, TtsService.ACTION_SET_SPEED) {
+                                putExtra(TtsService.EXTRA_VALUE, speed)
+                            }
+                        } else {
+                            Prefs.setSpeed(context, speed)
                         }
-                    } else {
-                        Prefs.setPitch(context, pitch)
-                    }
-                },
-                sliderFraction = if (paras != null && paras.size > 1) {
-                    sliderDrag ?: (listState.firstVisibleItemIndex.toFloat() / (paras.size - 1))
-                } else null,
-                onSeekDrag = { sliderDrag = it },
-                onSeekDone = {
-                    val f = sliderDrag
-                    val size = paras?.size ?: 0
-                    if (f != null && size > 1) {
-                        scope.launch {
-                            listState.scrollToItem(
-                                (f * (size - 1)).roundToInt().coerceIn(0, size - 1)
-                            )
-                            sliderDrag = null
+                    },
+                    pitch = pitch,
+                    onPitchChange = { pitch = it },
+                    onPitchDone = {
+                        if (sameBook) {
+                            TtsService.send(context, TtsService.ACTION_SET_PITCH) {
+                                putExtra(TtsService.EXTRA_VALUE, pitch)
+                            }
+                        } else {
+                            Prefs.setPitch(context, pitch)
                         }
-                    }
-                },
-                onPlayPause = { playPause() },
-                onNav = { nav(it) }
-            )
+                    },
+                    sliderFraction = if (paras != null && paras.size > 1) {
+                        sliderDrag ?: (listState.firstVisibleItemIndex.toFloat() / (paras.size - 1))
+                    } else null,
+                    onSeekDrag = { sliderDrag = it },
+                    onSeekDone = {
+                        val f = sliderDrag
+                        val size = paras?.size ?: 0
+                        if (f != null && size > 1) {
+                            scope.launch {
+                                listState.scrollToItem(
+                                    (f * (size - 1)).roundToInt().coerceIn(0, size - 1)
+                                )
+                                sliderDrag = null
+                            }
+                        }
+                    },
+                    onPlayPause = { playPause() },
+                    onNav = { nav(it) }
+                )
+                MainNavBar(mainNav)
+            }
         }
     ) { padding ->
         Box(
@@ -400,6 +424,7 @@ fun ReaderScreen(
                         NarratedSentence(tts.paraIndex, tts.sentStart, tts.sentEnd)
                     } else NarratedSentence.NONE,
                     bionic = bionic,
+                    spotlight = spotlight && sameBook,
                     longPressBookmark = longPressBookmark,
                     onPlayFrom = { idx, char -> playFrom(idx, char) },
                     onBookmark = { addBookmarkAt(it) },

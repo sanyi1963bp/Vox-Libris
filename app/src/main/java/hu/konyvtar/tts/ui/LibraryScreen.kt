@@ -98,7 +98,8 @@ import java.util.Locale
 fun LibraryScreen(
     vm: LibraryViewModel,
     onOpenBook: (FileRow) -> Unit,
-    onOpenNowPlaying: () -> Unit,
+    /** A minden nézetben jelen lévő alsó sáv adatai. */
+    mainNav: MainNav,
     onOpenShelf: () -> Unit,
     onOpenFiles: () -> Unit,
     onOpenStats: () -> Unit,
@@ -382,7 +383,7 @@ fun LibraryScreen(
                 HorizontalDivider()
             }
         },
-        bottomBar = { NowPlayingBar(onOpen = onOpenNowPlaying) }
+        bottomBar = { MainBottomBars(mainNav) }
     ) { padding ->
         Box(
             modifier = Modifier

@@ -34,6 +34,11 @@ pötty mutatja, melyiknél állsz.
 Ezen kívül van egy **polc** is (borítókat lapozva, a felső sáv ikonjáról), és
 egy **olvasó képernyő**, ahol a szöveg és minden vezérlő együtt van.
 
+**Minden nézet alján ott egy sáv** három gombbal — **Könyvtár · Fájlok ·
+Olvasó** —, tehát bárhonnan egy koppintással bárhová. Az aktív nézet ki van
+emelve, így az is látszik, hol vagy. Fölötte ül a „most szól" csík, ha van
+betöltött könyv.
+
 ## Gesztusok röviden
 
 | Gesztus | Könyvtárban és böngészőben | Olvasó képernyőn |

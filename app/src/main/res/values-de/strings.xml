@@ -344,4 +344,9 @@
     <string name="set_pron_empty">Noch keine Regeln.</string>
     <string name="set_pron_add">Regel hinzufügen</string>
     <string name="set_pron_rule">%1$s → %2$s</string>
+
+    <!-- also navigacios sav -->
+    <string name="nav_view_library">Bibliothek</string>
+    <string name="nav_view_files">Dateien</string>
+    <string name="nav_view_reader">Lesen</string>
 </resources>
