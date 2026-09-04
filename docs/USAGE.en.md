@@ -396,14 +396,15 @@ Each row shows:
 | Line | What it means |
 |---|---|
 | **The name** and a count | how often it has occurred so far |
-| **A highlighted line** (e.g. *Jóska's brother*) | what the book says about them, verbatim |
+| **An italic sentence** | the sentence where they first appeared |
 | **Often with: …** | who they most often share a paragraph with |
 
-The highlighted line is not invented by the app: it **finds where the book
-says it** and quotes from there. It usually finds it in one of two places — an
-apposition ("Pista, Jóska's brother, came in") or a kinship phrase ("Pista was
-Jóska's brother"). Where the book never says it, the line stays empty and the
-sentence of the first appearance takes its place.
+The **companions line** is the most useful: it does not say "brother", but it
+shows who belongs with whom. Tried on two real novels, this was the fastest
+way to place a character.
+
+What it **cannot** do: it does not tell place names from people, so Warsaw or
+London may end up on the list. Nor does it recognise titles (Sir, Lady).
 
 Worth knowing:
 

@@ -175,17 +175,7 @@ fun CharactersDialog(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-                                // Amit a könyv mond róla — ez a legfontosabb
-                                // sor, ezért kap kiemelt színt. Ha nincs
-                                // ilyen, az első előfordulás mondata áll itt.
-                                val desc = p.descriptor
-                                if (desc != null) {
-                                    Text(
-                                        text = desc,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                } else if (p.firstSentence.isNotBlank()) {
+                                if (p.firstSentence.isNotBlank()) {
                                     Text(
                                         text = p.firstSentence,
                                         style = MaterialTheme.typography.bodySmall,

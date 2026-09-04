@@ -18,23 +18,33 @@ package hu.konyvtar.tts.reader
  * működik bármelyik nyelven.
  *
  * A magyar ragozást tőre vonással kezeljük: a „Gandalfot", „Gandalfnak",
- * „Gandalffal" alakok a „Gandalf" alá kerülnek, mert az a legrövidebb alak,
- * aminek a többi a folytatása. **Ez nem tökéletes** — a fő szereplőknél
- * megbízhatóan működik, ritkább neveknél elmaradhat egy-egy alak.
+ * „Gandalffal" alakok a „Gandalf" alá kerülnek. A megjelenített név a
+ * **leggyakoribb** alak, nem a legrövidebb — különben a „Newcome" 457
+ * említése „New" néven jelenne meg, mert a „New" önállóan is előfordul.
  *
- * ## Ki kicsoda
+ * ## Kikkel szerepel együtt
  *
- * A puszta darabszám keveset mond. Hogy többet mondjunk, **nem értelmezzük a
- * szöveget** — megkeressük, hol mondja ki maga a könyv, és szó szerint
- * idézzük:
+ * Együtt-előfordulás bekezdésenként. Nem mondja meg, hogy „bátyja", de
+ * megmutatja a szereplő körét — szótár nélkül, bármelyik nyelven. Két valódi
+ * regényen mérve ez adta a leghasznosabb jelzést.
  *
- *  - **Közbevetés**: „Pista**, Jóska bátyja,** belépett." A két vessző közötti
- *    rész a regényekben majdnem mindig azonosítás. Ehhez nem kell szótár.
- *  - **Kapcsolatszó**: „Pista **Jóska bátyja** volt." Itt a [Relations]
- *    rokonsági és szereplistája adja a kapaszkodót.
- *  - **Kikkel szerepel együtt**: együtt-előfordulás bekezdésenként. Nem
- *    mondja meg, hogy „bátyja", de megmutatja a szereplő körét — szótár
- *    nélkül, bármelyik nyelven.
+ * ## Amit kipróbáltunk és elvetettünk
+ *
+ * Próbáltuk a szövegből kiolvasni, hogy ki kicsoda — közbevetésből („Pista,
+ * Jóska bátyja, belépett") és rokonsági fordulatból („Pista Jóska bátyja
+ * volt"). **Két valódi regényen mérve megbukott**: huszonöt szereplőből
+ * egyre adott bemutatást, és az is hibás volt.
+ *
+ * Tanulságos, hogy min. A vessző nem csak bemutatást vezet be — megszólítást
+ * is („Pantaleon, hozd be a konyakot"), határozói mellékmondatot is. A
+ * rokonsági fordulatnál pedig a mondatban két név áll, és nyelvtani elemzés
+ * nélkül nem eldönthető, melyikről szól: a listára egyszerre került fel a
+ * „Naum → Bernsztajn fia" és a „Bernsztajn → Naum fia", vagyis az apa-fiú
+ * viszony megfordítva is.
+ *
+ * Egy rossz bemutatás rosszabb, mint a semmilyen: az utóbbi hallgat, az
+ * előbbi félrevezet. Ehhez a feladathoz valódi szövegértés kell — az pedig
+ * nem fér el ebbe a rétegbe.
  */
 object Characters {
 
@@ -47,8 +57,6 @@ object Characters {
         val count: Int,
         val firstParaIndex: Int,
         val firstSentence: String,
-        /** Amit a könyv mond róla, szó szerint — ha talált ilyet. */
-        val descriptor: String? = null,
         /** Kikkel szerepel a leggyakrabban együtt. */
         val companions: List<Companion> = emptyList()
     )
@@ -59,20 +67,11 @@ object Characters {
     /** Ekkora ragot még hozzátoldásnak nézünk, nem külön névnek. */
     private const val MAX_SUFFIX = 4
 
-    /** Ennél hosszabb bemutatás már nem bemutatás, hanem fél bekezdés. */
-    private const val MAX_DESCRIPTOR = 70
-
     /** Ennyi társat mutatunk egy szereplőnél. */
     private const val MAX_COMPANIONS = 3
 
     /** Idézőjelek és gondolatjelek, amiket a mondat elején átugrunk. */
     private const val OPENERS = "\"'„“«»–—-*·•  \t"
-
-    /**
-     * Felsorolás-kötőszavak: ha a közbevetés ezekkel kezdődik, akkor nem
-     * bemutatás, hanem lista — „Pista, és Jóska, meg Elemér".
-     */
-    private val LIST_WORDS = setOf("és", "s", "meg", "vagy", "valamint", "illetve")
 
     /**
      * A szereplők listája, gyakoriság szerint csökkenő sorrendben.
@@ -157,24 +156,16 @@ object Characters {
         val formToName = HashMap<String, String>()
         for ((name, forms) in groups) for (f in forms) formToName[f] = name
 
-        // ---- második menet: ki kicsoda, és kivel van
-        val descriptors = HashMap<String, String>()
+        // ---- második menet: ki kivel szerepel együtt
         val together = HashMap<String, HashMap<String, Int>>()
 
         for (i in 0..end) {
             val text = cut(paragraphs, i, end, toChar)
             if (text.isBlank()) continue
-            val starts = Sentences.starts(text)
 
             val here = LinkedHashSet<String>()
             for ((from, to) in wordRanges(text)) {
-                val name = formToName[text.substring(from, to)] ?: continue
-                here.add(name)
-                if (name !in descriptors) {
-                    describe(text, starts, from, to, name, formToName)?.let {
-                        descriptors[name] = it
-                    }
-                }
+                here.add(formToName[text.substring(from, to)] ?: continue)
             }
             // Egy bekezdésben együtt szereplő nevek: mindenki mindenkivel
             for (a in here) {
@@ -186,11 +177,14 @@ object Characters {
         val people = groups.map { (name, forms) ->
             val first = forms.mapNotNull { firstAt[it] }.minByOrNull { it.first }
             Person(
-                name = name,
+                // A megjelenített név a LEGGYAKORIBB alak, nem a legrövidebb.
+                // Valódi könyvön a rövidebb ölte meg a listát: a „Newcome"
+                // 457 említése „New" néven jelent meg, mert a „New" önállóan
+                // is előfordul („New Street"), és rövidebb lévén ő lett a tő.
+                name = forms.maxByOrNull { upperCount[it] ?: 0 } ?: name,
                 count = forms.sumOf { upperCount[it] ?: 0 },
                 firstParaIndex = first?.first ?: 0,
                 firstSentence = first?.second.orEmpty(),
-                descriptor = descriptors[name],
                 companions = together[name].orEmpty()
                     .entries
                     .sortedByDescending { it.value }
@@ -204,86 +198,6 @@ object Characters {
     }
 
     // ------------------------------------------------------------- bemutatás
-
-    /**
-     * Mit mond a könyv erről a szereplőről ezen a helyen?
-     *
-     * Előbb a közbevetést próbáljuk (az a legjobb minőségű), utána a
-     * kapcsolatszavas fordulatot.
-     */
-    private fun describe(
-        text: String,
-        starts: List<Int>,
-        nameFrom: Int,
-        nameTo: Int,
-        self: String,
-        formToName: Map<String, String>
-    ): String? {
-        val (sFrom, sTo) = sentenceBounds(text, starts, nameFrom)
-        return apposition(text, nameTo, sTo) ?: relationPhrase(text, sFrom, sTo, self, formToName)
-    }
-
-    /**
-     * Közbevetés: a név után közvetlenül vessző, majd a következő vesszőig
-     * tartó rész. „Pista**, Jóska bátyja,** belépett."
-     */
-    internal fun apposition(text: String, nameTo: Int, sentenceEnd: Int): String? {
-        var i = nameTo
-        while (i < sentenceEnd && text[i] == ' ') i++
-        if (i >= sentenceEnd || text[i] != ',') return null
-        var j = i + 1
-        while (j < sentenceEnd && text[j] == ' ') j++
-        var k = j
-        while (k < sentenceEnd && text[k] != ',') k++
-        if (k >= sentenceEnd) return null
-
-        val phrase = text.substring(j, k).trim()
-        if (phrase.length < 4 || phrase.length > MAX_DESCRIPTOR) return null
-
-        val words = phrase.split(' ', '\t').filter { it.isNotBlank() }
-        if (words.isEmpty()) return null
-        if (words[0].lowercase().trimEnd(',', '.') in LIST_WORDS) return null
-
-        // Egyetlen nagybetűs szó nem bemutatás, hanem felsorolás egy tagja:
-        // „Pista, Jóska, és Elemér".
-        val hasRelation = words.any { Relations.isRelationWord(it.trim(',', '.', '!', '?')) }
-        val startsLower = phrase[0].isLowerCase()
-        if (!hasRelation && !(startsLower && words.size >= 2)) return null
-
-        return phrase
-    }
-
-    /**
-     * Kapcsolatszavas fordulat: „Pista **Jóska bátyja** volt."
-     *
-     * A kapcsolatszó előtti legközelebbi nagybetűs szótól a kapcsolatszó
-     * végéig idézünk. Ha a birtokos maga a szereplő volna („Pista bátyja"),
-     * akkor a mondat nem róla szól, hanem a bátyjáról — olyankor kihagyjuk.
-     */
-    internal fun relationPhrase(
-        text: String,
-        sentenceStart: Int,
-        sentenceEnd: Int,
-        self: String,
-        formToName: Map<String, String>
-    ): String? {
-        val words = wordRanges(text).filter { it.first >= sentenceStart && it.second <= sentenceEnd }
-        for ((idx, range) in words.withIndex()) {
-            val (from, to) = range
-            if (!Relations.isRelationWord(text.substring(from, to))) continue
-
-            // A legközelebbi nagybetűs szó visszafelé: ő a birtokos.
-            for (k in idx - 1 downTo 0) {
-                val (pf, pt) = words[k]
-                val owner = text.substring(pf, pt)
-                if (!owner[0].isUpperCase()) continue
-                if (formToName[owner] == self) return null
-                val phrase = text.substring(pf, to).trim()
-                return if (phrase.length in 4..MAX_DESCRIPTOR) phrase else null
-            }
-        }
-        return null
-    }
 
     // ------------------------------------------------------------- segédek
 
@@ -317,6 +231,10 @@ object Characters {
      * tővégi magánhangzót**: Anna → Annát, Kata → Katát, Emese → Emesét.
      * Enélkül minden `-a` és `-e` végű név kimaradna az összevonásból, pedig
      * magyar szövegben abból van a legtöbb.
+     *
+     * Az `o → ó` és `ö → ő` váltás egy valódi könyvön derült ki: a „Szapiro"
+     * és a „Szapirót" külön szereplőként szerepelt a listán, 493 és 44
+     * említéssel — ugyanaz az ember, kettévágva.
      */
     private fun continues(word: String, base: String): Boolean {
         if (word.length <= base.length) return false
@@ -324,7 +242,8 @@ object Characters {
             val a = word[i].lowercaseChar()
             val b = base[i].lowercaseChar()
             if (a == b) continue
-            val lengthened = (b == 'a' && a == 'á') || (b == 'e' && a == 'é')
+            val lengthened = (b == 'a' && a == 'á') || (b == 'e' && a == 'é') ||
+                (b == 'o' && a == 'ó') || (b == 'ö' && a == 'ő')
             if (!lengthened || i != base.length - 1) return false
         }
         return true

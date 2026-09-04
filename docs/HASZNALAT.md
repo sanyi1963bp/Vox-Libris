@@ -395,14 +395,15 @@ Egy sorban ezt látod:
 | Sor | Mit jelent |
 |---|---|
 | **A név** és mellette a darabszám | hányszor fordult elő eddig |
-| **Kiemelt sor** (pl. *Jóska bátyja*) | amit a könyv mond róla, szó szerint |
+| **Dőlt mondat** | az a mondat, ahol először feltűnt |
 | **Gyakran vele: …** | kikkel szerepel a leggyakrabban egy bekezdésben |
 
-A kiemelt sort nem az app találja ki: **megkeresi, hol mondja ki a könyv**, és
-onnan idézi. Két helyen szokta megtalálni — a közbevetésben („Pista, Jóska
-bátyja, belépett") és a rokonsági fordulatban („Pista Jóska bátyja volt").
-Ahol a könyv nem mondja ki, ott üresen marad, és az első előfordulás mondata
-áll a helyén.
+A **társak sora** a leghasznosabb: nem mondja meg, hogy „bátyja", de
+megmutatja, ki kihez tartozik. Két valódi regényen kipróbálva ebből derült ki
+a leggyorsabban, kicsoda valaki.
+
+Amit **nem tud**: a helyneveket nem különbözteti meg a személynevektől, tehát
+Varsó vagy London is felkerülhet a listára. A címeket (Sir, Lady) sem.
 
 Amit tudni érdemes:
 

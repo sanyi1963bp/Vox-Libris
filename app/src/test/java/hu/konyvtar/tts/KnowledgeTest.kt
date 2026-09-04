@@ -2,7 +2,6 @@ package hu.konyvtar.tts
 
 import hu.konyvtar.tts.reader.Characters
 import hu.konyvtar.tts.reader.Recap
-import hu.konyvtar.tts.reader.Relations
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -184,54 +183,33 @@ class CharactersTest {
 }
 
 /**
- * Ki kicsoda: a bemutatás kiolvasása a szövegből.
+ * Amit két valódi regényen mérve tanultunk.
  *
- * A lényeg, hogy NEM értelmezzük a mondatot — megkeressük, hol mondja ki a
- * könyv, és szó szerint idézzük. Ezek a próbák azt őrzik, hogy a jó helyet
- * találjuk meg, és hogy felsorolást ne nézzünk bemutatásnak.
+ * Ezek a próbák konkrét, élő könyvön talált hibákat őriznek — olyanokat,
+ * amiket kitalált próbaszövegen sosem vettünk volna észre.
  */
-class RelationTest {
+class RealBookTest {
 
     @Test
-    fun `a kozbevetest bemutatasnak ismeri fel`() {
-        val paras = listOf(
-            "Pista, Jóska bátyja, belépett az ajtón.",
-            "Pista leült a székre, és nem szólt semmit.",
-            "Jóska később érkezett. Jóska köszönt Pistának."
-        )
-        val people = Characters.find(paras, 2, paras[2].length)
-        val pista = people.first { it.name == "Pista" }
-        assertEquals("Jóska bátyja", pista.descriptor)
+    fun `a hosszu maganhangzos ragot is osszevonja`() {
+        // „Szapiro" és „Szapirót" ugyanaz az ember. Valódi könyvön külön
+        // szereplőként szerepeltek, 493 és 44 említéssel.
+        val groups = Characters.group(listOf("Szapiro", "Szapirót", "Szapiróval"))
+        assertEquals(1, groups.size)
+        assertTrue(groups.containsKey("Szapiro"))
     }
 
     @Test
-    fun `a kapcsolatszavas fordulatot is elkapja`() {
-        val paras = listOf(
-            "Elemér Zoli testvére volt, és nagyon hasonlítottak.",
-            "Elemér reggel indult el. Zoli otthon maradt Elemérrel."
-        )
-        val people = Characters.find(paras, 1, paras[1].length)
-        val elemer = people.first { it.name == "Elemér" }
-        assertEquals("Zoli testvére", elemer.descriptor)
-    }
-
-    @Test
-    fun `a felsorolast nem nezi bemutatasnak`() {
-        // "Pista, Jóska, és Elemér" -- itt a Jóska nem Pista bemutatása.
-        val paras = List(2) { "Pista, Jóska, és Elemér elindultak a piacra Pistával." }
-        val people = Characters.find(paras, 1, paras[1].length)
-        val pista = people.first { it.name == "Pista" }
-        assertNull("felsorolást vett bemutatásnak: ${pista.descriptor}", pista.descriptor)
-    }
-
-    @Test
-    fun `a sajat birtoklast nem veszi bemutatasnak`() {
-        // "Pista bátyja" azt jelenti, hogy valaki MÁS a Pista bátyja --
-        // ez a mondat nem Pistát mutatja be.
-        val paras = List(2) { "Pista bátyja megérkezett, és Pista örült neki." }
-        val people = Characters.find(paras, 1, paras[1].length)
-        val pista = people.first { it.name == "Pista" }
-        assertNull("fordítva értette a birtokost: ${pista.descriptor}", pista.descriptor)
+    fun `a megjelenitett nev a leggyakoribb alak`() {
+        // A „Newcome" 457 említése „New" néven jelent meg, mert a „New"
+        // önállóan is előfordul („New Street"), és rövidebb lévén ő lett a tő.
+        val paras = List(3) {
+            "Newcome ezredes hazatért. A New Street sarkán Newcome megállt, " +
+                "és Newcome-mal együtt mentek tovább."
+        }
+        val names = Characters.find(paras, 2, paras[2].length).map { it.name }
+        assertTrue("a csonkot mutatja név helyett: $names", names.contains("Newcome"))
+        assertFalse("a csonkot mutatja név helyett: $names", names.contains("New"))
     }
 
     @Test
@@ -246,17 +224,5 @@ class RelationTest {
         val gandalf = people.first { it.name == "Gandalf" }
         assertEquals("Frodó", gandalf.companions.first().name)
         assertEquals(2, gandalf.companions.first().count)
-    }
-
-    @Test
-    fun `a fiatal szo nem kapcsolatszo`() {
-        // A "fia" tő beleloghatna a "fiatal" szóba; a ragok listája véd.
-        assertTrue(Relations.isRelationWord("fia"))
-        assertTrue(Relations.isRelationWord("fiát"))
-        assertTrue(Relations.isRelationWord("bátyjának"))
-        assertTrue(Relations.isRelationWord("lányát"))
-        assertFalse(Relations.isRelationWord("fiatal"))
-        assertFalse(Relations.isRelationWord("lányok"))
-        assertFalse(Relations.isRelationWord("asztal"))
     }
 }

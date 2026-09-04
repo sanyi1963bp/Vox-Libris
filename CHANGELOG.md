@@ -11,38 +11,46 @@ követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint meg
 
 ### [4.6.0] — 2026-09-04
 
-**Ki kicsoda: a szereplőlista most már meg is mondja**
+**A szereplőlista két valódi regényen mérve**
 
-Eddig csak annyit tudott, hogy hányszor fordult elő a név. Most megpróbálja
-megmondani, **kicsoda** — és nem úgy, hogy értelmezi a szöveget, hanem úgy,
-hogy megkeresi, hol mondja ki a könyv, és **szó szerint idézi**.
+Megpróbáltuk kiolvasni azt is, hogy **ki kicsoda** — a szövegben álló
+közbevetésekből és rokonsági fordulatokból.
 
-- **Közbevetés.** „Pista**, Jóska bátyja,** belépett." A két vessző közötti
-  rész a regényekben majdnem mindig azonosítás. Ehhez nem kell szótár, és
-  bármelyik nyelven működik.
-- **Kapcsolatszavas fordulat.** „Pista **Jóska bátyja** volt." Ehhez egy
-  rokonsági és szereplista adja a kapaszkodót (apja, bátyja, felesége,
-  mestere, kapitánya…). Ez az egyetlen szólista a funkcióban, és tudatosan
-  az: a rokonsági szavak halmaza zárt és állandó.
-- **Kikkel szerepel együtt.** Egyszerű együtt-előfordulás bekezdésenként.
-  Nem mondja meg, hogy „bátyja", de megmutatja a szereplő körét — szótár
-  nélkül, bármelyik nyelven.
+**Ez megbukott, és ezért nem került bele.** Két valódi regényen mérve — egy
+mai fordításon és egy Thackerayen — huszonöt szereplőből egyre adott
+bemutatást, és az is hibás volt. Tanulságos, min:
 
-Amire külön ügyeltünk:
+- A vessző nem csak bemutatást vezet be. Megszólítást is („Pantaleon, hozd
+  be a konyakot") és határozói mellékmondatot is.
+- A rokonsági fordulatnál a mondatban két név áll, és nyelvtani elemzés
+  nélkül nem eldönthető, melyikről szól: a listára egyszerre került fel a
+  „Naum → Bernsztajn fia" és a „Bernsztajn → Naum fia" — az apa-fiú viszony
+  **megfordítva is**.
+- A „Fiat" autómárka rokonsági szónak látszott, mert a `fia` tő és a `t` rag
+  ráillik.
 
-- **A felsorolás nem bemutatás.** A „Pista, Jóska, és Elemér" mondatban a
-  Jóska nem Pista azonosítása; az ilyet kiszűrjük.
-- **A birtokos iránya számít.** A „Pista bátyja megérkezett" mondat nem
-  Pistáról szól, hanem a bátyjáról — ilyenkor nem használjuk bemutatásnak.
-- **A rag megkülönböztet.** A `fia` tő beleérne a „fiatal" szóba; a magyar
-  esetragok listája dönti el, hogy `fia + t` (fiát) kapcsolatszó, a
-  `fia + tal` viszont nem.
+Egy rossz bemutatás rosszabb, mint a semmilyen: az utóbbi hallgat, az előbbi
+félrevezet. Ehhez a feladathoz valódi szövegértés kell.
 
-6 új egységteszt, összesen 103 fut.
+**Ami viszont bekerült, mert a mérés szerint működik:**
 
-Ez továbbra is **helyben, mesterséges intelligencia és internet nélkül**
-működik — és nem tökéletes: ahol a könyv nem mondja ki, ott az app sem tudja
-kitalálni.
+- **Kikkel szerepel együtt.** Minden szereplőnél ott a három leggyakoribb
+  társa. Ez adta a leghasznosabb jelzést: a próbakönyvben rögtön látszott,
+  ki tartozik kihez.
+- **A megjelenített név a leggyakoribb alak, nem a legrövidebb.** Enélkül a
+  „Newcome" 457 említése **„New" néven** jelent meg, mert a „New" önállóan is
+  előfordul („New Street"), és rövidebb lévén ő lett a tő. Ugyanígy „Eth" az
+  Ethel és „Hob" a Hobson helyett.
+- **A hosszú magánhangzós rag is összevonódik.** A „Szapiro" és a „Szapirót"
+  külön szereplőként szerepelt, 493 és 44 említéssel — ugyanaz az ember,
+  kettévágva.
+
+A névfelismerés és a sebesség jónak bizonyult: egy 615 ezer karakteres
+regényen 150 ms, és a lista élén tényleg a főszereplők álltak.
+
+Ami továbbra sem megy: a **helyneveket** nem különbözteti meg a
+személynevektől (Varsó, London, Palesztina a listán van), és a **címeket**
+sem (Sir, Lady, Lord).
 
 ### [4.5.0] — 2026-09-04
 
@@ -487,37 +495,46 @@ and [Semantic Versioning](https://semver.org/).
 
 ### [4.6.0] — 2026-09-04
 
-**Who's who: the character list now says so**
+**The character list, measured on two real novels**
 
-Until now it only knew how often a name occurred. It now tries to say **who
-they are** — not by interpreting the text, but by finding where the book says
-it and **quoting verbatim**.
+We tried to read out **who is who** as well, from appositions and kinship
+phrasing in the text.
 
-- **Appositions.** "Pista**, Jóska's older brother,** came through the door."
-  The part between the two commas is almost always an identification in
-  novels. No dictionary needed, works in any language.
-- **Kinship phrasing.** "Pista **was Jóska's brother**." A list of kinship and
-  role words provides the handle here (father, brother, wife, master,
-  captain…). It is the only word list in the feature, and deliberately so:
-  the set of kinship words is closed and stable.
-- **Who they appear with.** Simple per-paragraph co-occurrence. It does not
-  say "brother", but it shows the character's circle — dictionary-free, in
-  any language.
+**It failed, and so it is not in here.** Measured on two real novels — a
+contemporary translation and a Thackeray — it produced an introduction for
+one character out of twenty-five, and that one was wrong. What it failed on
+is instructive:
 
-What we took care over:
+- A comma does not only introduce an apposition. It also introduces direct
+  address ("Pantaleon, fetch the cognac") and adverbial clauses.
+- With kinship phrasing there are two names in the sentence, and without real
+  parsing there is no telling which one it is about: the list ended up with
+  both "Naum → Bernsztajn's son" and "Bernsztajn → Naum's son" — the
+  father-son relation **reversed as well**.
+- The car brand "Fiat" looked like a kinship word, because the Hungarian stem
+  `fia` (son) plus the suffix `t` matches it.
 
-- **A list is not an introduction.** In "Pista, Jóska, and Elemér", Jóska is
-  not an identification of Pista; such cases are filtered out.
-- **The direction of possession matters.** "Pista's brother arrived" is not
-  about Pista but about the brother — we do not use it as an introduction.
-- **Suffixes discriminate.** The Hungarian stem `fia` (son) would reach into
-  "fiatal" (young); a list of case suffixes decides that `fia + t` is a
-  kinship word while `fia + tal` is not.
+A wrong introduction is worse than none: the latter stays silent, the former
+misleads. This task needs real language understanding.
 
-6 new unit tests, 103 in total.
+**What did go in, because measurement says it works:**
 
-This still runs **locally, with no AI and no internet** — and it is not
-perfect: where the book does not say it, the app cannot invent it.
+- **Who they appear with.** Each character now shows their three most
+  frequent companions. This gave the most useful signal by far: in the test
+  book you could see at once who belongs with whom.
+- **The displayed name is the most frequent form, not the shortest.** Without
+  this, the 457 mentions of "Newcome" showed up **as "New"**, because "New"
+  also occurs on its own ("New Street") and being shorter it became the stem.
+  Likewise "Eth" for Ethel and "Hob" for Hobson.
+- **Long-vowel suffixes now fold too.** "Szapiro" and "Szapirót" appeared as
+  separate characters with 493 and 44 mentions — the same man, cut in two.
+
+Name detection and speed proved good: 150 ms on a 615,000-character novel,
+and the top of the list really was the main cast.
+
+What still does not work: **place names** are not told apart from people
+(Warsaw, London, Palestine are on the list), nor are **titles** (Sir, Lady,
+Lord).
 
 ### [4.5.0] — 2026-09-04
 
