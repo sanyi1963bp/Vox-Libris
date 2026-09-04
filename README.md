@@ -116,7 +116,12 @@ koppintásra jön elő.
   eredeti sorrendben. Nem összefoglaló: a könyv saját mondatai. Aki a szemével
   olvas, visszalapoz egy oldalt; aki hallgat, nem tud.
 - **Szereplők.** Kik tűntek fel eddig, gyakoriság szerint, mindegyikhez az
-  első előfordulás mondatával. Egy névre koppintva odaugrik.
+  első előfordulás mondatával és a leggyakoribb társaival. Egy névre koppintva
+  odaugrik.
+  - **Részletes leírások**, ha a könyv mellett van egy `.vox.json` fájl. Ezt a
+    **saját géped készíti**, egy ott futó nyelvi modellel
+    (`tools/vox_characters.py`) — az app csak beolvassa, tehát **továbbra sem
+    megy internetre**. Lásd lentebb.
   - Mindkettő **csak az eddig olvasott részt nézi**, tehát spoilermentes, és
     mindkettő **helyben fut, mesterséges intelligencia nélkül**. A mondatokat
     TF-IDF-fel pontozzuk, a korpusz maga a könyv olvasott része — így nincs
@@ -177,6 +182,41 @@ fülhallgatók tudnivalói itt vannak leírva:
 **[docs/TELEPITES.md](docs/TELEPITES.md)**
 
 Részletes leírás minden képernyőről: [docs/HASZNALAT.md](docs/HASZNALAT.md)
+
+## Szereplőleírások a géped segítségével
+
+Az app nem tudja megmondani, ki kicsoda egy regényben — ahhoz valódi
+szövegértés kell, és ezt [megmértük](CHANGELOG.md): szabályokkal huszonöt
+szereplőből egyre ment, hibásan.
+
+Ehelyett a nehéz munkát **a számítógéped végzi**, és az eredmény egy kis fájl
+a könyv mellett. Az alkalmazás csak beolvassa, tehát **változatlanul nincs
+internet-engedélye**.
+
+Kell hozzá [Ollama](https://ollama.com) és egy letöltött modell:
+
+```bash
+ollama pull qwen2.5:14b
+```
+
+Aztán egy könyvre vagy egy egész mappára:
+
+```bash
+python tools/vox_characters.py "D:/konyvek/A kiraly.epub"
+```
+
+```bash
+python tools/vox_characters.py "D:/konyvek" --all
+```
+
+Az eszköz adagokban végigolvastatja a könyvet a modellel, összevonja a
+jegyzeteket, és `A kiraly.vox.json` néven a könyv mellé írja. Ezt a fájlt a
+könyvvel együtt másold a telefonra.
+
+A formátumot a [tools/pelda.vox.json](tools/pelda.vox.json) mutatja. A leírás
+a **teljes könyvet** ismeri, tehát elárulhat későbbi fejleményeket is.
+
+Támogatott bemenet: `epub`, `txt`, `html`.
 
 ## Építés
 

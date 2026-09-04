@@ -9,6 +9,43 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.7.0] — 2026-09-05
+
+**Szereplőleírások a könyv mellől — a PC-n készítve**
+
+A 4.6.0-ban kiderült, hogy a „ki kicsoda" kiolvasása szabályokkal nem megy:
+ahhoz valódi szövegértés kell. Ez a kiadás **megkerüli a problémát anélkül,
+hogy az app garanciáit feladná**.
+
+A nehéz munka a **számítógépen** történik, egy ott futó nyelvi modellel. Az
+eredmény egy kis JSON-fájl a könyv mellett, amit az app beolvas:
+
+```
+A király.epub
+A király.vox.json
+```
+
+Az alkalmazásnak **továbbra sincs internet-engedélye**, nincs API-kulcsa, és
+nem hagy el semmi a telefont. Ha nincs ilyen fájl, minden marad a régiben.
+
+- A szereplőlistán a darabszám alatt a **leírás** jelenik meg, és a teljes
+  név („Jakub Szapiro") a szövegből felismert töredék helyett.
+- A társak sora és az első előfordulás mondata továbbra is megvan.
+- A fájl a könyv mellett fekszik, tehát **vele együtt másolható**, és túléli
+  az app újratelepítését.
+
+Az eszköz: **`tools/vox_characters.py`** — Python és Ollama kell hozzá,
+mindkettő helyben fut.
+
+```
+python vox_characters.py "D:/konyvek/A kiraly.epub"
+python vox_characters.py "D:/konyvek" --all
+```
+
+A beolvasás szándékosan elnéző: hiányzó mezőt, rossz típust, csonka listát
+kihagy. Egy félresikerült kísérőfájl miatt nem eshet szét a szereplőlista.
+12 új egységteszt őrzi ezt, összesen 112 fut.
+
 ### [4.6.0] — 2026-09-04
 
 **A szereplőlista két valódi regényen mérve**
@@ -492,6 +529,43 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.7.0] — 2026-09-05
+
+**Character descriptions from beside the book — made on the PC**
+
+4.6.0 established that reading out "who is who" with rules does not work: it
+needs real language understanding. This release **sidesteps the problem
+without giving up the app's guarantees**.
+
+The heavy work happens on the **computer**, with a language model running
+there. The result is a small JSON file beside the book, which the app reads:
+
+```
+A király.epub
+A király.vox.json
+```
+
+The app still **has no internet permission**, no API key, and nothing leaves
+the phone. With no such file, everything stays as it was.
+
+- The character list shows the **description** under the count, and the full
+  name ("Jakub Szapiro") instead of the fragment found in the text.
+- The companions line and the first-appearance sentence remain.
+- The file sits beside the book, so it **travels with it** and survives
+  reinstalling the app.
+
+The tool: **`tools/vox_characters.py`** — needs Python and Ollama, both
+running locally.
+
+```
+python vox_characters.py "D:/books/A kiraly.epub"
+python vox_characters.py "D:/books" --all
+```
+
+Reading it is deliberately forgiving: missing fields, wrong types and
+truncated lists are skipped. A botched sidecar file must not break the
+character list. 12 new unit tests cover this, 112 in total.
 
 ### [4.6.0] — 2026-09-04
 

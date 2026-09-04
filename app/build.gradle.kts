@@ -18,8 +18,8 @@ android {
         applicationId = "hu.konyvtar.tts"
         minSdk = 30
         targetSdk = 35
-        versionCode = 14
-        versionName = "4.6.0"
+        versionCode = 15
+        versionName = "4.7.0"
     }
 
     buildTypes {
@@ -76,4 +76,6 @@ dependencies {
     // megvalósítása a JVM-en; Androidon a rendszer sajátja használódik.
     testImplementation("junit:junit:4.13.2")
     testImplementation("net.sf.kxml:kxml2:2.3.0")
+    // Az org.json az Androidban benne van, a JVM-tesztekben nincs.
+    testImplementation("org.json:json:20240303")
 }

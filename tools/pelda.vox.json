@@ -1,0 +1,23 @@
+{
+ "format": 1,
+ "book": "Példa",
+ "generated": "2026-09-05",
+ "model": "qwen2.5:14b",
+ "spoilers": true,
+ "characters": [
+  {
+   "name": "Gandalf",
+   "aliases": ["Szürke Gandalf", "Mithrandir"],
+   "description": "Vándorló mágus, aki összefogja a szövetséget. Bilbó régi barátja, és ő indítja útnak Frodót."
+  },
+  {
+   "name": "Frodó Zsákos",
+   "aliases": ["Frodó"],
+   "description": "Hobbit, Bilbó örökbefogadott unokaöccse. Rá hárul a Gyűrű elpusztítása."
+  },
+  {
+   "name": "Szarumán",
+   "description": "A Fehér Tanács feje, aki a történet során átáll az ellenséghez."
+  }
+ ]
+}

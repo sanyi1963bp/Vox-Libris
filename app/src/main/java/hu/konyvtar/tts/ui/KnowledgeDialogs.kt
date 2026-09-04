@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import hu.konyvtar.tts.R
+import hu.konyvtar.tts.data.CharacterNotes
 import hu.konyvtar.tts.reader.Characters
 import hu.konyvtar.tts.reader.Recap
 import kotlinx.coroutines.Dispatchers
@@ -115,12 +116,19 @@ fun RecapDialog(
 @Composable
 fun CharactersDialog(
     paragraphs: List<String>,
+    /** A könyv fájlja — a mellette fekvő leírásokat is beolvassuk. */
+    bookPath: String,
     toPara: Int,
     toChar: Int,
     onGoTo: (paraIndex: Int) -> Unit,
     onDismiss: () -> Unit
 ) {
     var people by remember { mutableStateOf<List<Characters.Person>?>(null) }
+    var notes by remember(bookPath) { mutableStateOf<Map<String, CharacterNotes.Note>>(emptyMap()) }
+
+    LaunchedEffect(bookPath) {
+        notes = withContext(Dispatchers.IO) { CharacterNotes.load(bookPath) }
+    }
 
     LaunchedEffect(toPara, toChar) {
         people = withContext(Dispatchers.Default) {
@@ -164,8 +172,12 @@ fun CharactersDialog(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    val note = CharacterNotes.lookup(notes, p.name)
                                     Text(
-                                        text = p.name,
+                                        // A kísérőfájl teljes nevet ismer
+                                        // („Jakub Szapiro"), a szöveg csak
+                                        // egy darabját — ha van, azt mutatjuk.
+                                        text = note?.name ?: p.name,
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -175,7 +187,14 @@ fun CharactersDialog(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-                                if (p.firstSentence.isNotBlank()) {
+                                val note = CharacterNotes.lookup(notes, p.name)
+                                if (note != null) {
+                                    Text(
+                                        text = note.description,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                } else if (p.firstSentence.isNotBlank()) {
                                     Text(
                                         text = p.firstSentence,
                                         style = MaterialTheme.typography.bodySmall,

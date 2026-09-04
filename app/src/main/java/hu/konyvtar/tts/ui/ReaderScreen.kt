@@ -474,6 +474,7 @@ fun ReaderScreen(
     if (charactersOpen && paras != null) {
         CharactersDialog(
             paragraphs = paras,
+            bookPath = path,
             toPara = knowPara,
             toChar = knowChar,
             onGoTo = { idx ->

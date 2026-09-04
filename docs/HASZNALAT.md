@@ -405,6 +405,26 @@ a leggyorsabban, kicsoda valaki.
 Amit **nem tud**: a helyneveket nem különbözteti meg a személynevektől, tehát
 Varsó vagy London is felkerülhet a listára. A címeket (Sir, Lady) sem.
 
+### Részletes szereplőleírások
+
+Ha a könyv mellett van egy `.vox.json` fájl, akkor a listán a darabszám alatt
+**valódi leírás** jelenik meg, és a teljes név is („Jakub Szapiro" a szövegből
+felismert „Szapiro" helyett).
+
+Ezt a fájlt **a számítógépeden készíted**, egy ott futó nyelvi modellel:
+
+```
+A király.epub
+A király.vox.json
+```
+
+Az app csak beolvassa. **Nem megy internetre**, nincs hozzá kulcs, és nem hagy
+el semmi a telefont. A fájl a könyv mellett fekszik, tehát vele együtt
+másolható, és túléli az app újratelepítését.
+
+Az elkészítéséhez az eszköz a `tools/vox_characters.py`; a használatát a
+projekt README-je írja le. Ha nincs ilyen fájl, minden marad a régiben.
+
 Amit tudni érdemes:
 
 - **Egyik sem néz túl azon, ameddig eljutottál.** Nem azt mutatja, mi lesz,
