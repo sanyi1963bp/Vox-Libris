@@ -349,4 +349,14 @@
     <string name="nav_view_library">Knižnica</string>
     <string name="nav_view_files">Súbory</string>
     <string name="nav_view_reader">Čítanie</string>
+
+    <!-- 4. fazis: hol voltam, szereplok -->
+    <string name="recap_title">Kde som skončil?</string>
+    <string name="recap_empty">Zatiaľ niet čo pripomínať — túto knihu si práve začal.</string>
+    <string name="recap_hint">Vlastné vety knihy z toho, čo si už počul. Nikdy z ďalšej časti.</string>
+    <string name="chars_title">Postavy</string>
+    <string name="chars_empty">V prečítanej časti sa nenašli žiadne postavy.</string>
+    <string name="chars_hint">Len z prečítanej časti — ťuknutím na meno prejdeš na jeho prvý výskyt.</string>
+    <string name="chars_count">%1$d zmienok</string>
+    <string name="knowledge_working">Počíta sa…</string>
 </resources>

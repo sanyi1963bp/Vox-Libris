@@ -349,4 +349,14 @@
     <string name="nav_view_library">Bibliothek</string>
     <string name="nav_view_files">Dateien</string>
     <string name="nav_view_reader">Lesen</string>
+
+    <!-- 4. fazis: hol voltam, szereplok -->
+    <string name="recap_title">Wo war ich?</string>
+    <string name="recap_empty">Noch nichts zu erinnern — du hast dieses Buch gerade erst begonnen.</string>
+    <string name="recap_hint">Die eigenen Sätze des Buches aus dem, was du gehört hast. Nie von weiter vorn.</string>
+    <string name="chars_title">Figuren</string>
+    <string name="chars_empty">In dem bisher Gelesenen wurden keine Figuren gefunden.</string>
+    <string name="chars_hint">Nur aus dem bisher Gelesenen — tippe auf einen Namen, um zum ersten Auftreten zu springen.</string>
+    <string name="chars_count">%1$d Erwähnungen</string>
+    <string name="knowledge_working">Wird berechnet…</string>
 </resources>

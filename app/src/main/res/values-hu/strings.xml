@@ -347,4 +347,14 @@
     <string name="nav_view_library">Könyvtár</string>
     <string name="nav_view_files">Fájlok</string>
     <string name="nav_view_reader">Olvasó</string>
+
+    <!-- 4. fazis: hol voltam, szereplok -->
+    <string name="recap_title">Hol voltam?</string>
+    <string name="recap_empty">Még nincs mit felidézni — most kezdted ezt a könyvet.</string>
+    <string name="recap_hint">A könyv saját mondatai abból, amit már hallottál. Sosem előrébbről.</string>
+    <string name="chars_title">Szereplők</string>
+    <string name="chars_empty">Az eddig olvasott részben nem találtam szereplőket.</string>
+    <string name="chars_hint">Csak az eddig olvasott részből — egy névre koppintva odaugrik az első előfordulásához.</string>
+    <string name="chars_count">%1$d említés</string>
+    <string name="knowledge_working">Számolás…</string>
 </resources>

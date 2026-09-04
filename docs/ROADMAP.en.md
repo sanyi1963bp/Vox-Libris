@@ -188,18 +188,55 @@ operations.
 **24 new unit tests** cover this phase (pronunciation, sentence bounds, word
 picking, bionic weighting), bringing the total to 79.
 
-## Phase 4 — Knowing the book
+## Phase 4 — Knowing the book ✅ *(done)*
 
-- **Character index**: collects capitalised names from the part you have read
-  that do not only appear at sentence starts (built on the existing sentence
-  boundary detector). Ranked by frequency, each with the sentence of its first
-  appearance. Spoiler-free by construction, since only the read part is
-  scanned. Hungarian inflection is handled by stem folding — imperfect, but it
-  works for the main characters.
-- **"Where was I?"**: sentences of the last chapter are scored by the
-  chapter's most frequent content words, and the 3–4 most characteristic ones
-  are shown in their original order. It does not retell the story, it **puts
-  you back into the text** — and needs no AI at all.
+Both live in the reader's ⋮ menu, and **neither ever looks past your reading
+position**. That is not fussiness: the rest of the chapter is a spoiler, and a
+spoiler cannot be undone.
+
+- **"Where was I?"** — the **four most characteristic sentences** of the part
+  you last listened to, in their original order. Not a summary and not a
+  retelling: the book's own sentences. Someone reading with their eyes flips
+  back a page; someone listening cannot — this replaces that.
+- **Character index** — who has appeared so far, ranked by frequency, each
+  with the sentence of its first appearance. Tap a name to jump to that
+  paragraph.
+
+### How it works without a dictionary
+
+Sentences are scored with **classic TF-IDF**, where the "corpus" is the text
+you have read so far. The point of the formula is that anything appearing in
+*every* paragraph gets exactly zero weight: `ln(n/n) = 0`. Articles and
+conjunctions therefore fall out by themselves — **there is no built-in
+stopword list to maintain across ten languages**, and it works on a book in
+any language.
+
+Name detection is dictionary-free in the same way: what is capitalised and
+does **not only** appear at the start of a sentence is a name. Ordinary words
+are capitalised at sentence starts too, but not mid-sentence.
+
+### Where we departed from the plan, and why
+
+- **The recap is bound to the position, not the chapter.** The plan spoke of
+  "the last chapter", but that had two problems: if you stopped mid-chapter,
+  the rest of the chapter is a **spoiler**; and in PDF or TXT the chapter
+  boundary is unreliable. So the window is simply the 40 paragraphs before
+  your position at most — always meaningful, in every format.
+- **The threshold split into two questions.** Whether something *is a name*
+  and whether it *matters* are different things: mid-sentence capitalisation
+  proves the first, the count proves the second. Demanding two mid-sentence
+  occurrences would have dropped characters who mostly start sentences.
+
+### What writing the tests uncovered
+
+Hungarian suffixation **lengthens the stem-final vowel**: `Anna → Annát`,
+`Kata → Katát`, `Emese → Emesét`. So "Annát" does **not** start with "Anna" —
+it starts with "Anná". A plain prefix match would therefore have missed every
+name ending in `-a` or `-e`, which in Hungarian is most of them. Stem matching
+now allows `a→á` and `e→é` on the stem's last letter.
+
+**18 new unit tests** cover this phase, including ones written specifically to
+keep either feature from ever looking past the reading position. 97 in total.
 
 ## Phase 5 — Statistics
 

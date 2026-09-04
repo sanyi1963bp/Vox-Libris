@@ -375,6 +375,34 @@ Worth knowing:
 - The rules can be reviewed, deleted and added under *Settings →
   Pronunciation dictionary*.
 
+### "Where was I?" and the characters
+
+Both live in the top bar's **⋮ menu**.
+
+**"Where was I?"** — you come back to the book and have no idea where you
+stopped. This shows the **four most characteristic sentences** of the part you
+last listened to, in their original order.
+
+It is not a summary and does not retell the story — these are the book's own
+sentences. Someone reading with their eyes flips back a page; someone
+listening cannot, and this replaces that.
+
+**Characters** — a name comes up and you cannot place it. This collects the
+characters by frequency, each with the sentence where they first appeared. Tap
+a name to jump to that paragraph.
+
+Worth knowing:
+
+- **Neither looks past where you have got to.** They show what happened, never
+  what is coming — you cannot be spoiled by them.
+- **No AI is involved**, and nothing goes online. Sentences are scored by word
+  frequency: what appears in every paragraph (articles, conjunctions) counts
+  for nothing, what is frequent in *this* stretch counts for a lot.
+- Inflected forms are folded together: "Gandalfot" and "Gandalfnak" land under
+  "Gandalf". **It is not perfect** — reliable for the main characters, and it
+  may miss the odd form of a rarer name.
+- Early in a book there is nothing to work from yet, and they say so.
+
 ### Bionic Reading
 
 The first ~40% of every word is set in bold, so the eye can catch on word

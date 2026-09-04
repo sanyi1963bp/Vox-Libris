@@ -189,17 +189,56 @@ pontja az **adatlap**, utána a jegyzet és a fájlműveletek.
 A fázisra **24 új egységteszt** ügyel (kiejtés, mondathatárok,
 szóválasztás, bionic szedés), így összesen 79 teszt fut.
 
-## 4. fázis — Tudás a könyvről
+## 4. fázis — Tudás a könyvről ✅ *(kész)*
 
-- **Karakternévtár**: az addig olvasott részből kigyűjti a nagybetűs neveket,
-  amelyek nem csak mondat elején állnak (a meglévő mondathatár-felismerőre
-  épül). Gyakoriság szerint rendez, mindegyikhez az első előfordulás mondata.
-  Spoilermentes, mert csak az olvasott részt nézi. A magyar ragozást tőre
-  vonással kezeljük — ez nem tökéletes, de a fő szereplőknél működik.
-- **„Hol voltam?"**: a legutóbbi fejezet mondatait pontozzuk a fejezet
-  leggyakoribb tartalmi szavai alapján, és a 3–4 legjellemzőbbet mutatjuk
-  eredeti sorrendben. Nem a történetet meséli el, hanem **visszahelyez a
-  szövegbe** — és ehhez nem kell mesterséges intelligencia.
+Mindkét funkció az olvasó ⋮ menüjéből érhető el, és **egyik sem néz túl az
+olvasási pozíciódon**. Ez nem óvatoskodás: a fejezet hátralévő része spoiler,
+és a spoilert nem lehet visszacsinálni.
+
+- **„Hol voltam?"** — a legutóbb hallgatott rész **négy legjellemzőbb
+  mondata**, eredeti sorrendben. Nem összefoglaló és nem meséli el a
+  történetet: a könyv saját mondatai. Aki a szemével olvas, visszalapoz egy
+  oldalt; aki hallgat, nem tud — ezt pótolja.
+- **Karakternévtár** — kik szerepelnek eddig, gyakoriság szerint,
+  mindegyikhez az első előfordulás mondatával. Egy névre koppintva odaugrik
+  ahhoz a bekezdéshez.
+
+### Hogyan működik, szótár nélkül
+
+A mondatok pontozása **klasszikus TF-IDF**, ahol a „korpusz" maga az eddig
+olvasott szöveg. A képlet lényege, hogy ami *minden* bekezdésben ott van, az
+pontosan nulla súlyt kap: `ln(n/n) = 0`. A névelő és a kötőszó így magától
+esik ki — **nincs beépített kötőszólista, amit tíz nyelvre kellene
+karbantartani**, és a dolog bármelyik nyelvű könyvön működik.
+
+A névfelismerés hasonlóan szótár nélküli: ami nagybetűs, és **nem csak mondat
+elején** áll, az név. A hétköznapi szavak is nagybetűsek mondatkezdéskor, de
+mondat közepén már nem azok.
+
+### Amiben eltértünk a tervtől, és miért
+
+- **A felidézés nem fejezethez kötött, hanem pozícióhoz.** A terv „a
+  legutóbbi fejezet" mondatairól szólt, de ennek két baja lett volna: ha a
+  fejezet közepén hagytad abba, a fejezet hátralévő része **spoiler**; és
+  PDF-nél vagy TXT-nél a fejezethatár bizonytalan. Így a szakasz egyszerűen
+  a pozíciód előtti legfeljebb 40 bekezdés — mindig értelmes, minden
+  formátumnál.
+- **A küszöb két külön kérdésre bomlott.** Egy szereplőnél az, hogy *név-e*,
+  és az, hogy *számít-e*, két külön dolog: az elsőt a mondat közepi nagybetű
+  bizonyítja, a másodikat a darabszám. Ha a mondat közepi előfordulásból
+  kérnénk kettőt, kimaradna az a szereplő, aki többnyire mondatot kezd.
+
+### Amit a tesztírás derített ki
+
+A magyar ragozás **megnyújtja a tővégi magánhangzót**: `Anna → Annát`,
+`Kata → Katát`, `Emese → Emesét`. Az „Annát" tehát **nem** az „Anna" szóval
+kezdődik, hanem az „Anná"-val — vagyis a sima előtag-egyezés minden `-a` és
+`-e` végű nevet kihagyott volna az összevonásból, pedig magyar szövegben
+abból van a legtöbb. A tő-egyeztetés ezért megengedi az `a→á` és `e→é`
+váltást a tő utolsó betűjén.
+
+A fázisra **18 új egységteszt** ügyel — köztük olyanok, amik kifejezetten azt
+őrzik, hogy egyik funkció se nézzen a pozíción túlra. Összesen 97 teszt fut.
 
 ## 5. fázis — Statisztikák
 

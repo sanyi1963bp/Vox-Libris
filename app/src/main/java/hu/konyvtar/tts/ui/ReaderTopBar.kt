@@ -12,6 +12,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,6 +76,8 @@ fun ReaderTopBar(
     onOpenSettings: () -> Unit,
     onBookmarkHere: () -> Unit,
     onOpenBookmarks: () -> Unit,
+    onOpenRecap: () -> Unit,
+    onOpenCharacters: () -> Unit,
     onOpenInfo: () -> Unit,
     onStopNarration: () -> Unit
 ) {
@@ -143,6 +148,20 @@ fun ReaderTopBar(
                             leadingIcon = { Icon(Icons.Filled.Bookmarks, null) },
                             onClick = { menuOpen = false; onOpenBookmarks() }
                         )
+                        HorizontalDivider()
+                        // A könyvről szóló két funkció: mindkettő csak az
+                        // eddig olvasott részt nézi, tehát spoilermentes.
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.recap_title)) },
+                            leadingIcon = { Icon(Icons.Filled.History, null) },
+                            onClick = { menuOpen = false; onOpenRecap() }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.chars_title)) },
+                            leadingIcon = { Icon(Icons.Filled.Groups, null) },
+                            onClick = { menuOpen = false; onOpenCharacters() }
+                        )
+                        HorizontalDivider()
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.row_info)) },
                             leadingIcon = { Icon(Icons.Filled.Info, null) },

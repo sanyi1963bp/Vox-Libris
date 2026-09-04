@@ -349,4 +349,14 @@
     <string name="nav_view_library">Библиотека</string>
     <string name="nav_view_files">Файлы</string>
     <string name="nav_view_reader">Чтение</string>
+
+    <!-- 4. fazis: hol voltam, szereplok -->
+    <string name="recap_title">На чём я остановился?</string>
+    <string name="recap_empty">Пока нечего вспоминать — вы только начали эту книгу.</string>
+    <string name="recap_hint">Собственные предложения книги из того, что вы уже слышали. Никогда из дальнейшего.</string>
+    <string name="chars_title">Персонажи</string>
+    <string name="chars_empty">В прочитанной части персонажи не найдены.</string>
+    <string name="chars_hint">Только из прочитанной части — коснитесь имени, чтобы перейти к первому появлению.</string>
+    <string name="chars_count">упоминаний: %1$d</string>
+    <string name="knowledge_working">Вычисление…</string>
 </resources>

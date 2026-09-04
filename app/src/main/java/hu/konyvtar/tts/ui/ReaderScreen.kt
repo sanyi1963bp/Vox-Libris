@@ -116,6 +116,8 @@ fun ReaderScreen(
     var bookmarks by remember(path) { mutableStateOf<List<Bookmark>>(emptyList()) }
     var bookmarksOpen by remember { mutableStateOf(false) }
     var infoOpen by remember { mutableStateOf(false) }
+    var recapOpen by remember { mutableStateOf(false) }
+    var charactersOpen by remember { mutableStateOf(false) }
 
     var sliderDrag by remember { mutableStateOf<Float?>(null) }
     var speed by remember { mutableFloatStateOf(Prefs.speed(context)) }
@@ -302,6 +304,8 @@ fun ReaderScreen(
                     addBookmarkAt(idx)
                 },
                 onOpenBookmarks = { bookmarksOpen = true },
+                onOpenRecap = { recapOpen = true },
+                onOpenCharacters = { charactersOpen = true },
                 onOpenInfo = { infoOpen = true },
                 onStopNarration = { TtsService.send(context, TtsService.ACTION_STOP) }
             )
@@ -446,6 +450,37 @@ fun ReaderScreen(
             author = author,
             onBookmark = { addBookmarkAt(at.first) },
             onDismiss = { actionsAt = null }
+        )
+    }
+
+    // Az olvasási pozíció, ameddig a két „tudás a könyvről" funkció nézhet.
+    // Ha ez a könyv szól, a most elhangzott mondat VÉGÉIG — ennél tovább
+    // nézni spoiler volna. Ha csak nézelődsz benne, a látható bekezdésig.
+    val paras = paragraphs
+    val knowPara = if (sameBook && tts.totalParas > 0) tts.paraIndex
+    else listState.firstVisibleItemIndex
+    val knowChar = if (sameBook && tts.totalParas > 0) tts.sentEnd
+    else (paras?.getOrNull(knowPara)?.length ?: 0)
+
+    if (recapOpen && paras != null) {
+        RecapDialog(
+            paragraphs = paras,
+            toPara = knowPara,
+            toChar = knowChar,
+            onDismiss = { recapOpen = false }
+        )
+    }
+
+    if (charactersOpen && paras != null) {
+        CharactersDialog(
+            paragraphs = paras,
+            toPara = knowPara,
+            toChar = knowChar,
+            onGoTo = { idx ->
+                charactersOpen = false
+                scope.launch { listState.scrollToItem(idx) }
+            },
+            onDismiss = { charactersOpen = false }
         )
     }
 

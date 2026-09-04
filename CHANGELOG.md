@@ -9,6 +9,43 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.5.0] — 2026-09-04
+
+**Tudás a könyvről: „Hol voltam?" és karakternévtár**
+
+Mindkettő az olvasó **⋮ menüjéből** érhető el, és **egyik sem néz túl az
+olvasási pozíciódon**. Ez nem óvatoskodás: a fejezet hátralévő része spoiler,
+és azt nem lehet visszacsinálni.
+
+- **„Hol voltam?"** — a legutóbb hallgatott rész **négy legjellemzőbb
+  mondata**, eredeti sorrendben. Nem összefoglaló, és nem meséli el a
+  történetet: a könyv saját mondatai. Aki a szemével olvas, visszalapoz egy
+  oldalt; aki hallgat, nem tud — ez pótolja azt.
+- **Szereplők** — kik tűntek fel eddig, gyakoriság szerint, mindegyikhez az
+  első előfordulás mondatával. Egy névre koppintva odaugrik ahhoz a
+  bekezdéshez.
+
+Mindkettő **helyben fut, mesterséges intelligencia és internet nélkül** — az
+alkalmazásnak továbbra sincs internet-engedélye.
+
+Ami a motorháztető alatt van:
+
+- A mondatok pontozása **TF-IDF**, ahol a korpusz maga az eddig olvasott
+  szöveg. Ami minden bekezdésben ott van, az nulla súlyt kap — a névelő és a
+  kötőszó magától kiesik. **Nincs kötőszólista, amit tíz nyelvre kellene
+  karbantartani**, és bármelyik nyelvű könyvön működik.
+- A névfelismerés is szótár nélküli: ami nagybetűs, és **nem csak mondat
+  elején** áll, az név.
+- A ragozott alakok tőre vonva egyesülnek: a „Gandalfot", „Gandalfnak",
+  „Gandalffal" a „Gandalf" alá kerül. A magyar **tővégi magánhangzó-nyúlást**
+  is kezeli (`Anna → Annát`), enélkül minden `-a` és `-e` végű név kimaradt
+  volna.
+- 18 új egységteszt, köztük olyanok, amik kifejezetten azt őrzik, hogy egyik
+  funkció se nézzen a pozíción túlra. Összesen 97 teszt fut.
+
+Ez nem tökéletes: a főszereplőknél megbízhatóan működik, ritkább neveknél
+elmaradhat egy-egy ragozott alak.
+
 ### [4.4.0] — 2026-09-02
 
 **Állandó navigációs sáv minden nézetben**
@@ -412,6 +449,42 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.5.0] — 2026-09-04
+
+**Knowing the book: "Where was I?" and a character index**
+
+Both live in the reader's **⋮ menu**, and **neither ever looks past your
+reading position**. That is not fussiness: the rest of the chapter is a
+spoiler, and a spoiler cannot be undone.
+
+- **"Where was I?"** — the **four most characteristic sentences** of the part
+  you last listened to, in their original order. Not a summary and not a
+  retelling: the book's own sentences. Someone reading with their eyes flips
+  back a page; someone listening cannot — this replaces that.
+- **Characters** — who has appeared so far, ranked by frequency, each with the
+  sentence of its first appearance. Tap a name to jump to that paragraph.
+
+Both run **locally, with no AI and no internet** — the app still has no
+internet permission.
+
+Under the bonnet:
+
+- Sentences are scored with **TF-IDF**, where the corpus is the text you have
+  read so far. Anything present in every paragraph gets zero weight, so
+  articles and conjunctions fall out by themselves. **No stopword list to
+  maintain across ten languages**, and it works on a book in any language.
+- Name detection is dictionary-free too: what is capitalised and does **not
+  only** appear at the start of a sentence is a name.
+- Inflected forms fold onto their stem: "Gandalfot", "Gandalfnak" and
+  "Gandalffal" all land under "Gandalf". Hungarian **stem-final vowel
+  lengthening** is handled as well (`Anna → Annát`); without it every name
+  ending in `-a` or `-e` would have been missed.
+- 18 new unit tests, including ones written specifically to keep either
+  feature from ever looking past the reading position. 97 in total.
+
+It is not perfect: reliable for the main characters, and it may miss the odd
+inflected form of a rarer name.
 
 ### [4.4.0] — 2026-09-02
 

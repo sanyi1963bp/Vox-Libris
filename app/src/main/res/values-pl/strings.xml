@@ -349,4 +349,14 @@
     <string name="nav_view_library">Biblioteka</string>
     <string name="nav_view_files">Pliki</string>
     <string name="nav_view_reader">Czytanie</string>
+
+    <!-- 4. fazis: hol voltam, szereplok -->
+    <string name="recap_title">Gdzie skończyłem?</string>
+    <string name="recap_empty">Nie ma jeszcze czego przypominać — dopiero zacząłeś tę książkę.</string>
+    <string name="recap_hint">Własne zdania książki z tego, co już usłyszałeś. Nigdy z dalszej części.</string>
+    <string name="chars_title">Postacie</string>
+    <string name="chars_empty">W przeczytanej części nie znaleziono postaci.</string>
+    <string name="chars_hint">Tylko z przeczytanej części — dotknij imienia, aby przejść do pierwszego wystąpienia.</string>
+    <string name="chars_count">%1$d wzmianek</string>
+    <string name="knowledge_working">Obliczanie…</string>
 </resources>

@@ -111,6 +111,16 @@ on a single tap.
   scheme.
 - **Bionic Reading.** The first ~40% of every word in bold, so the eye can
   catch on word beginnings. Toggleable, from the reader's tuning row.
+- **"Where was I?"** The four most characteristic sentences of the part you
+  last listened to, in their original order. Not a summary: the book's own
+  sentences. Someone reading with their eyes flips back a page; someone
+  listening cannot.
+- **Characters.** Who has appeared so far, ranked by frequency, each with the
+  sentence of its first appearance. Tap a name to jump there.
+  - Both look **only at what you have already read**, so they cannot spoil
+    anything, and both run **locally, with no AI**. Sentences are scored with
+    TF-IDF where the corpus is the read part of the book itself — no stopword
+    list needed, and it works in any language.
 - **Headset buttons** (Bluetooth and wired, over MediaSession):
   1 press = play/pause, 2 presses = ~5 seconds back.
 - **Appearance.** Light/dark theme or follow the system, **six colour

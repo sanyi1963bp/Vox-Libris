@@ -112,6 +112,15 @@ koppintásra jön elő.
   képet rajzol a futó színsémával.
 - **Bionic Reading.** Minden szó első ~40%-a félkövér, hogy a szem a
   szókezdetekbe kapaszkodhasson. Kapcsolható, az olvasó hangolósávjában.
+- **„Hol voltam?"** A legutóbb hallgatott rész négy legjellemzőbb mondata,
+  eredeti sorrendben. Nem összefoglaló: a könyv saját mondatai. Aki a szemével
+  olvas, visszalapoz egy oldalt; aki hallgat, nem tud.
+- **Szereplők.** Kik tűntek fel eddig, gyakoriság szerint, mindegyikhez az
+  első előfordulás mondatával. Egy névre koppintva odaugrik.
+  - Mindkettő **csak az eddig olvasott részt nézi**, tehát spoilermentes, és
+    mindkettő **helyben fut, mesterséges intelligencia nélkül**. A mondatokat
+    TF-IDF-fel pontozzuk, a korpusz maga a könyv olvasott része — így nincs
+    szükség kötőszólistára, és bármelyik nyelven működik.
 - **Fülhallgató-gombok** (Bluetooth és vezetékes, MediaSession-en át):
   1 nyomás = Start/Stop, 2 nyomás = ~5 másodperc vissza.
 - **Megjelenés.** Világos/sötét téma vagy rendszerkövetés, **hat színséma**

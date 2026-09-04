@@ -374,6 +374,35 @@ Amit érdemes tudni:
 - A szabályok a *Beállítások → Kiejtési szótár* alatt áttekinthetők és
   törölhetők, és ott újat is felvehetsz.
 
+### „Hol voltam?" és a szereplők
+
+Mindkettő a felső sáv **⋮ menüjében** van.
+
+**„Hol voltam?"** — visszatérsz a könyvhöz, és fogalmad sincs, hol hagytad
+abba. Ez kiemeli a legutóbb hallgatott rész **négy legjellemzőbb mondatát**,
+eredeti sorrendben.
+
+Nem összefoglaló, és nem meséli el a történetet — a könyv saját mondatai
+azok. Aki a szemével olvas, visszalapoz egy oldalt; aki hallgat, nem tud, és
+ezt pótolja.
+
+**Szereplők** — felbukkan egy név, és nem emlékszel, ki az. Ez kigyűjti a
+szereplőket gyakoriság szerint, mindegyikhez azzal a mondattal, ahol először
+feltűnt. Egy névre koppintva odaugrik ahhoz a bekezdéshez.
+
+Amit tudni érdemes:
+
+- **Egyik sem néz túl azon, ameddig eljutottál.** Nem azt mutatja, mi lesz,
+  hanem azt, mi volt — spoilert nem kapsz tőlük.
+- **Nincs bennük mesterséges intelligencia**, és nem mennek internetre. A
+  mondatokat a szó gyakorisága alapján pontozzuk: ami minden bekezdésben ott
+  van (névelő, kötőszó), az nem számít; ami épp ebben a részben gyakori, az
+  annál inkább.
+- A ragozott alakokat összevonja: a „Gandalfot" és a „Gandalfnak" a „Gandalf"
+  alá kerül. **Nem tökéletes** — a fő szereplőknél megbízhatóan működik,
+  ritkább neveknél elmaradhat egy-egy alak.
+- Ha a könyv elején jársz, még nincs miből dolgozniuk, és ezt meg is mondják.
+
 ### Bionic Reading
 
 Minden szó első ~40%-a félkövér, hogy a szem a szókezdetekbe kapaszkodhasson.
