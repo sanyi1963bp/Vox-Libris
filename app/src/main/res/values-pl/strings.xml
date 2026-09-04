@@ -358,5 +358,6 @@
     <string name="chars_empty">W przeczytanej części nie znaleziono postaci.</string>
     <string name="chars_hint">Tylko z przeczytanej części — dotknij imienia, aby przejść do pierwszego wystąpienia.</string>
     <string name="chars_count">%1$d wzmianek</string>
+    <string name="chars_with">Często z: %1$s</string>
     <string name="knowledge_working">Obliczanie…</string>
 </resources>

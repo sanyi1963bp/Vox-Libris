@@ -358,5 +358,6 @@
     <string name="chars_empty">V přečtené části nebyly nalezeny žádné postavy.</string>
     <string name="chars_hint">Jen z přečtené části — klepnutím na jméno přejdeš na jeho první výskyt.</string>
     <string name="chars_count">%1$d zmínek</string>
+    <string name="chars_with">Často s: %1$s</string>
     <string name="knowledge_working">Počítá se…</string>
 </resources>

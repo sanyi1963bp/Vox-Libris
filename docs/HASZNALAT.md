@@ -387,8 +387,22 @@ azok. Aki a szemével olvas, visszalapoz egy oldalt; aki hallgat, nem tud, és
 ezt pótolja.
 
 **Szereplők** — felbukkan egy név, és nem emlékszel, ki az. Ez kigyűjti a
-szereplőket gyakoriság szerint, mindegyikhez azzal a mondattal, ahol először
-feltűnt. Egy névre koppintva odaugrik ahhoz a bekezdéshez.
+szereplőket gyakoriság szerint, és megpróbálja meg is mondani, **kicsodák**.
+Egy névre koppintva odaugrik az első előfordulásához.
+
+Egy sorban ezt látod:
+
+| Sor | Mit jelent |
+|---|---|
+| **A név** és mellette a darabszám | hányszor fordult elő eddig |
+| **Kiemelt sor** (pl. *Jóska bátyja*) | amit a könyv mond róla, szó szerint |
+| **Gyakran vele: …** | kikkel szerepel a leggyakrabban egy bekezdésben |
+
+A kiemelt sort nem az app találja ki: **megkeresi, hol mondja ki a könyv**, és
+onnan idézi. Két helyen szokta megtalálni — a közbevetésben („Pista, Jóska
+bátyja, belépett") és a rokonsági fordulatban („Pista Jóska bátyja volt").
+Ahol a könyv nem mondja ki, ott üresen marad, és az első előfordulás mondata
+áll a helyén.
 
 Amit tudni érdemes:
 

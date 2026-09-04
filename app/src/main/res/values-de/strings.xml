@@ -358,5 +358,6 @@
     <string name="chars_empty">In dem bisher Gelesenen wurden keine Figuren gefunden.</string>
     <string name="chars_hint">Nur aus dem bisher Gelesenen — tippe auf einen Namen, um zum ersten Auftreten zu springen.</string>
     <string name="chars_count">%1$d Erwähnungen</string>
+    <string name="chars_with">Oft mit: %1$s</string>
     <string name="knowledge_working">Wird berechnet…</string>
 </resources>

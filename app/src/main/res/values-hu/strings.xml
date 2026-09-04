@@ -356,5 +356,6 @@
     <string name="chars_empty">Az eddig olvasott részben nem találtam szereplőket.</string>
     <string name="chars_hint">Csak az eddig olvasott részből — egy névre koppintva odaugrik az első előfordulásához.</string>
     <string name="chars_count">%1$d említés</string>
+    <string name="chars_with">Gyakran vele: %1$s</string>
     <string name="knowledge_working">Számolás…</string>
 </resources>

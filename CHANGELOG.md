@@ -9,6 +9,41 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.6.0] — 2026-09-04
+
+**Ki kicsoda: a szereplőlista most már meg is mondja**
+
+Eddig csak annyit tudott, hogy hányszor fordult elő a név. Most megpróbálja
+megmondani, **kicsoda** — és nem úgy, hogy értelmezi a szöveget, hanem úgy,
+hogy megkeresi, hol mondja ki a könyv, és **szó szerint idézi**.
+
+- **Közbevetés.** „Pista**, Jóska bátyja,** belépett." A két vessző közötti
+  rész a regényekben majdnem mindig azonosítás. Ehhez nem kell szótár, és
+  bármelyik nyelven működik.
+- **Kapcsolatszavas fordulat.** „Pista **Jóska bátyja** volt." Ehhez egy
+  rokonsági és szereplista adja a kapaszkodót (apja, bátyja, felesége,
+  mestere, kapitánya…). Ez az egyetlen szólista a funkcióban, és tudatosan
+  az: a rokonsági szavak halmaza zárt és állandó.
+- **Kikkel szerepel együtt.** Egyszerű együtt-előfordulás bekezdésenként.
+  Nem mondja meg, hogy „bátyja", de megmutatja a szereplő körét — szótár
+  nélkül, bármelyik nyelven.
+
+Amire külön ügyeltünk:
+
+- **A felsorolás nem bemutatás.** A „Pista, Jóska, és Elemér" mondatban a
+  Jóska nem Pista azonosítása; az ilyet kiszűrjük.
+- **A birtokos iránya számít.** A „Pista bátyja megérkezett" mondat nem
+  Pistáról szól, hanem a bátyjáról — ilyenkor nem használjuk bemutatásnak.
+- **A rag megkülönböztet.** A `fia` tő beleérne a „fiatal" szóba; a magyar
+  esetragok listája dönti el, hogy `fia + t` (fiát) kapcsolatszó, a
+  `fia + tal` viszont nem.
+
+6 új egységteszt, összesen 103 fut.
+
+Ez továbbra is **helyben, mesterséges intelligencia és internet nélkül**
+működik — és nem tökéletes: ahol a könyv nem mondja ki, ott az app sem tudja
+kitalálni.
+
 ### [4.5.0] — 2026-09-04
 
 **Tudás a könyvről: „Hol voltam?" és karakternévtár**
@@ -449,6 +484,40 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.6.0] — 2026-09-04
+
+**Who's who: the character list now says so**
+
+Until now it only knew how often a name occurred. It now tries to say **who
+they are** — not by interpreting the text, but by finding where the book says
+it and **quoting verbatim**.
+
+- **Appositions.** "Pista**, Jóska's older brother,** came through the door."
+  The part between the two commas is almost always an identification in
+  novels. No dictionary needed, works in any language.
+- **Kinship phrasing.** "Pista **was Jóska's brother**." A list of kinship and
+  role words provides the handle here (father, brother, wife, master,
+  captain…). It is the only word list in the feature, and deliberately so:
+  the set of kinship words is closed and stable.
+- **Who they appear with.** Simple per-paragraph co-occurrence. It does not
+  say "brother", but it shows the character's circle — dictionary-free, in
+  any language.
+
+What we took care over:
+
+- **A list is not an introduction.** In "Pista, Jóska, and Elemér", Jóska is
+  not an identification of Pista; such cases are filtered out.
+- **The direction of possession matters.** "Pista's brother arrived" is not
+  about Pista but about the brother — we do not use it as an introduction.
+- **Suffixes discriminate.** The Hungarian stem `fia` (son) would reach into
+  "fiatal" (young); a list of case suffixes decides that `fia + t` is a
+  kinship word while `fia + tal` is not.
+
+6 new unit tests, 103 in total.
+
+This still runs **locally, with no AI and no internet** — and it is not
+perfect: where the book does not say it, the app cannot invent it.
 
 ### [4.5.0] — 2026-09-04
 

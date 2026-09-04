@@ -358,5 +358,6 @@
     <string name="chars_empty">Aucun personnage trouvé dans ce que vous avez lu.</string>
     <string name="chars_hint">Uniquement d’après ce que vous avez lu — touchez un nom pour aller à sa première apparition.</string>
     <string name="chars_count">%1$d mentions</string>
+    <string name="chars_with">Souvent avec : %1$s</string>
     <string name="knowledge_working">Calcul en cours…</string>
 </resources>

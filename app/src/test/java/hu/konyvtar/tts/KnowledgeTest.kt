@@ -2,8 +2,10 @@ package hu.konyvtar.tts
 
 import hu.konyvtar.tts.reader.Characters
 import hu.konyvtar.tts.reader.Recap
+import hu.konyvtar.tts.reader.Relations
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -178,5 +180,83 @@ class CharactersTest {
     fun `ures konyv nem szall el`() {
         assertTrue(Characters.find(emptyList(), 0, 0).isEmpty())
         assertTrue(Characters.find(listOf(""), 0, 0).isEmpty())
+    }
+}
+
+/**
+ * Ki kicsoda: a bemutatás kiolvasása a szövegből.
+ *
+ * A lényeg, hogy NEM értelmezzük a mondatot — megkeressük, hol mondja ki a
+ * könyv, és szó szerint idézzük. Ezek a próbák azt őrzik, hogy a jó helyet
+ * találjuk meg, és hogy felsorolást ne nézzünk bemutatásnak.
+ */
+class RelationTest {
+
+    @Test
+    fun `a kozbevetest bemutatasnak ismeri fel`() {
+        val paras = listOf(
+            "Pista, Jóska bátyja, belépett az ajtón.",
+            "Pista leült a székre, és nem szólt semmit.",
+            "Jóska később érkezett. Jóska köszönt Pistának."
+        )
+        val people = Characters.find(paras, 2, paras[2].length)
+        val pista = people.first { it.name == "Pista" }
+        assertEquals("Jóska bátyja", pista.descriptor)
+    }
+
+    @Test
+    fun `a kapcsolatszavas fordulatot is elkapja`() {
+        val paras = listOf(
+            "Elemér Zoli testvére volt, és nagyon hasonlítottak.",
+            "Elemér reggel indult el. Zoli otthon maradt Elemérrel."
+        )
+        val people = Characters.find(paras, 1, paras[1].length)
+        val elemer = people.first { it.name == "Elemér" }
+        assertEquals("Zoli testvére", elemer.descriptor)
+    }
+
+    @Test
+    fun `a felsorolast nem nezi bemutatasnak`() {
+        // "Pista, Jóska, és Elemér" -- itt a Jóska nem Pista bemutatása.
+        val paras = List(2) { "Pista, Jóska, és Elemér elindultak a piacra Pistával." }
+        val people = Characters.find(paras, 1, paras[1].length)
+        val pista = people.first { it.name == "Pista" }
+        assertNull("felsorolást vett bemutatásnak: ${pista.descriptor}", pista.descriptor)
+    }
+
+    @Test
+    fun `a sajat birtoklast nem veszi bemutatasnak`() {
+        // "Pista bátyja" azt jelenti, hogy valaki MÁS a Pista bátyja --
+        // ez a mondat nem Pistát mutatja be.
+        val paras = List(2) { "Pista bátyja megérkezett, és Pista örült neki." }
+        val people = Characters.find(paras, 1, paras[1].length)
+        val pista = people.first { it.name == "Pista" }
+        assertNull("fordítva értette a birtokost: ${pista.descriptor}", pista.descriptor)
+    }
+
+    @Test
+    fun `kikkel szerepel egyutt`() {
+        val paras = listOf(
+            "Gandalf és Frodó együtt indultak el a hegyek felé.",
+            "Gandalf és Frodó megpihentek a fa alatt hosszan.",
+            "Gandalf egyedül ment tovább, Gandalf nem nézett hátra.",
+            "Szarumán figyelte Gandalfot a toronyból, Szarumán mosolygott."
+        )
+        val people = Characters.find(paras, 3, paras[3].length)
+        val gandalf = people.first { it.name == "Gandalf" }
+        assertEquals("Frodó", gandalf.companions.first().name)
+        assertEquals(2, gandalf.companions.first().count)
+    }
+
+    @Test
+    fun `a fiatal szo nem kapcsolatszo`() {
+        // A "fia" tő beleloghatna a "fiatal" szóba; a ragok listája véd.
+        assertTrue(Relations.isRelationWord("fia"))
+        assertTrue(Relations.isRelationWord("fiát"))
+        assertTrue(Relations.isRelationWord("bátyjának"))
+        assertTrue(Relations.isRelationWord("lányát"))
+        assertFalse(Relations.isRelationWord("fiatal"))
+        assertFalse(Relations.isRelationWord("lányok"))
+        assertFalse(Relations.isRelationWord("asztal"))
     }
 }

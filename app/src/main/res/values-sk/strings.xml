@@ -358,5 +358,6 @@
     <string name="chars_empty">V prečítanej časti sa nenašli žiadne postavy.</string>
     <string name="chars_hint">Len z prečítanej časti — ťuknutím na meno prejdeš na jeho prvý výskyt.</string>
     <string name="chars_count">%1$d zmienok</string>
+    <string name="chars_with">Často s: %1$s</string>
     <string name="knowledge_working">Počíta sa…</string>
 </resources>

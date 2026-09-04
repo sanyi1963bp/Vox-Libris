@@ -4,30 +4,53 @@ package hu.konyvtar.tts.reader
  * Karakternévtár: kik szerepelnek a könyvben — abból, amit **már olvastál**.
  *
  * Felbukkan egy név, és nem emlékszel, ki az. Ez kigyűjti a szereplőket
- * gyakoriság szerint, mindegyikhez azzal a mondattal, ahol először feltűnt.
+ * gyakoriság szerint, és megpróbálja meg is mondani, kicsodák.
  *
  * **Spoilermentes**: csak az olvasási pozícióig néz. Nem árulja el, hogy a
  * későbbi fejezetekben ki bukkan még fel — ez a lényege, nem mellékes
  * körülmény.
  *
- * Hogyan ismer fel egy nevet? Nagybetűvel kezdődik, és **nem csak mondat
- * elején** áll. Ez a kettő együtt elég erős jel: a hétköznapi szavak is
- * nagybetűsek mondatkezdéskor, de mondat közepén már nem azok. Ezért nem
- * kell hozzá névlista, és ezért működik bármelyik nyelven.
+ * ## Hogyan ismer fel egy nevet
+ *
+ * Nagybetűvel kezdődik, és **nem csak mondat elején** áll. Ez a kettő együtt
+ * elég erős jel: a hétköznapi szavak is nagybetűsek mondatkezdéskor, de
+ * mondat közepén már nem azok. Ezért nem kell hozzá névlista, és ezért
+ * működik bármelyik nyelven.
  *
  * A magyar ragozást tőre vonással kezeljük: a „Gandalfot", „Gandalfnak",
  * „Gandalffal" alakok a „Gandalf" alá kerülnek, mert az a legrövidebb alak,
  * aminek a többi a folytatása. **Ez nem tökéletes** — a fő szereplőknél
  * megbízhatóan működik, ritkább neveknél elmaradhat egy-egy alak.
+ *
+ * ## Ki kicsoda
+ *
+ * A puszta darabszám keveset mond. Hogy többet mondjunk, **nem értelmezzük a
+ * szöveget** — megkeressük, hol mondja ki maga a könyv, és szó szerint
+ * idézzük:
+ *
+ *  - **Közbevetés**: „Pista**, Jóska bátyja,** belépett." A két vessző közötti
+ *    rész a regényekben majdnem mindig azonosítás. Ehhez nem kell szótár.
+ *  - **Kapcsolatszó**: „Pista **Jóska bátyja** volt." Itt a [Relations]
+ *    rokonsági és szereplistája adja a kapaszkodót.
+ *  - **Kikkel szerepel együtt**: együtt-előfordulás bekezdésenként. Nem
+ *    mondja meg, hogy „bátyja", de megmutatja a szereplő körét — szótár
+ *    nélkül, bármelyik nyelven.
  */
 object Characters {
 
-    /** Egy szereplő: neve, hányszor fordult elő, és hol tűnt fel először. */
+    /** Egy másik szereplő, akivel gyakran egy bekezdésben szerepel. */
+    data class Companion(val name: String, val count: Int)
+
+    /** Egy szereplő mindazzal, amit a könyvből ki tudtunk olvasni róla. */
     data class Person(
         val name: String,
         val count: Int,
         val firstParaIndex: Int,
-        val firstSentence: String
+        val firstSentence: String,
+        /** Amit a könyv mond róla, szó szerint — ha talált ilyet. */
+        val descriptor: String? = null,
+        /** Kikkel szerepel a leggyakrabban együtt. */
+        val companions: List<Companion> = emptyList()
     )
 
     /** Ennyi előfordulás alatt nem tekintjük szereplőnek. */
@@ -36,8 +59,20 @@ object Characters {
     /** Ekkora ragot még hozzátoldásnak nézünk, nem külön névnek. */
     private const val MAX_SUFFIX = 4
 
+    /** Ennél hosszabb bemutatás már nem bemutatás, hanem fél bekezdés. */
+    private const val MAX_DESCRIPTOR = 70
+
+    /** Ennyi társat mutatunk egy szereplőnél. */
+    private const val MAX_COMPANIONS = 3
+
     /** Idézőjelek és gondolatjelek, amiket a mondat elején átugrunk. */
-    private const val OPENERS = "\"'„“«»–—-*·•  \t"
+    private const val OPENERS = "\"'„“«»–—-*·•  \t"
+
+    /**
+     * Felsorolás-kötőszavak: ha a közbevetés ezekkel kezdődik, akkor nem
+     * bemutatás, hanem lista — „Pista, és Jóska, meg Elemér".
+     */
+    private val LIST_WORDS = setOf("és", "s", "meg", "vagy", "valamint", "illetve")
 
     /**
      * A szereplők listája, gyakoriság szerint csökkenő sorrendben.
@@ -63,9 +98,9 @@ object Characters {
         /** Az első előfordulás helye: bekezdés + a mondat szövege. */
         val firstAt = HashMap<String, Pair<Int, String>>()
 
+        // ---- első menet: ki lehet egyáltalán név
         for (i in 0..end) {
-            val full = paragraphs[i]
-            val text = if (i == end) full.substring(0, toChar.coerceIn(0, full.length)) else full
+            val text = cut(paragraphs, i, end, toChar)
             if (text.isBlank()) continue
 
             val starts = Sentences.starts(text)
@@ -94,9 +129,6 @@ object Characters {
             }
         }
 
-        // Jelölt az, ami mondat közepén is nagybetűs, és nem gyakoribb
-        // kisbetűvel — utóbbi esetben köznév, ami történetesen mondat elején
-        // is előfordult.
         // MINDEN nagybetűs szó jelölt, nem csak a mondat közepén látottak —
         // a „Frodó" gyakran mondatot kezd, és csak a „Frodóval" alakja esik
         // középre. Ha itt szűrnénk a mondat közepére, a név sosem kerülne be,
@@ -115,21 +147,150 @@ object Characters {
         //  - előfordul-e legalább kétszer? Ez bizonyítja, hogy SZÁMÍT.
         // Ha a mondat közepi előfordulásból kérnénk kettőt, kimaradna az a
         // szereplő, aki többnyire mondatot kezd — pedig az gyakori.
-        val people = group(candidates).mapNotNull { (name, forms) ->
-            if (forms.sumOf { midCount[it] ?: 0 } < 1) return@mapNotNull null
-            val total = forms.sumOf { upperCount[it] ?: 0 }
-            if (total < MIN_HITS) return@mapNotNull null
+        val groups = group(candidates).filter { (_, forms) ->
+            forms.sumOf { midCount[it] ?: 0 } >= 1 &&
+                forms.sumOf { upperCount[it] ?: 0 } >= MIN_HITS
+        }
+        if (groups.isEmpty()) return emptyList()
+
+        /** Melyik ragozott alak melyik szereplőhöz tartozik. */
+        val formToName = HashMap<String, String>()
+        for ((name, forms) in groups) for (f in forms) formToName[f] = name
+
+        // ---- második menet: ki kicsoda, és kivel van
+        val descriptors = HashMap<String, String>()
+        val together = HashMap<String, HashMap<String, Int>>()
+
+        for (i in 0..end) {
+            val text = cut(paragraphs, i, end, toChar)
+            if (text.isBlank()) continue
+            val starts = Sentences.starts(text)
+
+            val here = LinkedHashSet<String>()
+            for ((from, to) in wordRanges(text)) {
+                val name = formToName[text.substring(from, to)] ?: continue
+                here.add(name)
+                if (name !in descriptors) {
+                    describe(text, starts, from, to, name, formToName)?.let {
+                        descriptors[name] = it
+                    }
+                }
+            }
+            // Egy bekezdésben együtt szereplő nevek: mindenki mindenkivel
+            for (a in here) {
+                val row = together.getOrPut(a) { HashMap() }
+                for (b in here) if (a != b) row[b] = (row[b] ?: 0) + 1
+            }
+        }
+
+        val people = groups.map { (name, forms) ->
             val first = forms.mapNotNull { firstAt[it] }.minByOrNull { it.first }
             Person(
                 name = name,
-                count = total,
+                count = forms.sumOf { upperCount[it] ?: 0 },
                 firstParaIndex = first?.first ?: 0,
-                firstSentence = first?.second.orEmpty()
+                firstSentence = first?.second.orEmpty(),
+                descriptor = descriptors[name],
+                companions = together[name].orEmpty()
+                    .entries
+                    .sortedByDescending { it.value }
+                    .take(MAX_COMPANIONS)
+                    .map { Companion(it.key, it.value) }
             )
         }
         return people.sortedWith(
             compareByDescending<Person> { it.count }.thenBy { it.name }
         ).take(limit)
+    }
+
+    // ------------------------------------------------------------- bemutatás
+
+    /**
+     * Mit mond a könyv erről a szereplőről ezen a helyen?
+     *
+     * Előbb a közbevetést próbáljuk (az a legjobb minőségű), utána a
+     * kapcsolatszavas fordulatot.
+     */
+    private fun describe(
+        text: String,
+        starts: List<Int>,
+        nameFrom: Int,
+        nameTo: Int,
+        self: String,
+        formToName: Map<String, String>
+    ): String? {
+        val (sFrom, sTo) = sentenceBounds(text, starts, nameFrom)
+        return apposition(text, nameTo, sTo) ?: relationPhrase(text, sFrom, sTo, self, formToName)
+    }
+
+    /**
+     * Közbevetés: a név után közvetlenül vessző, majd a következő vesszőig
+     * tartó rész. „Pista**, Jóska bátyja,** belépett."
+     */
+    internal fun apposition(text: String, nameTo: Int, sentenceEnd: Int): String? {
+        var i = nameTo
+        while (i < sentenceEnd && text[i] == ' ') i++
+        if (i >= sentenceEnd || text[i] != ',') return null
+        var j = i + 1
+        while (j < sentenceEnd && text[j] == ' ') j++
+        var k = j
+        while (k < sentenceEnd && text[k] != ',') k++
+        if (k >= sentenceEnd) return null
+
+        val phrase = text.substring(j, k).trim()
+        if (phrase.length < 4 || phrase.length > MAX_DESCRIPTOR) return null
+
+        val words = phrase.split(' ', '\t').filter { it.isNotBlank() }
+        if (words.isEmpty()) return null
+        if (words[0].lowercase().trimEnd(',', '.') in LIST_WORDS) return null
+
+        // Egyetlen nagybetűs szó nem bemutatás, hanem felsorolás egy tagja:
+        // „Pista, Jóska, és Elemér".
+        val hasRelation = words.any { Relations.isRelationWord(it.trim(',', '.', '!', '?')) }
+        val startsLower = phrase[0].isLowerCase()
+        if (!hasRelation && !(startsLower && words.size >= 2)) return null
+
+        return phrase
+    }
+
+    /**
+     * Kapcsolatszavas fordulat: „Pista **Jóska bátyja** volt."
+     *
+     * A kapcsolatszó előtti legközelebbi nagybetűs szótól a kapcsolatszó
+     * végéig idézünk. Ha a birtokos maga a szereplő volna („Pista bátyja"),
+     * akkor a mondat nem róla szól, hanem a bátyjáról — olyankor kihagyjuk.
+     */
+    internal fun relationPhrase(
+        text: String,
+        sentenceStart: Int,
+        sentenceEnd: Int,
+        self: String,
+        formToName: Map<String, String>
+    ): String? {
+        val words = wordRanges(text).filter { it.first >= sentenceStart && it.second <= sentenceEnd }
+        for ((idx, range) in words.withIndex()) {
+            val (from, to) = range
+            if (!Relations.isRelationWord(text.substring(from, to))) continue
+
+            // A legközelebbi nagybetűs szó visszafelé: ő a birtokos.
+            for (k in idx - 1 downTo 0) {
+                val (pf, pt) = words[k]
+                val owner = text.substring(pf, pt)
+                if (!owner[0].isUpperCase()) continue
+                if (formToName[owner] == self) return null
+                val phrase = text.substring(pf, to).trim()
+                return if (phrase.length in 4..MAX_DESCRIPTOR) phrase else null
+            }
+        }
+        return null
+    }
+
+    // ------------------------------------------------------------- segédek
+
+    /** Az utolsó bekezdést a pozíciónál vágjuk el, a többit érintetlenül. */
+    private fun cut(paragraphs: List<String>, index: Int, end: Int, toChar: Int): String {
+        val full = paragraphs[index]
+        return if (index == end) full.substring(0, toChar.coerceIn(0, full.length)) else full
     }
 
     /**
@@ -193,8 +354,8 @@ object Characters {
         return out
     }
 
-    /** Az a mondat, amelyikben a [pos] karakter áll. */
-    private fun sentenceAround(text: String, starts: List<Int>, pos: Int): String {
+    /** Annak a mondatnak a határai, amelyikben a [pos] karakter áll. */
+    private fun sentenceBounds(text: String, starts: List<Int>, pos: Int): Pair<Int, Int> {
         var s = 0
         var e = text.length
         for (i in starts.indices) {
@@ -205,6 +366,12 @@ object Characters {
                 break
             }
         }
+        return s to e
+    }
+
+    /** Az a mondat, amelyikben a [pos] karakter áll. */
+    private fun sentenceAround(text: String, starts: List<Int>, pos: Int): String {
+        val (s, e) = sentenceBounds(text, starts, pos)
         return text.substring(s, e).trim()
     }
 }

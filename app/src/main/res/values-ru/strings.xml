@@ -358,5 +358,6 @@
     <string name="chars_empty">В прочитанной части персонажи не найдены.</string>
     <string name="chars_hint">Только из прочитанной части — коснитесь имени, чтобы перейти к первому появлению.</string>
     <string name="chars_count">упоминаний: %1$d</string>
+    <string name="chars_with">Часто вместе: %1$s</string>
     <string name="knowledge_working">Вычисление…</string>
 </resources>

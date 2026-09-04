@@ -381,5 +381,6 @@
     <string name="chars_empty">No characters found in what you have read so far.</string>
     <string name="chars_hint">From the part you have read only — tap a name to jump to its first appearance.</string>
     <string name="chars_count">%1$d mentions</string>
+    <string name="chars_with">Often with: %1$s</string>
     <string name="knowledge_working">Working…</string>
 </resources>

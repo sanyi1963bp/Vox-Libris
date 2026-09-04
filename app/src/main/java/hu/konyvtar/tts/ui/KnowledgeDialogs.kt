@@ -175,13 +175,35 @@ fun CharactersDialog(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-                                if (p.firstSentence.isNotBlank()) {
+                                // Amit a könyv mond róla — ez a legfontosabb
+                                // sor, ezért kap kiemelt színt. Ha nincs
+                                // ilyen, az első előfordulás mondata áll itt.
+                                val desc = p.descriptor
+                                if (desc != null) {
+                                    Text(
+                                        text = desc,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                } else if (p.firstSentence.isNotBlank()) {
                                     Text(
                                         text = p.firstSentence,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontStyle = FontStyle.Italic,
                                         maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                                if (p.companions.isNotEmpty()) {
+                                    Text(
+                                        text = stringResource(
+                                            R.string.chars_with,
+                                            p.companions.joinToString(" · ") { it.name }
+                                        ),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }

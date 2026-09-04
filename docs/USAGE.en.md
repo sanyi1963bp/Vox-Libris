@@ -388,8 +388,22 @@ sentences. Someone reading with their eyes flips back a page; someone
 listening cannot, and this replaces that.
 
 **Characters** — a name comes up and you cannot place it. This collects the
-characters by frequency, each with the sentence where they first appeared. Tap
-a name to jump to that paragraph.
+characters by frequency and tries to say **who they are**. Tap a name to jump
+to its first appearance.
+
+Each row shows:
+
+| Line | What it means |
+|---|---|
+| **The name** and a count | how often it has occurred so far |
+| **A highlighted line** (e.g. *Jóska's brother*) | what the book says about them, verbatim |
+| **Often with: …** | who they most often share a paragraph with |
+
+The highlighted line is not invented by the app: it **finds where the book
+says it** and quotes from there. It usually finds it in one of two places — an
+apposition ("Pista, Jóska's brother, came in") or a kinship phrase ("Pista was
+Jóska's brother"). Where the book never says it, the line stays empty and the
+sentence of the first appearance takes its place.
 
 Worth knowing:
 
