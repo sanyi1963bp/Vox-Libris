@@ -165,6 +165,55 @@
 
   .dlcount[hidden] { display: none; }
 
+  /* ---- új verzió a legutóbbi látogatás óta
+     A jelzés a böngésződben tárolt utolsó látott verzióhoz képest szól:
+     nincs hozzá szerver, és nem is tud rólad semmit senki. */
+
+  .download.is-new {
+    border-color: var(--accent);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
+  .fresh {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    color: var(--accent-ink);
+  }
+
+  .fresh[hidden] { display: none; }
+
+  .fresh .tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent-ink);
+    padding: 0.16rem 0.5rem;
+  }
+
+  .fresh .was {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .fresh { color: var(--accent); }
+    :root:not([data-theme="light"]) .fresh .tag {
+      color: #0d1310;
+      background: var(--accent);
+    }
+  }
+  :root[data-theme="dark"] .fresh { color: var(--accent); }
+  :root[data-theme="dark"] .fresh .tag { color: #0d1310; background: var(--accent); }
+
   .btn {
     display: inline-block;
     align-self: flex-start;
@@ -433,10 +482,16 @@
     </div>
   </header>
 
-  <div class="download">
+  <div class="download" id="download-box">
+    <p class="fresh" id="fresh" hidden>
+      <span class="tag">Új verzió</span>
+      <span id="fresh-text"></span>
+      <span class="was" id="fresh-was"></span>
+    </p>
     <div class="download-meta">
       <span id="apk-name">vox-libris-4.2.0.apk</span>
       <span id="apk-size">9,8 MB</span>
+      <span id="apk-date"></span>
       <span>Android 11+</span>
     </div>
     <div class="btn-row">
@@ -819,7 +874,49 @@
         var version = String(newest.tag_name || '').replace(/^v/i, '');
         setText('ver-badge', version);
         setText('ver-footer', version);
+        setText('apk-date', kiadasNapja(newest.published_at));
+
+        markIfNew(version);
       })
       .catch(function () { /* marad a HTML-be írt kiadás */ });
+
+    /** A kiadás napja magyarul, rövid alakban. */
+    function kiadasNapja(iso) {
+      if (!iso) return '';
+      var d = new Date(iso);
+      if (isNaN(d)) return '';
+      return d.toLocaleDateString('hu-HU', {
+        year: 'numeric', month: 'short', day: 'numeric'
+      });
+    }
+
+    /**
+     * Új-e ez a verzió a legutóbbi látogatásodhoz képest?
+     *
+     * Az összehasonlítás alapja a böngésződben tárolt utolsó látott
+     * verziószám. Nincs hozzá szerver, nincs fiók, és senki nem tud rólad
+     * semmit — az adat a te gépeden marad, és csak ez az oldal látja.
+     *
+     * Első látogatáskor nincs jelzés: akkor még nincs mihez képest újnak
+     * lennie. A jelzés a következő látogatásig marad ki, miután láttad.
+     */
+    function markIfNew(version) {
+      if (!version) return;
+      var seen = null;
+      try {
+        seen = window.localStorage.getItem('voxLatottVerzio');
+        window.localStorage.setItem('voxLatottVerzio', version);
+      } catch (e) {
+        return;                 // privát ablak vagy letiltott tárolás
+      }
+      if (!seen || seen === version) return;
+
+      var box = document.getElementById('download-box');
+      var fresh = document.getElementById('fresh');
+      if (box) box.className += ' is-new';
+      setText('fresh-text', version + ' — a legutóbbi látogatásod óta jelent meg');
+      setText('fresh-was', 'előzőleg ' + seen);
+      if (fresh) fresh.hidden = false;
+    }
   })();
 </script>
