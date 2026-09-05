@@ -174,6 +174,88 @@
     box-shadow: inset 3px 0 0 var(--accent);
   }
 
+  /* ---- az egész oldal jelzi, ha új verzió van
+     A háttér egy árnyalatnyit a kiemelő szín felé tolódik, és fölé kerül egy
+     széles sáv. Az elsőt nem tudod megnevezni, csak érzed, hogy más; a
+     második megmondja, mi történt. */
+
+  :root.van-uj { --paper: #eef4f0; }
+
+  @media (prefers-color-scheme: dark) {
+    :root.van-uj:not([data-theme="light"]) { --paper: #0c1512; }
+  }
+  :root.van-uj[data-theme="dark"] { --paper: #0c1512; }
+
+  .ribbon {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 0.8rem;
+    margin: 1.6rem 0 0;
+    padding: 0.7rem 1rem;
+    background: var(--accent-ink);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-size: 0.94rem;
+  }
+
+  .ribbon[hidden] { display: none; }
+  .ribbon strong { font-weight: 600; }
+
+  .ribbon a {
+    color: var(--paper);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .ribbon { background: var(--accent); color: #0d1310; }
+    :root:not([data-theme="light"]) .ribbon a { color: #0d1310; }
+  }
+  :root[data-theme="dark"] .ribbon { background: var(--accent); color: #0d1310; }
+  :root[data-theme="dark"] .ribbon a { color: #0d1310; }
+
+  /* ---- újdonságok és frissült szakaszok */
+
+  .news[hidden], .changed[hidden] { display: none; }
+
+  .news h3 {
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.3rem 0 0.4rem;
+  }
+
+  .news ul { margin: 0.3rem 0 0.9rem; padding-left: 1.1rem; }
+  .news li { margin-bottom: 0.35rem; }
+  .news code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-2);
+    padding: 0.05rem 0.3rem;
+  }
+
+  .changed ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+
+  .pill {
+    display: inline-block;
+    margin-left: 0.6rem;
+    padding: 0.1rem 0.45rem;
+    vertical-align: middle;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .pill { color: #0d1310; }
+  }
+  :root[data-theme="dark"] .pill { color: #0d1310; }
+
   .fresh {
     display: flex;
     flex-wrap: wrap;
@@ -468,6 +550,12 @@
 
 <div class="wrap">
 
+  <p class="ribbon" id="ribbon" hidden>
+    <strong>Új verzió</strong>
+    <span id="ribbon-text"></span>
+    <a href="#ujdonsagok">Mi változott?</a>
+  </p>
+
   <header class="masthead">
     <h1 class="wordmark">Vox&nbsp;Libris<br><em>tesztelőknek</em></h1>
     <p class="standfirst">
@@ -508,6 +596,21 @@
       <a href="https://github.com/sanyi1963bp/Vox-Libris/releases">Minden verzió</a>
     </p>
   </div>
+
+  <!-- A kiadás saját szövege, a GitHubról. Nem kell kézzel karbantartani:
+       ami a kiadás leírásába kerül, az jelenik meg itt. -->
+  <section class="news" id="ujdonsagok" hidden>
+    <p class="eyebrow">Újdonságok</p>
+    <h2 id="news-title">Mi változott</h2>
+    <div id="news-body"></div>
+  </section>
+
+  <!-- Ami a lap saját leírásaiból változott a legutóbbi látogatásod óta. -->
+  <section class="changed" id="valtozott" hidden>
+    <p class="eyebrow">Frissült leírások</p>
+    <h2>Ezek a részek is megváltoztak</h2>
+    <ul id="valtozott-lista"></ul>
+  </section>
 
   <section>
     <p class="eyebrow">Mi ez</p>
@@ -876,6 +979,7 @@
         setText('ver-footer', version);
         setText('apk-date', kiadasNapja(newest.published_at));
 
+        ujdonsagok(version, newest.body);
         markIfNew(version);
       })
       .catch(function () { /* marad a HTML-be írt kiadás */ });
@@ -917,6 +1021,133 @@
       setText('fresh-text', version + ' — a legutóbbi látogatásod óta jelent meg');
       setText('fresh-was', 'előzőleg ' + seen);
       if (fresh) fresh.hidden = false;
+
+      // Az egész lap színe elmozdul, és fölé kerül egy sáv. A színváltozást
+      // nem kell elolvasni ahhoz, hogy feltűnjön.
+      document.documentElement.className += ' van-uj';
+      var ribbon = document.getElementById('ribbon');
+      setText('ribbon-text', 'a ' + version + ' megjelent — eddig a ' + seen +
+        ' volt fent nálad');
+      if (ribbon) ribbon.hidden = false;
     }
+
+    /** A kiadás saját leírása, a GitHubról — a letöltés alá. */
+    function ujdonsagok(version, body) {
+      var text = (body || '').trim();
+      if (!text) return;
+      setText('news-title', 'Mi változott a ' + version + '-ban');
+      var box = document.getElementById('news-body');
+      var sec = document.getElementById('ujdonsagok');
+      if (!box || !sec) return;
+      box.innerHTML = mdToHtml(text);
+      sec.hidden = false;
+    }
+
+    /**
+     * A kiadás leírása Markdownban érkezik. Csak azt a néhány jelölést
+     * ismerjük fel, amit használunk — és MINDENT megszökésztetünk előtte,
+     * hogy a szöveg soha ne tudjon beleszólni az oldal szerkezetébe.
+     */
+    function mdToHtml(md) {
+      var esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      function inline(s) {
+        return s.replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      }
+      var out = [], inList = false;
+      var lines = esc.split(/\r?\n/);
+      for (var i = 0; i < lines.length; i++) {
+        var l = lines[i].trim();
+        if (!l) { if (inList) { out.push('</ul>'); inList = false; } continue; }
+        var h = l.match(/^#{1,4}\s+(.*)$/);
+        var li = l.match(/^[-*]\s+(.*)$/);
+        if (h) {
+          if (inList) { out.push('</ul>'); inList = false; }
+          out.push('<h3>' + inline(h[1]) + '</h3>');
+        } else if (li) {
+          if (!inList) { out.push('<ul>'); inList = true; }
+          out.push('<li>' + inline(li[1]) + '</li>');
+        } else {
+          if (inList) { out.push('</ul>'); inList = false; }
+          out.push('<p>' + inline(l) + '</p>');
+        }
+      }
+      if (inList) out.push('</ul>');
+      return out.join('');
+    }
+
+    /**
+     * Megváltozott-e a lap valamelyik leírása a legutóbbi látogatásod óta?
+     *
+     * Minden szakasz szövegéből egy rövid ujjlenyomatot számolunk, és azt
+     * tároljuk. Ami más lett, az kap egy jelzést a címe mellé, és felkerül a
+     * letöltés alatti listára. Így a szövegek javítása is látszik, nem csak
+     * az új verzió.
+     */
+    function valtozottSzakaszok() {
+      var secs = document.querySelectorAll('.wrap > section');
+      var elozo = {}, most = {}, lista = [];
+      try {
+        elozo = JSON.parse(window.localStorage.getItem('voxSzakaszok') || '{}');
+      } catch (e) {
+        return;
+      }
+      for (var i = 0; i < secs.length; i++) {
+        var s = secs[i];
+        if (s.className.indexOf('news') >= 0 || s.className.indexOf('changed') >= 0) {
+          continue;
+        }
+        var cim = s.querySelector('h2');
+        if (!cim) continue;
+        // A kulcs a szakasz CÍME, nem a sorszáma: így egy új szakasz
+        // beszúrása nem tolja el a többit, és nem tűnik úgy, mintha az egész
+        // lap megváltozott volna.
+        var kulcs = cim.textContent.replace(/\s+/g, ' ').trim();
+        most[kulcs] = ujjlenyomat((s.textContent || '').replace(/\s+/g, ' ').trim());
+        if (elozo[kulcs] && elozo[kulcs] !== most[kulcs]) {
+          lista.push(cim);
+          var pill = document.createElement('span');
+          pill.className = 'pill';
+          pill.textContent = 'frissült';
+          cim.appendChild(pill);
+        }
+      }
+      try {
+        window.localStorage.setItem('voxSzakaszok', JSON.stringify(most));
+      } catch (e) { /* nem baj */ }
+
+      if (!lista.length) return;
+      var ul = document.getElementById('valtozott-lista');
+      var sec = document.getElementById('valtozott');
+      if (!ul || !sec) return;
+      for (var k = 0; k < lista.length; k++) {
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.textContent = lista[k].firstChild.nodeValue.trim();
+        a.href = '#';
+        (function (cim) {
+          a.onclick = function (e) {
+            e.preventDefault();
+            cim.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          };
+        })(lista[k]);
+        li.appendChild(a);
+        ul.appendChild(li);
+      }
+      sec.hidden = false;
+    }
+
+    /** Rövid ujjlenyomat egy szövegből (djb2). */
+    function ujjlenyomat(s) {
+      var h = 5381;
+      for (var i = 0; i < s.length; i++) {
+        h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+      }
+      return String(h);
+    }
+
+    // A szakaszok ellenőrzése nem függ a hálózattól: akkor is lefut, ha a
+    // GitHub épp nem elérhető.
+    valtozottSzakaszok();
   })();
 </script>
