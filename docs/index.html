@@ -217,7 +217,57 @@
 
   /* ---- újdonságok és frissült szakaszok */
 
-  .news[hidden], .changed[hidden] { display: none; }
+  .news[hidden], .changed[hidden], .history[hidden] { display: none; }
+
+  /* ---- korábbi kiadások, összecsukva */
+
+  .history details {
+    border-top: 1px solid var(--edge);
+    padding: 0.15rem 0;
+  }
+
+  .history details:last-of-type { border-bottom: 1px solid var(--edge); }
+
+  .history summary {
+    cursor: pointer;
+    padding: 0.62rem 0.1rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--accent-ink);
+    list-style: none;
+  }
+
+  .history summary::-webkit-details-marker { display: none; }
+
+  .history summary::before {
+    content: "+";
+    display: inline-block;
+    width: 1.1rem;
+    font-weight: 600;
+  }
+
+  .history details[open] > summary::before { content: "–"; }
+  .history summary:hover { color: var(--accent); }
+
+  .history .body {
+    padding: 0.1rem 0 0.9rem 1.1rem;
+    font-size: 0.95rem;
+  }
+
+  .history .body h3 {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0.9rem 0 0.3rem;
+  }
+
+  .history .body ul { margin: 0.3rem 0 0.7rem; padding-left: 1.1rem; }
+  .history .body li { margin-bottom: 0.3rem; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .history summary { color: var(--accent); }
+  }
+  :root[data-theme="dark"] .history summary { color: var(--accent); }
 
   .news h3 {
     font-family: var(--sans);
@@ -599,14 +649,21 @@
 
   <!-- A kiadás saját szövege, a GitHubról. Nem kell kézzel karbantartani:
        ami a kiadás leírásába kerül, az jelenik meg itt. -->
-  <section class="news" id="ujdonsagok" hidden>
+  <section class="news gen" id="ujdonsagok" hidden>
     <p class="eyebrow">Újdonságok</p>
     <h2 id="news-title">Mi változott</h2>
     <div id="news-body"></div>
   </section>
 
+  <!-- A korábbi kiadások leírásai, összecsukva. -->
+  <section class="history gen" id="korabbiak" hidden>
+    <p class="eyebrow">Korábban</p>
+    <h2>Mi változott a korábbi verziókban</h2>
+    <div id="korabbiak-lista"></div>
+  </section>
+
   <!-- Ami a lap saját leírásaiból változott a legutóbbi látogatásod óta. -->
-  <section class="changed" id="valtozott" hidden>
+  <section class="changed gen" id="valtozott" hidden>
     <p class="eyebrow">Frissült leírások</p>
     <h2>Ezek a részek is megváltoztak</h2>
     <ul id="valtozott-lista"></ul>
@@ -932,6 +989,9 @@
 
     var API = 'https://api.github.com/repos/sanyi1963bp/Vox-Libris/releases?per_page=100';
 
+    /** Ennyi korábbi kiadást sorolunk fel; a többi a GitHubon. */
+    var MAX_KORABBI = 8;
+
     function isApk(a) { return /\.apk$/i.test(a.name); }
     function setText(id, text) {
       var el = document.getElementById(id);
@@ -980,6 +1040,7 @@
         setText('apk-date', kiadasNapja(newest.published_at));
 
         ujdonsagok(version, newest.body);
+        korabbiak(releases, newest);
         markIfNew(version);
       })
       .catch(function () { /* marad a HTML-be írt kiadás */ });
@@ -1041,6 +1102,46 @@
       if (!box || !sec) return;
       box.innerHTML = mdToHtml(text);
       sec.hidden = false;
+    }
+
+    /**
+     * A korábbi kiadások, összecsukva.
+     *
+     * A `<details>` elem a böngésző saját nyitható-csukható eleme — nem kell
+     * hozzá szkript, és billentyűzettel is működik. Alapból mind csukva van,
+     * hogy ne foglalja el a lapot az, ami már nem újdonság.
+     */
+    function korabbiak(releases, newest) {
+      var box = document.getElementById('korabbiak-lista');
+      var sec = document.getElementById('korabbiak');
+      if (!box || !sec) return;
+
+      var db = 0;
+      for (var i = 0; i < releases.length && db < MAX_KORABBI; i++) {
+        var r = releases[i];
+        if (r === newest) continue;
+        var v = String(r.tag_name || '').replace(/^v/i, '');
+        if (!v) continue;
+
+        var d = document.createElement('details');
+        var s = document.createElement('summary');
+        var nap = kiadasNapja(r.published_at);
+        s.textContent = v + (nap ? '  ·  ' + nap : '');
+        d.appendChild(s);
+
+        var body = document.createElement('div');
+        body.className = 'body';
+        var text = (r.body || '').trim();
+        if (text) {
+          body.innerHTML = mdToHtml(text);
+        } else {
+          body.textContent = 'Ehhez a kiadáshoz nem készült leírás.';
+        }
+        d.appendChild(body);
+        box.appendChild(d);
+        db++;
+      }
+      if (db) sec.hidden = false;
     }
 
     /**
@@ -1116,9 +1217,9 @@
       }
       for (var i = 0; i < secs.length; i++) {
         var s = secs[i];
-        if (s.className.indexOf('news') >= 0 || s.className.indexOf('changed') >= 0) {
-          continue;
-        }
+        // A magunk töltötte szakaszokat kihagyjuk: azok minden kiadásnál
+        // változnak, és értelmetlen volna „frissültnek" jelölni őket.
+        if (s.className.indexOf('gen') >= 0) continue;
         var cim = s.querySelector('h2');
         if (!cim) continue;
         // A kulcs a szakasz CÍME, nem a sorszáma: így egy új szakasz
