@@ -53,6 +53,9 @@ DEFAULT_CHUNK = 20000
 
 SIDECAR_SUFFIX = ".vox.json"
 
+# Ide megy a részeredmény futás közben; a végén töröljük.
+PARTIAL_SUFFIX = ".vox.partial.json"
+
 
 # --------------------------------------------------------------- szövegkinyerés
 
@@ -181,22 +184,73 @@ A feljegyzések:
 ---"""
 
 
-def collect(model, paragraphs, chunk_size, verbose=True):
-    """Adagonként végigolvassuk a könyvet, majd összevonjuk a jegyzeteket."""
-    parts = list(chunks(paragraphs, chunk_size))
-    seen = {}
-    for i, part in enumerate(parts, 1):
-        if verbose:
-            print("  [%d/%d] adag (%d karakter)…" % (i, len(parts), len(part)))
-        data = ask(model, CHUNK_PROMPT % part)
-        if not data:
+def harvest(data, seen):
+    """
+    A modell válaszából kigyűjtjük, amit tudunk — és semmi többet nem várunk el.
+
+    A nyelvi modell nem szerződéses fél: ugyanarra a kérésre adhat objektumok
+    listáját, puszta neveket, más kulcsneveket, vagy a listát a gyökérben. Egy
+    ilyen meglepetés miatt nem szabad elveszni egy órányi munkának, ezért itt
+    mindent némán átugrunk, amit nem tudunk értelmezni.
+    """
+    if isinstance(data, list):
+        items = data
+    elif isinstance(data, dict):
+        items = None
+        for key in ("characters", "szereplok", "szereplők", "people", "persons"):
+            if isinstance(data.get(key), list):
+                items = data[key]
+                break
+        if items is None:
+            return 0
+    else:
+        return 0
+
+    added = 0
+    for c in items:
+        if not isinstance(c, dict):
+            # Puszta név leírás nélkül — nincs mit kezdeni vele.
             continue
-        for c in data.get("characters") or []:
-            name = (c.get("name") or "").strip()
-            desc = (c.get("description") or "").strip()
-            if not name or not desc:
-                continue
-            seen.setdefault(name, []).append(desc)
+        name = c.get("name") or c.get("nev") or c.get("név") or ""
+        desc = c.get("description") or c.get("leiras") or c.get("leírás") or ""
+        if not isinstance(name, str) or not isinstance(desc, str):
+            continue
+        name, desc = name.strip(), desc.strip()
+        if not name or not desc or len(name) > 80:
+            continue
+        seen.setdefault(name, []).append(desc)
+        added += 1
+    return added
+
+
+def collect(model, paragraphs, chunk_size, book_path, verbose=True):
+    """
+    Adagonként végigolvassuk a könyvet, majd összevonjuk a jegyzeteket.
+
+    A részeredményt minden adag után kiírjuk. Egy huszonnégy adagos könyv
+    percekig fut; ha a végén bármi elromlik, ne kelljen elölről kezdeni.
+    """
+    parts = list(chunks(paragraphs, chunk_size))
+    seen, start = load_partial(book_path, chunk_size, len(parts))
+    if start:
+        print("  folytatás a(z) %d. adagtól (%d név már megvan)" % (start + 1, len(seen)))
+
+    try:
+        for i in range(start, len(parts)):
+            if verbose:
+                print("  [%d/%d] adag (%d karakter)…" % (i + 1, len(parts), len(parts[i])))
+            data = ask(model, CHUNK_PROMPT % parts[i])
+            if data is not None:
+                # Egyetlen adag hibája sem viheti el az egész futást.
+                try:
+                    harvest(data, seen)
+                except Exception as e:
+                    print("    ! ezt az adagot kihagyom: %s" % e)
+            save_partial(book_path, chunk_size, len(parts), i + 1, seen)
+    except KeyboardInterrupt:
+        print("\n  megszakítva — a részeredmény elmentve, "
+              "ugyanezzel a paranccsal folytatható")
+        raise
 
     if not seen:
         return []
@@ -211,10 +265,36 @@ def collect(model, paragraphs, chunk_size, verbose=True):
     if verbose:
         print("  összevonás (%d név)…" % len(seen))
     merged = ask(model, MERGE_PROMPT % notes[:60000])
-    if merged and merged.get("characters"):
-        return merged["characters"]
+    final = []
+    if merged is not None:
+        try:
+            tmp = {}
+            harvest(merged, tmp)
+            # Az összevonásból az aliasokat is átvesszük, ha adott.
+            items = merged.get("characters") if isinstance(merged, dict) else merged
+            if isinstance(items, list):
+                for c in items:
+                    if not isinstance(c, dict):
+                        continue
+                    name = (c.get("name") or "").strip() if isinstance(c.get("name"), str) else ""
+                    desc = (c.get("description") or "").strip() \
+                        if isinstance(c.get("description"), str) else ""
+                    if not name or not desc:
+                        continue
+                    row = {"name": name, "description": desc}
+                    al = c.get("aliases")
+                    if isinstance(al, list):
+                        row["aliases"] = [a.strip() for a in al
+                                          if isinstance(a, str) and a.strip()]
+                    final.append(row)
+        except Exception as e:
+            print("  ! az összevonás válaszát nem értem: %s" % e)
+
+    if final:
+        return final
 
     # Ha az összevonás nem sikerült, a nyers gyűjtés is jobb a semminél.
+    print("  (az összevonás nem sikerült, a nyers gyűjtés megy ki)")
     return [
         {"name": n, "description": d[0]}
         for n, d in sorted(seen.items(), key=lambda kv: -len(kv[1]))[:60]
@@ -226,6 +306,52 @@ def collect(model, paragraphs, chunk_size, verbose=True):
 def sidecar_path(book_path):
     base = os.path.splitext(book_path)[0]
     return base + SIDECAR_SUFFIX
+
+
+def partial_path(book_path):
+    return os.path.splitext(book_path)[0] + PARTIAL_SUFFIX
+
+
+def save_partial(book_path, chunk_size, total, done, seen):
+    """
+    A részeredmény kiírása minden adag után.
+
+    Egy nagy könyv fél óráig is futhat. Ha a végén elszáll valami — rossz
+    válasz, áramszünet, Ctrl+C —, ne kelljen elölről kezdeni.
+    """
+    try:
+        with open(partial_path(book_path), "w", encoding="utf-8") as f:
+            json.dump({"chunk": chunk_size, "total": total,
+                       "done": done, "seen": seen}, f, ensure_ascii=False)
+    except Exception:
+        pass                                # a mentés hiánya ne álljon útba
+
+
+def load_partial(book_path, chunk_size, total):
+    """A korábbi részeredmény, ha ugyanahhoz a felosztáshoz tartozik."""
+    try:
+        p = partial_path(book_path)
+        if not os.path.isfile(p):
+            return {}, 0
+        with open(p, "r", encoding="utf-8") as f:
+            d = json.load(f)
+        # Más adagméret más felosztást jelent: onnan nem lehet folytatni.
+        if d.get("chunk") != chunk_size or d.get("total") != total:
+            return {}, 0
+        seen = d.get("seen")
+        done = d.get("done")
+        if not isinstance(seen, dict) or not isinstance(done, int):
+            return {}, 0
+        return seen, max(0, min(done, total))
+    except Exception:
+        return {}, 0
+
+
+def drop_partial(book_path):
+    try:
+        os.remove(partial_path(book_path))
+    except Exception:
+        pass
 
 
 def process(book_path, model, chunk_size, force=False):
@@ -247,7 +373,7 @@ def process(book_path, model, chunk_size, force=False):
         len(paragraphs), sum(len(p) for p in paragraphs)))
 
     started = time.time()
-    characters = collect(model, paragraphs, chunk_size)
+    characters = collect(model, paragraphs, chunk_size, book_path)
     if not characters:
         print("  ! nem lett belőle szereplő")
         return False
@@ -265,6 +391,7 @@ def process(book_path, model, chunk_size, force=False):
     }
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
+    drop_partial(book_path)
     print("  kész: %d szereplő, %.0f mp -> %s" % (
         len(characters), time.time() - started, os.path.basename(out_path)))
     return True
