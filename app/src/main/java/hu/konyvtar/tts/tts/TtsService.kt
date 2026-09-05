@@ -313,6 +313,22 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         if (status == TextToSpeech.SUCCESS) {
             ttsReady = true
             val engine = tts ?: return
+
+            // A felolvasó motornak KÜLÖN meg kell mondani, hogy amit mond, az
+            // médiahang. A hangfókusz-kérésen eddig is rajta volt, de az csak
+            // arról szól, kié legyen a hang — arról nem, milyen csatornán
+            // szóljon.
+            //
+            // Enélkül a motor alapértelmezésére hagyatkoznánk, és az
+            // eszközönként más lehet. Autós fejegységnél ez számít: a
+            // médiaként bejelentett hang megy a zenecsatornára (A2DP), a
+            // másképp bejelentett a telefoncsatornára kerülhet, vagy sehova.
+            engine.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
+            )
             applyLanguage(engine)
             engine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String?) {}

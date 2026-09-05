@@ -9,6 +9,23 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.7.1] — 2026-09-06
+
+**A felolvasás médiahangként jelenti be magát**
+
+Autós fejegységnél derült ki a hiány: a `USAGE_MEDIA` beállítás eddig csak a
+**hangfókusz-kérésen** volt rajta, magán a **felolvasó motoron nem**. A kettő
+két különböző dolog: az egyik arról szól, kié legyen a hang, a másik arról,
+milyen csatornán szóljon.
+
+Enélkül a motor alapértelmezésére hagyatkoztunk, ami eszközönként más lehet.
+Autóban ez számít: a médiaként bejelentett hang a zenecsatornára megy (A2DP),
+a másképp bejelentett a telefoncsatornára kerülhet — vagy sehova.
+
+Ez nem garantálja, hogy minden fejegység elsőre csatlakozik: a párosítás a
+rendszer dolga, abba az app nem lát bele. De ami rajtunk múlt, az mostantól
+egyértelmű.
+
 ### [4.7.0] — 2026-09-05
 
 **Szereplőleírások a könyv mellől — a PC-n készítve**
@@ -529,6 +546,23 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.7.1] — 2026-09-06
+
+**Narration now declares itself as media audio**
+
+A car head unit exposed the gap: `USAGE_MEDIA` was set on the **audio focus
+request** but never on the **speech engine itself**. Those are two different
+things — one says who owns the audio, the other says which channel it belongs
+to.
+
+Without it we relied on the engine's default, which varies by device. In a car
+this matters: audio declared as media goes to the music channel (A2DP), while
+audio declared otherwise may end up on the phone-call channel — or nowhere.
+
+This does not guarantee that every head unit will connect first time: pairing
+is the system's business and the app has no view into it. But the part that
+was ours is now unambiguous.
 
 ### [4.7.0] — 2026-09-05
 
