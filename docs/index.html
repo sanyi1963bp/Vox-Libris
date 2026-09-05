@@ -1050,29 +1050,51 @@
      */
     function mdToHtml(md) {
       var esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
       function inline(s) {
         return s.replace(/`([^`]+)`/g, '<code>$1</code>')
-                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>');
       }
-      var out = [], inList = false;
+
+      // A bekezdéseket ELŐBB összefűzzük, és csak utána alkalmazzuk a
+      // kiemeléseket. Soronként dolgozva a két sorra tört **félkövér** két
+      // fél csillagpárra esne szét, és nyersen jelenne meg a lapon.
       var lines = esc.split(/\r?\n/);
+      var out = [], bek = [], lista = null;
+
+      function zarBekezdes() {
+        if (bek.length) { out.push('<p>' + inline(bek.join(' ')) + '</p>'); bek = []; }
+      }
+      function zarLista() {
+        if (lista) {
+          var items = '';
+          for (var k = 0; k < lista.length; k++) items += '<li>' + inline(lista[k]) + '</li>';
+          out.push('<ul>' + items + '</ul>');
+          lista = null;
+        }
+      }
+
       for (var i = 0; i < lines.length; i++) {
         var l = lines[i].trim();
-        if (!l) { if (inList) { out.push('</ul>'); inList = false; } continue; }
+        if (!l) { zarBekezdes(); zarLista(); continue; }
         var h = l.match(/^#{1,4}\s+(.*)$/);
         var li = l.match(/^[-*]\s+(.*)$/);
         if (h) {
-          if (inList) { out.push('</ul>'); inList = false; }
+          zarBekezdes(); zarLista();
           out.push('<h3>' + inline(h[1]) + '</h3>');
         } else if (li) {
-          if (!inList) { out.push('<ul>'); inList = true; }
-          out.push('<li>' + inline(li[1]) + '</li>');
+          zarBekezdes();
+          if (!lista) lista = [];
+          lista.push(li[1]);
+        } else if (lista) {
+          lista[lista.length - 1] += ' ' + l;   // tördelt felsorolás folytatása
         } else {
-          if (inList) { out.push('</ul>'); inList = false; }
-          out.push('<p>' + inline(l) + '</p>');
+          bek.push(l);
         }
       }
-      if (inList) out.push('</ul>');
+      zarBekezdes();
+      zarLista();
       return out.join('');
     }
 
