@@ -36,6 +36,11 @@ import urllib.error
 import urllib.request
 import zipfile
 
+# A Windows-konzol alapértelmezett kódlapja nem bírja a magyar ékezeteket, és
+# egy hosszú futás közepén elhasalni egy kiírás miatt bosszantó volna.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 OLLAMA = "http://localhost:11434"
 
 # Magyar szöveghez a nagyobb, többnyelvű modellek érezhetően jobbak. Ez csak
