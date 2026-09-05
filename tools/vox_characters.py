@@ -119,44 +119,104 @@ def chunks(paragraphs, size):
 
 # ------------------------------------------------------------------- a modell
 
-def ask(model, prompt, retries=2):
-    """Kérdés az Ollamának, JSON válasszal."""
-    body = json.dumps({
-        "model": model,
-        "prompt": prompt,
-        "stream": False,
-        "format": "json",
-        "options": {"temperature": 0.1},
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        OLLAMA + "/api/generate", data=body,
-        headers={"Content-Type": "application/json"},
-    )
+# A válasz alakját sémával kérjük, nem példával.
+#
+# Ez nem finomhangolás, hanem az első éles futás tanulsága. Eredetileg egy
+# kitalált példa volt a promptban ("Jakub Szapiro"), és a modell azt másolta
+# le a feladat elvégzése helyett: egy egész regényből egyetlen szereplő lett,
+# az is a példából. A séma nem másolható — csak az alakot írja elő.
+CHUNK_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "characters": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "description": {"type": "string"},
+                },
+                "required": ["name", "description"],
+            },
+        }
+    },
+    "required": ["characters"],
+}
+
+MERGE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "characters": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "aliases": {"type": "array", "items": {"type": "string"}},
+                    "description": {"type": "string"},
+                },
+                "required": ["name", "description"],
+            },
+        }
+    },
+    "required": ["characters"],
+}
+
+
+def ask(model, prompt, schema=None, retries=2):
+    """
+    Kérdés az Ollamának.
+
+    A sémát a régebbi Ollama-változatok nem ismerik; ha visszautasítja, sima
+    JSON-módban próbálkozunk tovább.
+    """
+    formats = [schema, "json"] if schema else ["json"]
     last = None
-    for attempt in range(retries + 1):
-        try:
-            with urllib.request.urlopen(req, timeout=600) as r:
-                answer = json.loads(r.read().decode("utf-8"))["response"]
-            return json.loads(answer)
-        except Exception as e:              # a modell néha csonka JSON-t ad
-            last = e
-            if attempt < retries:
-                time.sleep(2)
+    for fmt in formats:
+        body = json.dumps({
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "format": fmt,
+            "options": {"temperature": 0.1},
+        }).encode("utf-8")
+        for attempt in range(retries + 1):
+            try:
+                req = urllib.request.Request(
+                    OLLAMA + "/api/generate", data=body,
+                    headers={"Content-Type": "application/json"},
+                )
+                with urllib.request.urlopen(req, timeout=600) as r:
+                    answer = json.loads(r.read().decode("utf-8"))["response"]
+                return json.loads(answer)
+            except urllib.error.HTTPError as e:
+                last = e
+                break                       # ezt a formátumot nem fogadja el
+            except Exception as e:          # a modell néha csonka JSON-t ad
+                last = e
+                if attempt < retries:
+                    time.sleep(2)
     print("    ! a modell nem adott értelmes választ: %s" % last)
     return None
 
 
+# A promptokban SZÁNDÉKOSAN nincs kitalált példanév. Az első éles futáson egy
+# volt benne, és a modell azt másolta le a feladat elvégzése helyett — egy
+# egész regényből egyetlen, a példából származó szereplő lett. A válasz alakját
+# ezért séma írja elő, nem példa.
+
 CHUNK_PROMPT = """Az alábbi regényrészletben szereplő SZEMÉLYEKET gyűjtsd ki.
 
 Szabályok:
-- Csak személyek. Helyszín, ország, utca, intézmény, tárgy NEM kell.
-- A nevet abban az alakban add meg, ahogy a szövegben áll, ragok nélkül.
-- A leírás egy tömör magyar mondat legyen arról, KICSODA az illető:
-  foglalkozása, rokoni viszonyai, szerepe a történetben.
-- Ha egy szereplőről ebben a részletben semmi lényeges nem derül ki, hagyd ki.
-
-Válaszolj pontosan ilyen JSON-nal:
-{"characters":[{"name":"Jakub Szapiro","description":"Zsidó bokszoló, Kaplica bandájának verőembere."}]}
+- Csak személyek. Helyszín, ország, hajó, intézmény, tárgy NEM kell.
+- CSAK olyan nevet írj, ami szó szerint szerepel az alábbi részletben.
+- A nevet ragok nélkül add meg, abban az alakban, ahogy a szövegben áll.
+- A puszta beosztás nem név: névvel együtt említve igen, önmagában nem.
+- A leírás egy tömör mondat arról, KICSODA az illető a részlet szerint.
+- MAGYARUL írj. A leírás minden szava magyar legyen, angolul ne válaszolj.
+- NE TALÁLGASS. Amit a részlet nem mond ki, azt ne írd le. Ha valamiben nem
+  vagy biztos, inkább hagyd ki.
+- Ha nincs benne személy, adj vissza üres listát.
 
 A részlet:
 ---
@@ -164,19 +224,16 @@ A részlet:
 ---"""
 
 MERGE_PROMPT = """Ugyanannak a regénynek a szereplőiről készültek részleges
-feljegyzések, fejezetenként. Vond össze őket EGY listába.
+feljegyzések, a könyv egymást követő szakaszaiból. Vond össze őket EGY listába.
 
 Szabályok:
 - Aki ugyanaz a személy, az egy tétel legyen. A "name" a teljes, leggyakoribb
-  alak legyen ("Jakub Szapiro"), az "aliases" pedig az összes többi említett
-  alak ("Szapiro", "Jakub").
+  alak, az "aliases" pedig a többi említett alakja ugyanannak a személynek.
 - A "description" 1-3 magyar mondat: ki az illető, mi a szerepe, kikhez
-  tartozik. Nyugodtan foglalja össze a teljes ívét.
-- Csak személyek maradjanak. Helyszín, ország, intézmény NEM.
+  tartozik. Ez a leírás a teljes könyvet összefoglalhatja.
+- Csak személyek maradjanak. Helyszín, ország, hajó, intézmény NEM.
+- Amelyik névről csak bizonytalan, találgató feljegyzés van, azt hagyd ki.
 - A legfontosabb szereplők kerüljenek előre.
-
-Válaszolj pontosan ilyen JSON-nal:
-{"characters":[{"name":"Jakub Szapiro","aliases":["Szapiro","Jakub"],"description":"..."}]}
 
 A feljegyzések:
 ---
@@ -216,11 +273,29 @@ def harvest(data, seen):
         if not isinstance(name, str) or not isinstance(desc, str):
             continue
         name, desc = name.strip(), desc.strip()
-        if not name or not desc or len(name) > 80:
+        if not name or not desc or not looks_like_name(name):
             continue
         seen.setdefault(name, []).append(desc)
         added += 1
     return added
+
+
+def looks_like_name(name):
+    """
+    Névnek látszik-e egyáltalán?
+
+    A modell néha egész fogalmakat ad vissza személy helyett — egy éles
+    futáson például „Örökös problémák" került a szereplők közé. Egy név
+    legfeljebb három szó, és minden szava nagybetűvel kezdődik.
+
+    Ez csak a durva szemetet szűri. Egy beosztást („Kezelő") ezen az alapon
+    nem lehet megkülönböztetni egy vezetéknévtől — azt az összevonó lépésre
+    hagyjuk, ami az egész könyvet látja.
+    """
+    words = [w for w in name.replace("-", " ").split() if w]
+    if not (1 <= len(words) <= 3) or len(name) > 60:
+        return False
+    return all(w[0].isupper() for w in words if w[0].isalpha())
 
 
 def collect(model, paragraphs, chunk_size, book_path, verbose=True):
@@ -235,17 +310,32 @@ def collect(model, paragraphs, chunk_size, book_path, verbose=True):
     if start:
         print("  folytatás a(z) %d. adagtól (%d név már megvan)" % (start + 1, len(seen)))
 
+    # Adagonként kiírjuk, hány nevet hozott. Az első éles futás azért ment el
+    # húsz percig a semmiért, mert a képernyőn nem látszott, hogy nulla az
+    # eredmény — csak a végén derült ki.
+    empty_streak = 0
     try:
         for i in range(start, len(parts)):
-            if verbose:
-                print("  [%d/%d] adag (%d karakter)…" % (i + 1, len(parts), len(parts[i])))
-            data = ask(model, CHUNK_PROMPT % parts[i])
+            data = ask(model, CHUNK_PROMPT % parts[i], CHUNK_SCHEMA)
+            added = 0
             if data is not None:
                 # Egyetlen adag hibája sem viheti el az egész futást.
                 try:
-                    harvest(data, seen)
+                    added = harvest(data, seen)
                 except Exception as e:
                     print("    ! ezt az adagot kihagyom: %s" % e)
+            if verbose:
+                print("  [%d/%d] adag (%d karakter) -> %d név, összesen %d" % (
+                    i + 1, len(parts), len(parts[i]), added, len(seen)))
+
+            # Ha sorozatban semmit nem hoz, valami elromlott — szóljunk, ne
+            # húsz perc múlva derüljön ki egy majdnem üres fájlból.
+            empty_streak = empty_streak + 1 if added == 0 else 0
+            if empty_streak == 3:
+                print("  ! három adag egymás után üres. Ha ez így marad, a modell")
+                print("    nem érti a feladatot — érdemes megszakítani (Ctrl+C),")
+                print("    és másik modellel próbálni: --model qwen2.5:32b")
+
             save_partial(book_path, chunk_size, len(parts), i + 1, seen)
     except KeyboardInterrupt:
         print("\n  megszakítva — a részeredmény elmentve, "
@@ -264,7 +354,7 @@ def collect(model, paragraphs, chunk_size, book_path, verbose=True):
     )
     if verbose:
         print("  összevonás (%d név)…" % len(seen))
-    merged = ask(model, MERGE_PROMPT % notes[:60000])
+    merged = ask(model, MERGE_PROMPT % notes[:60000], MERGE_SCHEMA)
     final = []
     if merged is not None:
         try:
