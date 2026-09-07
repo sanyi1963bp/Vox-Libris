@@ -9,6 +9,21 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.7.2] — 2026-09-07
+
+**A kocsi lejátszás gombja elindítja a legutóbbi könyvet**
+
+Az autós fejegység gombja (és a kormányon lévő párja) eddig csak akkor működött,
+ha az appban már be volt töltve egy könyv. Beülünk a kocsiba, a Bluetooth
+csatlakozik, megnyomjuk a lejátszást — és nem történik semmi, mert az app azóta
+el sem indult, nem volt mit folytatni.
+
+Mostantól ilyenkor a **legutóbb hallgatott könyv folytatódik** onnan, ahol
+abbahagytuk. A telefont elő sem kell venni.
+
+A szünet és a tekerés gombja továbbra sem csinál semmit üres kézzel — azoknak
+üres állapotban nincs értelme.
+
 ### [4.7.1] — 2026-09-06
 
 **A felolvasás médiahangként jelenti be magát**
@@ -546,6 +561,20 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.7.2] — 2026-09-07
+
+**The car's play button starts the last book**
+
+The head unit's play button (and its twin on the steering wheel) only worked if
+a book was already loaded. You get in the car, Bluetooth connects, you press
+play — and nothing happens, because the app hasn't run since, so there was
+nothing to resume.
+
+Now that press **resumes the last book you listened to**, from where you left
+off. No need to reach for the phone.
+
+Pause and skip still do nothing when empty — they have no meaning there.
 
 ### [4.7.1] — 2026-09-06
 

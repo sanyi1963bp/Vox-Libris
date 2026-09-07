@@ -22,6 +22,7 @@ import android.speech.tts.UtteranceProgressListener
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
 import hu.konyvtar.tts.MainActivity
 import hu.konyvtar.tts.R
@@ -416,12 +417,21 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 // frissen is indulhatott, ezért ELŐBB előtérbe lépünk:
                 // különben az Android öt másodperc után megöl minket.
                 startForeground(NOTIF_ID, buildNotification())
-                MediaButtonReceiver.handleIntent(mediaSession, intent)
                 if (paragraphs.isEmpty()) {
-                    // Nincs betöltött könyv, nincs mit kezdeni a gombbal —
-                    // ne maradjunk itt előtérben a semmiért.
-                    stopForeground(STOP_FOREGROUND_REMOVE)
-                    stopSelf()
+                    // Nincs betöltött könyv. Ez a tipikus autós helyzet: beülünk,
+                    // a fejegység csatlakozik, és a kormányon megnyomjuk a
+                    // lejátszást — de az app azóta el sem indult, így nincs mit
+                    // folytatni. Ilyenkor a legutóbb hallgatott könyvet vesszük
+                    // elő onnan, ahol abbahagytuk.
+                    if (isPlayButton(intent)) resumeLastBook()
+                    else {
+                        // Bármi más gomb (szünet, továbbtekerés) üres kézzel
+                        // értelmetlen — ne maradjunk előtérben a semmiért.
+                        stopForeground(STOP_FOREGROUND_REMOVE)
+                        stopSelf()
+                    }
+                } else {
+                    MediaButtonReceiver.handleIntent(mediaSession, intent)
                 }
             }
             ACTION_PRONOUNCE_CHANGED -> {
@@ -443,6 +453,44 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     // ---------------------------------------------------------------- lejátszásvezérlés
+
+    /** Lejátszás-jellegű médiagomb volt-e? A szünet/tekerés nem az. */
+    private fun isPlayButton(intent: Intent): Boolean {
+        @Suppress("DEPRECATION")
+        val key = intent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT) ?: return false
+        if (key.action != KeyEvent.ACTION_DOWN) return false
+        return when (key.keyCode) {
+            KeyEvent.KEYCODE_MEDIA_PLAY,
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+            KeyEvent.KEYCODE_HEADSETHOOK -> true
+            else -> false
+        }
+    }
+
+    /**
+     * A legutóbb hallgatott könyv folytatása. Akkor hívjuk, ha kívülről
+     * (fejegység, kormánygomb, fülhallgató) jött lejátszás-parancs, de az
+     * appban nincs betöltött könyv.
+     */
+    private fun resumeLastBook() {
+        scope.launch {
+            val row = withContext(Dispatchers.IO) { AppDb.lastListened() }
+            if (row == null || !File(row.path).exists()) {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
+                return@launch
+            }
+            val start = Intent(this@TtsService, TtsService::class.java).apply {
+                action = ACTION_PLAY_FILE
+                putExtra(EXTRA_PATH, row.path)
+                putExtra(EXTRA_TITLE, row.title)
+                putExtra(EXTRA_AUTHOR, row.author)
+                row.konyvId?.let { putExtra(EXTRA_KONYV_ID, it) }
+                // startIndex nélkül a handlePlayFile a mentett pozíciót veszi elő.
+            }
+            if (!ttsReady) pendingStart = start else handlePlayFile(start)
+        }
+    }
 
     private fun handlePlayFile(intent: Intent) {
         val path = intent.getStringExtra(EXTRA_PATH) ?: return
