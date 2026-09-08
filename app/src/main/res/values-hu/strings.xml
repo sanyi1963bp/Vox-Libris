@@ -370,4 +370,10 @@
     <string name="set_diag_export">Mentés a Letöltésekbe</string>
     <string name="set_diag_exported">Mentve: %1$s</string>
     <string name="set_diag_export_failed">A naplót nem sikerült menteni.</string>
+
+    <!-- Zárolt képernyő: bővebb adatok és gombok -->
+    <string name="notif_prev_chapter">Előző fejezet</string>
+    <string name="notif_next_chapter">Következő fejezet</string>
+    <string name="notif_chapter_of">%1$d. fejezet / %2$d</string>
+    <string name="notif_details">A könyv adatlapja</string>
 </resources>

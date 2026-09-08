@@ -9,6 +9,33 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.9.0] — 2026-09-08
+
+**Sokkal többet mutat a zárolt képernyő**
+
+Eddig egy cím, egy szerző és három gomb volt. Mostantól:
+
+- a **könyv borítója** — ha van a fájlban, kiolvassuk
+- **hányadik fejezetnél** tartunk, és hányból
+- **haladásjelző csík**, ami mutatja, hol vagy a könyvben — és **húzható** is,
+  tehát a zárolt képernyőről lehet előre-hátra tekerni
+- **fejezetugró gombok** a rendszer lejátszójában — a „következő" ott eddig
+  csak egy mondatot lépett, ami hangoskönyvnél kevés
+- egy **adatlap gomb**, ami megnyitja a könyv adatlapját: miről szól, ki írta
+
+A haladásjelző becsült: a felolvasásnak nincs valódi idővonala, ezért a
+karakterszámból és a beszédsebességből számoljuk. Ugyanabból, amiből a
+visszatekerés — így a kettő nem mondhat mást.
+
+A borító és a fejezetszám az autós fejegység kijelzőjén is megjelenik. Eddig
+azért írta ki, hogy „Music Album", mert nem volt mit mondanunk neki.
+
+**Az adatlap gomb, és miért nem hosszú nyomás**
+
+A rendszer lejátszóján a hosszú nyomás a rendszeré: hangkimenet-váltó, app-infó.
+Azt nem vehetjük el. Egy külön gomb viszont egyetlen koppintás — és látszik is,
+hogy ott van.
+
 ### [4.8.0] — 2026-09-08
 
 **A három nézet együtt mozog**
@@ -587,6 +614,32 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.9.0] — 2026-09-08
+
+**The lock screen shows far more**
+
+It used to be a title, an author and three buttons. Now:
+
+- the **book cover**, read from the file when it has one
+- **which chapter** you are on, and out of how many
+- a **progress bar** showing where you are in the book — and it is **draggable**,
+  so you can seek from the lock screen
+- **chapter skip buttons** in the system player — "next" there only moved one
+  sentence, which is not much for an audiobook
+- a **details button** that opens the book's info: what it is about, who wrote it
+
+The progress bar is an estimate: narration has no real timeline, so we compute it
+from the character count and the speech rate. The same numbers drive the rewind,
+so the two cannot disagree.
+
+The cover and chapter number also reach the car head unit's display. It said
+"Music Album" before because we gave it nothing to say.
+
+**The details button, and why not a long press**
+
+On the system player a long press belongs to the system: output switcher, app
+info. We cannot take that. A separate button is one tap — and it is visible.
 
 ### [4.8.0] — 2026-09-08
 

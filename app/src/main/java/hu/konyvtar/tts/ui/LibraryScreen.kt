@@ -154,6 +154,19 @@ fun LibraryScreen(
         }
     }
 
+    // A zárolt képernyő „adatlap" gombja ide fut be: megnyitjuk a könyv
+    // adatlapját, és rögtön el is felejtjük a kérést, hogy ne ugorjon fel
+    // újra minden visszatéréskor.
+    val detailsPath by vm.detailsPath.collectAsState()
+    LaunchedEffect(detailsPath, ui.books) {
+        val p = detailsPath ?: return@LaunchedEffect
+        val book = ui.books.firstOrNull { it.path == p }
+        if (book != null) {
+            infoBook = book
+            vm.detailsShown()
+        }
+    }
+
     /** Megnyitás felolvasással — ez a dupla koppintás. */
     fun openAndPlay(book: ShelfBook) {
         val row = book.toFileRow()

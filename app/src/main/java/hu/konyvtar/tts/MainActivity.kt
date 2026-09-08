@@ -44,6 +44,7 @@ import hu.konyvtar.tts.data.AppDb
 import hu.konyvtar.tts.ui.MainNav
 import hu.konyvtar.tts.ui.MainView
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.Lifecycle
@@ -76,12 +77,29 @@ class MainActivity : ComponentActivity() {
 
     private var openPlayerOnStart = false
 
+    companion object {
+        /**
+         * A zárolt képernyő „adatlap" gombja ide teszi le a könyv útvonalát.
+         *
+         * Azért statikus, mert az activity `singleTask`: a gombnyomás egy már
+         * futó példányba érkezik, a Compose fája viszont akkor már megvan. Ez
+         * a folyam köti össze a kettőt.
+         */
+        val detailsRequest = MutableStateFlow<String?>(null)
+    }
+
+    /** A kapott szándékból kiolvassuk, kérték-e valamelyik könyv adatlapját. */
+    private fun handleDetailsExtra(intent: Intent?) {
+        intent?.getStringExtra("show_details")?.let { detailsRequest.value = it }
+    }
+
     private val notifPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         openPlayerOnStart = intent?.getBooleanExtra("open_player", false) == true
+        handleDetailsExtra(intent)
         ThemeState.load(this)
 
         // Értesítési engedély (Android 13+), hogy a felolvasó vezérlősáv látsszon
@@ -107,6 +125,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        handleDetailsExtra(intent)
     }
 }
 
@@ -200,6 +219,18 @@ fun AppRoot(startInPlayer: Boolean) {
         onFiles = { goToPage(1) },
         onReader = { openReader() }
     )
+
+    // A zárolt képernyő „adatlap" gombja: a könyvtárhoz megyünk, ráállunk a
+    // könyvre, és felnyitjuk az adatlapját. A kérést rögtön töröljük, hogy
+    // a képernyőforgatás ne nyissa fel újra.
+    val detailsReq by MainActivity.detailsRequest.collectAsState()
+    LaunchedEffect(detailsReq) {
+        val p = detailsReq ?: return@LaunchedEffect
+        MainActivity.detailsRequest.value = null
+        vm.setSyncPath(p)
+        vm.requestDetails(p)
+        goToPage(0)
+    }
 
     // Értesítésre koppintva egyből a most szóló könyv olvasója nyílik
     if (startInPlayer) {

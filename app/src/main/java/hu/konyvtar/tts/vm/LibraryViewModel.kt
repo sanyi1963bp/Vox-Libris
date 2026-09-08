@@ -101,6 +101,23 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
         if (_syncPath.value != path) _syncPath.value = path
     }
 
+    /**
+     * Melyik könyv adatlapját kérték kívülről — a zárolt képernyő gombjáról.
+     *
+     * Egyszer használatos jelzés: a könyvtár képernyő megnyitja az adatlapot,
+     * majd törli. Enélkül minden visszatéréskor újra felugrana.
+     */
+    private val _detailsPath = MutableStateFlow<String?>(null)
+    val detailsPath: StateFlow<String?> = _detailsPath
+
+    fun requestDetails(path: String?) {
+        _detailsPath.value = path
+    }
+
+    fun detailsShown() {
+        _detailsPath.value = null
+    }
+
     private var listJob: Job? = null
     private var libJob: Job? = null
     private var scanJob: Job? = null

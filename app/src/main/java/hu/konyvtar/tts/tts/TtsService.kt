@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -27,6 +28,7 @@ import androidx.core.app.NotificationCompat
 import hu.konyvtar.tts.MainActivity
 import hu.konyvtar.tts.R
 import hu.konyvtar.tts.data.AppDb
+import hu.konyvtar.tts.data.CoverExtractor
 import hu.konyvtar.tts.data.EventLog
 import androidx.media.session.MediaButtonReceiver
 import hu.konyvtar.tts.data.Prefs
@@ -177,6 +179,9 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     private var focusRequest: AudioFocusRequest? = null
     private var mediaSession: MediaSessionCompat? = null
 
+    /** A könyv borítója a zárolt képernyőre — könyvenként egyszer olvassuk ki. */
+    private var coverArt: Bitmap? = null
+
     private val noisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
@@ -244,10 +249,63 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                     EventLog.add(this@TtsService, "Menet-parancs: ELŐRETEKERÉS")
                     skip(1)
                 }
+
+                /** A zárolt képernyő haladásjelzőjének húzása. */
+                override fun onSeekTo(pos: Long) {
+                    EventLog.add(this@TtsService, "Menet-parancs: TEKERÉS", "${pos / 1000} mp")
+                    seekToMs(pos)
+                }
+
+                override fun onCustomAction(action: String?, extras: Bundle?) {
+                    EventLog.add(this@TtsService, "Menet-parancs: saját gomb", action ?: "?")
+                    when (action) {
+                        ACTION_NEXT_CHAPTER -> skipChapter(1)
+                        ACTION_PREV_CHAPTER -> skipChapter(-1)
+                    }
+                }
             })
             isActive = true
         }
         updateMediaSessionState()
+    }
+
+    /**
+     * Becsült beszédsebesség karakter/másodpercben.
+     *
+     * A TTS-nek nincs igazi idővonala — nem tudjuk előre, meddig tart egy
+     * könyv. De a karakterszámból jól becsülhető, és a zárolt képernyőnek
+     * pont ez kell ahhoz, hogy haladásjelzőt tudjon rajzolni. Ugyanez a szám
+     * mozgatja a visszatekerést is, tehát a kettő nem mondhat mást.
+     */
+    private fun charsPerSecond(): Float = 14f * _state.value.speed.coerceAtLeast(0.5f)
+
+    /** Hol tartunk a könyvben, ezredmásodpercre átszámolva. */
+    private fun positionMs(): Long {
+        val u = sentences.getOrNull(sentIndex) ?: return 0
+        val globalChar = cumulativeChars.getOrElse(u.para) { 0L } + u.start
+        return (globalChar / charsPerSecond() * 1000).toLong()
+    }
+
+    /** Mennyi az egész könyv, ugyanabban a becsült időben. */
+    private fun durationMs(): Long =
+        (totalChars / charsPerSecond() * 1000).toLong()
+
+    /** Az ezredmásodperc-alapú tekerés visszafordítása mondatra. */
+    private fun seekToMs(ms: Long) {
+        if (sentences.isEmpty()) return
+        val targetChar = (ms / 1000.0 * charsPerSecond()).toLong().coerceAtLeast(0)
+        // A cumulativeChars növekvő, tehát bináris kereséssel megvan a bekezdés.
+        var lo = 0
+        var hi = paragraphs.size - 1
+        while (lo < hi) {
+            val mid = (lo + hi + 1) / 2
+            if (cumulativeChars.getOrElse(mid) { 0L } <= targetChar) lo = mid else hi = mid - 1
+        }
+        val within = (targetChar - cumulativeChars.getOrElse(lo) { 0L }).toInt()
+        sentIndex = sentenceIndexFor(lo, within.coerceAtLeast(0))
+        publishPosition()
+        if (_state.value.playing) speakCurrent() else saveProgress()
+        updateNotification()
     }
 
     private fun updateMediaSessionState() {
@@ -259,28 +317,99 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
             PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
             PlaybackStateCompat.ACTION_REWIND or
-            PlaybackStateCompat.ACTION_FAST_FORWARD
+            PlaybackStateCompat.ACTION_FAST_FORWARD or
+            PlaybackStateCompat.ACTION_SEEK_TO
         val stateCode = when {
             s.playing -> PlaybackStateCompat.STATE_PLAYING
             s.path != null -> PlaybackStateCompat.STATE_PAUSED
             else -> PlaybackStateCompat.STATE_STOPPED
         }
-        mediaSession?.setPlaybackState(
-            PlaybackStateCompat.Builder()
-                .setActions(actions)
-                .setState(stateCode, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, s.speed)
-                .build()
-        )
+        val b = PlaybackStateCompat.Builder()
+            .setActions(actions)
+            .setState(stateCode, positionMs(), s.speed)
+
+        // Saját gombok a rendszer lejátszójában. A fejezetugrás azért van itt,
+        // mert hangoskönyvnél ez a természetes nagy lépés — a rendszer saját
+        // „következő" gombja nálunk csak mondatot lép.
+        if (paragraphs.isNotEmpty()) {
+            b.addCustomAction(
+                PlaybackStateCompat.CustomAction.Builder(
+                    ACTION_PREV_CHAPTER,
+                    getString(R.string.notif_prev_chapter),
+                    R.drawable.ic_chapter_prev
+                ).build()
+            )
+            b.addCustomAction(
+                PlaybackStateCompat.CustomAction.Builder(
+                    ACTION_NEXT_CHAPTER,
+                    getString(R.string.notif_next_chapter),
+                    R.drawable.ic_chapter_next
+                ).build()
+            )
+        }
+        mediaSession?.setPlaybackState(b.build())
     }
 
+    /**
+     * Amit a zárolt képernyő és az autós fejegység kiír a könyvről.
+     *
+     * Igyekszünk mindent megadni, amit egy zenelejátszótól várnak, mert a
+     * rendszer és a fejegységek ezekre a mezőkre vannak felkészítve: a cím és
+     * a szerző mellé borító, fejezet és hossz is jár. Amit nem töltünk ki, azt
+     * a fejegység üresen hagyja — pont ezt láttuk a kocsi kijelzőjén.
+     */
     private fun updateMediaMetadata() {
         val s = _state.value
-        mediaSession?.setMetadata(
-            MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, s.title)
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, s.author)
-                .build()
-        )
+        val b = MediaMetadataCompat.Builder()
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, s.title)
+            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, s.author)
+            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, s.author)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, s.title)
+            .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, s.author)
+
+        if (s.totalChapters > 0) {
+            val chapter = getString(
+                R.string.notif_chapter_of, s.chapterIndex + 1, s.totalChapters
+            )
+            b.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, chapter)
+            b.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, chapter)
+            b.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, s.totalChapters.toLong())
+            b.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, (s.chapterIndex + 1).toLong())
+        }
+        if (paragraphs.isNotEmpty()) {
+            b.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationMs())
+        }
+        coverArt?.let {
+            b.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, it)
+            b.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, it)
+        }
+        mediaSession?.setMetadata(b.build())
+    }
+
+    /**
+     * A könyv borítója a zárolt képernyőre. Egyszer olvassuk ki könyvenként,
+     * a háttérben — a borítókinyerés fájlt bont, annak nincs helye a
+     * felolvasás útjában.
+     */
+    private fun loadCoverArt(path: String) {
+        coverArt = null
+        scope.launch {
+            val bmp = withContext(Dispatchers.IO) {
+                try {
+                    val f = File(path)
+                    val ext = f.extension.lowercase()
+                    if (!CoverExtractor.canHaveCover(ext)) null
+                    else CoverExtractor.extract(this@TtsService, f, 512, 512)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            if (bmp != null && _state.value.path == path) {
+                coverArt = bmp
+                updateMediaMetadata()
+                updateNotification()
+            }
+        }
     }
 
     /**
@@ -615,6 +744,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             )
             publishPosition()
             updateMediaMetadata()
+            _state.value.path?.let { loadCoverArt(it) }
             resume()
         }
     }
@@ -1038,10 +1168,28 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             )
             else -> ""
         }
+        // Az adatlap külön gomb, nem hosszú nyomás: a rendszer lejátszóján a
+        // hosszú nyomás a sajátja (hangkimenet-váltó, app-infó), azt nem
+        // vehetjük el. Egy gomb viszont egy koppintás — és látszik is, hogy ott van.
+        val detailsIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra("show_details", s.path)
+        }
+        val detailsPi = PendingIntent.getActivity(
+            this, 101, detailsIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_book)
             .setContentTitle(s.title.ifEmpty { getString(R.string.app_name) })
             .setContentText(listOf(s.author, sub).filter { it.isNotEmpty() }.joinToString(" — "))
+            .setSubText(
+                if (s.totalChapters > 0)
+                    getString(R.string.notif_chapter_of, s.chapterIndex + 1, s.totalChapters)
+                else null
+            )
+            .setLargeIcon(coverArt)
             .setContentIntent(contentPi)
             .setOngoing(s.playing)
             .setOnlyAlertOnce(true)
@@ -1052,6 +1200,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 servicePending(ACTION_TOGGLE, 2)
             )
             .addAction(R.drawable.ic_next, getString(R.string.notif_next), servicePending(ACTION_NEXT, 3))
+            .addAction(R.drawable.ic_info, getString(R.string.notif_details), detailsPi)
             .addAction(R.drawable.ic_stop, getString(R.string.notif_stop), servicePending(ACTION_STOP, 4))
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
@@ -1061,7 +1210,18 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         return builder.build()
     }
 
+    /** Utoljára kiírt fejezet — csak változáskor frissítjük a metaadatokat. */
+    private var shownChapter = -1
+
     private fun updateNotification() {
+        // A zárolt képernyő haladásjelzője a menet állapotából él, nem az
+        // értesítésből. Ha csak az értesítést frissítenénk, a csík állna.
+        updateMediaSessionState()
+        val ch = _state.value.chapterIndex
+        if (ch != shownChapter) {
+            shownChapter = ch
+            updateMediaMetadata()
+        }
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         try {
             nm.notify(NOTIF_ID, buildNotification())
