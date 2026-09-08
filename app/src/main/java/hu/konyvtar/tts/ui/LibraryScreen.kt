@@ -140,6 +140,20 @@ fun LibraryScreen(
         listState.scrollToItem(0)
     }
 
+    // Szinkron a másik két nézettel: az éppen olvasott könyv sorára állunk, és
+    // ki is jelöljük, hogy egy pillantással megtaláld. Ha a saját szűrésed
+    // épp kitakarja, azt nem bántjuk — a te keresésed fontosabb, mint a
+    // szinkron; ilyenkor a szűrő törlése után áll a helyére.
+    val syncPath by vm.syncPath.collectAsState()
+    LaunchedEffect(syncPath, ui.libRows) {
+        val p = syncPath ?: return@LaunchedEffect
+        val idx = ui.libRows.indexOfFirst { it.path == p }
+        if (idx >= 0) {
+            selected = p
+            listState.scrollToItem(idx)
+        }
+    }
+
     /** Megnyitás felolvasással — ez a dupla koppintás. */
     fun openAndPlay(book: ShelfBook) {
         val row = book.toFileRow()

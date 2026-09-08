@@ -154,12 +154,20 @@ fun AppRoot(startInPlayer: Boolean) {
         }
     }
 
+    // A három nézet közös horgonya. Ha kívülről indul el egy könyv — a kocsi
+    // gombjáról, fülhallgatóról —, a könyvtár és a fájlböngésző is odaáll,
+    // anélkül hogy keresgélni kellene, mi szól éppen.
+    LaunchedEffect(player.path, lastRead) {
+        vm.setSyncPath(player.path ?: vm.readerTarget?.path ?: lastRead?.path)
+    }
+
     fun openReaderFor(row: FileRow) {
         vm.readerTarget = LibraryViewModel.ReaderTarget(
             path = row.path,
             title = row.cim ?: row.name.substringBeforeLast('.'),
             author = row.szerzo ?: ""
         )
+        vm.setSyncPath(row.path)
         nav.navigate("reader")
     }
 
@@ -174,6 +182,7 @@ fun AppRoot(startInPlayer: Boolean) {
             ?: lastRead
             ?: return
         vm.readerTarget = target
+        vm.setSyncPath(target.path)
         if (nav.currentDestination?.route != "reader") nav.navigate("reader")
     }
 

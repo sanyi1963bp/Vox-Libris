@@ -358,4 +358,16 @@
     <string name="chars_count">%1$d említés</string>
     <string name="chars_with">Gyakran vele: %1$s</string>
     <string name="knowledge_working">Számolás…</string>
+
+    <!-- Diagnosztika: a kívülről érkező gombparancsok naplója -->
+    <string name="set_diag_title">Diagnosztika</string>
+    <string name="set_diag_desc">Feljegyzi a fülhallgatóról, autós fejegységről és kormánygombról érkező parancsokat. Akkor hasznos, ha kívülről nem indul el a felolvasás.</string>
+    <string name="set_diag_count">%1$d bejegyzés</string>
+    <string name="set_diag_empty">Még nincs feljegyzés.</string>
+    <string name="set_diag_show">Mutasd</string>
+    <string name="set_diag_hide">Elrejt</string>
+    <string name="set_diag_clear">Ürítés</string>
+    <string name="set_diag_export">Mentés a Letöltésekbe</string>
+    <string name="set_diag_exported">Mentve: %1$s</string>
+    <string name="set_diag_export_failed">A naplót nem sikerült menteni.</string>
 </resources>

@@ -107,6 +107,24 @@ fun ExplorerScreen(
         if (ui.scan.done) browser.refresh()
     }
 
+    // Szinkron a másik két nézettel: megnyitjuk azt a mappát, ahol az éppen
+    // olvasott könyv fizikailag van. Így a fájlböngésző mindig ott áll, ahol a
+    // könyv — nem kell fejben tartani, melyik meghajtón, melyik mappában.
+    val syncPath by vm.syncPath.collectAsState()
+    LaunchedEffect(syncPath) {
+        val p = syncPath ?: return@LaunchedEffect
+        val dir = p.substringBeforeLast('/', "")
+        if (dir.isNotEmpty() && dir != br.currentDir) browser.navigateTo(dir)
+    }
+
+    // A mappa betöltése után álljunk rá a sorra. Külön lépés, mert a listázás
+    // a háttérben fut: a fenti ugrás pillanatában még a régi mappa látszik.
+    LaunchedEffect(syncPath, br.entries) {
+        val p = syncPath ?: return@LaunchedEffect
+        val idx = br.entries.indexOfFirst { it.path == p }
+        if (idx >= 0) listState.scrollToItem(idx)
+    }
+
     // Lista tetejére ugrunk, ha mappát váltunk
     LaunchedEffect(br.currentDir) {
         listState.scrollToItem(0)
@@ -358,6 +376,7 @@ fun ExplorerScreen(
                     FileRowItem(
                         row = row,
                         stripe = index % 2 == 1,
+                        selected = row.path == syncPath,
                         percent = br.progress[row.path],
                         onInfo = { infoRow = row },
                         onSingleTap = {
@@ -443,6 +462,7 @@ private fun HeaderRow(sortKey: SortKey, sortAsc: Boolean, onSort: (SortKey) -> U
 private fun FileRowItem(
     row: FileRow,
     stripe: Boolean,
+    selected: Boolean = false,
     percent: Double?,
     onInfo: () -> Unit,
     onSingleTap: () -> Unit,
@@ -452,8 +472,13 @@ private fun FileRowItem(
     // Hosszú nyomásra a fájlműveletek menüje nyílik — itt, a fájlok között
     // ez a természetes hely rá. A menü a sorhoz igazodik.
     var menuOpen by remember { mutableStateOf(false) }
-    val bg = if (stripe) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-    else MaterialTheme.colorScheme.surface
+    // Ugyanaz a kiemelés, mint a könyvtárban — a két nézetben ugyanaz a könyv
+    // ugyanúgy néz ki, ez teszi felismerhetővé az átkapcsolást.
+    val bg = when {
+        selected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+        stripe -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+        else -> MaterialTheme.colorScheme.surface
+    }
 
     Row(
         modifier = Modifier

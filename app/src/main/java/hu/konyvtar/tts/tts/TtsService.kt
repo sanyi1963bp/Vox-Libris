@@ -27,6 +27,7 @@ import androidx.core.app.NotificationCompat
 import hu.konyvtar.tts.MainActivity
 import hu.konyvtar.tts.R
 import hu.konyvtar.tts.data.AppDb
+import hu.konyvtar.tts.data.EventLog
 import androidx.media.session.MediaButtonReceiver
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.data.Pronounce
@@ -188,6 +189,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     override fun onCreate() {
         super.onCreate()
         AppDb.init(this)
+        EventLog.add(this, "Szolgáltatás elindult")
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         createChannel()
         initMediaSession()
@@ -209,30 +211,37 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         mediaSession = MediaSessionCompat(this, "KonyvtarTTS").apply {
             setCallback(object : MediaSessionCompat.Callback() {
                 override fun onPlay() {
+                    EventLog.add(this@TtsService, "Menet-parancs: LEJÁTSZÁS")
                     resume()
                 }
 
                 override fun onPause() {
+                    EventLog.add(this@TtsService, "Menet-parancs: SZÜNET")
                     pause()
                 }
 
                 override fun onStop() {
+                    EventLog.add(this@TtsService, "Menet-parancs: LEÁLLÍTÁS")
                     stopPlayback()
                 }
 
                 override fun onSkipToNext() {
+                    EventLog.add(this@TtsService, "Menet-parancs: KÖVETKEZŐ")
                     rewindSeconds(Prefs.rewindSeconds(this@TtsService))
                 }
 
                 override fun onSkipToPrevious() {
+                    EventLog.add(this@TtsService, "Menet-parancs: ELŐZŐ")
                     rewindSeconds(Prefs.rewindSeconds(this@TtsService))
                 }
 
                 override fun onRewind() {
+                    EventLog.add(this@TtsService, "Menet-parancs: VISSZATEKERÉS")
                     rewindSeconds(Prefs.rewindSeconds(this@TtsService))
                 }
 
                 override fun onFastForward() {
+                    EventLog.add(this@TtsService, "Menet-parancs: ELŐRETEKERÉS")
                     skip(1)
                 }
             })
@@ -417,6 +426,12 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 // frissen is indulhatott, ezért ELŐBB előtérbe lépünk:
                 // különben az Android öt másodperc után megöl minket.
                 startForeground(NOTIF_ID, buildNotification())
+                EventLog.add(
+                    this,
+                    "MÉDIAGOMB érkezett",
+                    keyName(intent) + "; betöltött könyv: " +
+                        (if (paragraphs.isEmpty()) "nincs" else _state.value.title)
+                )
                 if (paragraphs.isEmpty()) {
                     // Nincs betöltött könyv. Ez a tipikus autós helyzet: beülünk,
                     // a fejegység csatlakozik, és a kormányon megnyomjuk a
@@ -454,6 +469,25 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     // ---------------------------------------------------------------- lejátszásvezérlés
 
+    /** Emberi nyelven, mi jött a médiagombbal — a naplóhoz. */
+    private fun keyName(intent: Intent): String {
+        @Suppress("DEPRECATION")
+        val key = intent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+            ?: return "nincs billentyű az üzenetben"
+        val name = when (key.keyCode) {
+            KeyEvent.KEYCODE_MEDIA_PLAY -> "LEJÁTSZÁS"
+            KeyEvent.KEYCODE_MEDIA_PAUSE -> "SZÜNET"
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> "LEJÁTSZÁS/SZÜNET"
+            KeyEvent.KEYCODE_MEDIA_STOP -> "LEÁLLÍTÁS"
+            KeyEvent.KEYCODE_MEDIA_NEXT -> "KÖVETKEZŐ"
+            KeyEvent.KEYCODE_MEDIA_PREVIOUS -> "ELŐZŐ"
+            KeyEvent.KEYCODE_HEADSETHOOK -> "FÜLHALLGATÓ-GOMB"
+            else -> "kód " + key.keyCode
+        }
+        val updown = if (key.action == KeyEvent.ACTION_DOWN) "le" else "fel"
+        return "$name ($updown)"
+    }
+
     /** Lejátszás-jellegű médiagomb volt-e? A szünet/tekerés nem az. */
     private fun isPlayButton(intent: Intent): Boolean {
         @Suppress("DEPRECATION")
@@ -476,10 +510,16 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         scope.launch {
             val row = withContext(Dispatchers.IO) { AppDb.lastListened() }
             if (row == null || !File(row.path).exists()) {
+                EventLog.add(
+                    this@TtsService,
+                    "Nincs mit folytatni",
+                    if (row == null) "nincs mentett olvasás" else "a fájl eltűnt: " + row.path
+                )
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
                 return@launch
             }
+            EventLog.add(this@TtsService, "Legutóbbi könyv folytatása", row.title)
             val start = Intent(this@TtsService, TtsService::class.java).apply {
                 action = ACTION_PLAY_FILE
                 putExtra(EXTRA_PATH, row.path)
@@ -1032,6 +1072,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     // ---------------------------------------------------------------- életciklus
 
     override fun onDestroy() {
+        EventLog.add(this, "Szolgáltatás leáll")
         stopSpeaking()
         accumulateListened()
         saveProgressSync()

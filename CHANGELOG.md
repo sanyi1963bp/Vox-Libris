@@ -9,6 +9,32 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.8.0] — 2026-09-08
+
+**A három nézet együtt mozog**
+
+A könyvtár, a fájlböngésző és az olvasó eddig három külön világ volt. Mostantól
+közös horgonyuk van: az éppen olvasott könyv.
+
+Amikor megnyitsz egy könyvet — vagy amikor kívülről indul el, a kocsi gombjáról
+—, a **könyvtár ráugrik a bejegyzésére** és kijelöli, a **fájlböngésző pedig
+megnyitja azt a mappát**, ahol a könyv fizikailag van, és ott is kijelöli a
+fájlt. Nem kell fejben tartani, melyik meghajtón, melyik mappában lakik.
+
+A kiemelés mindkét nézetben ugyanúgy néz ki, hogy egy pillantással felismerd.
+
+Ha a saját keresésed épp kitakarja a könyvet a könyvtárban, azt nem bántjuk — a
+keresésed fontosabb, mint a szinkron.
+
+**Diagnosztikai napló**
+
+A beállítások közt új kártya: feljegyzi a fülhallgatóról, autós fejegységről és
+kormánygombról érkező parancsokat. Akkor kell elővenni, ha kívülről nem indul el
+a felolvasás — a naplóból kiderül, hogy a gombnyomás egyáltalán megérkezik-e.
+
+A napló a telefonon marad, sehova nem megy. A „Mentés a Letöltésekbe" gomb
+átteszi egy szövegfájlba, hogy kábelen el lehessen hozni.
+
 ### [4.7.2] — 2026-09-07
 
 **A kocsi lejátszás gombja elindítja a legutóbbi könyvet**
@@ -561,6 +587,32 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.8.0] — 2026-09-08
+
+**The three views move together**
+
+Library, file browser and reader used to be three separate worlds. Now they
+share an anchor: the book you are reading.
+
+When you open a book — or when one starts from outside, from the car's button —
+the **library jumps to its entry** and highlights it, and the **file browser
+opens the folder** where the book physically lives, highlighting the file there
+too. No need to remember which drive, which folder.
+
+The highlight looks the same in both views, so you recognise it at a glance.
+
+If your own search happens to hide the book in the library, we leave it alone —
+your search matters more than the sync.
+
+**Diagnostic log**
+
+A new card in settings records the commands arriving from headsets, car head
+units and steering wheel buttons. Reach for it when playback will not start from
+an external device — the log shows whether the button press arrives at all.
+
+The log stays on the phone and goes nowhere. "Save to Downloads" copies it to a
+text file so it can be fetched over a cable.
 
 ### [4.7.2] — 2026-09-07
 

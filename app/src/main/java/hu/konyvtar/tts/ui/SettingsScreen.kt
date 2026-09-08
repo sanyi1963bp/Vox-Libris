@@ -108,6 +108,7 @@ fun SettingsScreen(
             PronounceCard()
             CacheCard()
             TtsEngineCard()
+            DiagnosticsCard()
 
             Spacer(Modifier.height(24.dp))
         }

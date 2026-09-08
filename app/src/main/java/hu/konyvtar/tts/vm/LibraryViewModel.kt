@@ -86,6 +86,21 @@ class LibraryViewModel(app: Application) : AndroidViewModel(app) {
 
     var readerTarget: ReaderTarget? = null
 
+    /**
+     * Az aktuális könyv útvonala — ez köti össze a három nézetet.
+     *
+     * A könyvtár erre a sorra ugrik, a fájlböngésző ennek a mappáját nyitja
+     * meg, az olvasó pedig ezt olvassa. Egyetlen útvonal, három ablak: így nem
+     * lehet elveszni köztük. Azért itt lakik és nem a UiState-ben, mert a
+     * fájlböngésző is ezt figyeli, pedig annak külön állapota van.
+     */
+    private val _syncPath = MutableStateFlow<String?>(null)
+    val syncPath: StateFlow<String?> = _syncPath
+
+    fun setSyncPath(path: String?) {
+        if (_syncPath.value != path) _syncPath.value = path
+    }
+
     private var listJob: Job? = null
     private var libJob: Job? = null
     private var scanJob: Job? = null

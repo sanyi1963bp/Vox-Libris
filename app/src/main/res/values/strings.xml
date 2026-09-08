@@ -383,4 +383,16 @@
     <string name="chars_count">%1$d mentions</string>
     <string name="chars_with">Often with: %1$s</string>
     <string name="knowledge_working">Working…</string>
+
+    <!-- Diagnosztika: a kívülről érkező gombparancsok naplója -->
+    <string name="set_diag_title">Diagnostics</string>
+    <string name="set_diag_desc">Records button commands arriving from headsets, car head units and the steering wheel. Useful when playback will not start from an external device.</string>
+    <string name="set_diag_count">%1$d entries</string>
+    <string name="set_diag_empty">Nothing recorded yet.</string>
+    <string name="set_diag_show">Show</string>
+    <string name="set_diag_hide">Hide</string>
+    <string name="set_diag_clear">Clear</string>
+    <string name="set_diag_export">Save to Downloads</string>
+    <string name="set_diag_exported">Saved: %1$s</string>
+    <string name="set_diag_export_failed">Could not save the log.</string>
 </resources>

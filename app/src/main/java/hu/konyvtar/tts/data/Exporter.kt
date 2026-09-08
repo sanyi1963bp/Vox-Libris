@@ -44,7 +44,8 @@ object Exporter {
     private fun row(vararg values: Any?): String =
         values.joinToString(";") { cell(it) } + "\r\n"
 
-    private fun targetDir(): File {
+    /** A Letöltések alatti közös mappánk — a napló is ide megy. */
+    fun targetDir(): File {
         val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         val dir = File(downloads, "KonyvtarTTS")
         if (!dir.exists()) dir.mkdirs()
