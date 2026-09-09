@@ -309,6 +309,14 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun updateMediaSessionState() {
+        try {
+            buildSessionState()
+        } catch (e: Exception) {
+            EventLog.add(this, "HIBA a menet állapotánál", e.toString())
+        }
+    }
+
+    private fun buildSessionState() {
         val s = _state.value
         val actions = PlaybackStateCompat.ACTION_PLAY or
             PlaybackStateCompat.ACTION_PAUSE or
@@ -359,6 +367,14 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
      * a fejegység üresen hagyja — pont ezt láttuk a kocsi kijelzőjén.
      */
     private fun updateMediaMetadata() {
+        try {
+            buildMetadata()
+        } catch (e: Exception) {
+            EventLog.add(this, "HIBA a metaadatoknál", e.toString())
+        }
+    }
+
+    private fun buildMetadata() {
         val s = _state.value
         val b = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, s.title)
@@ -490,6 +506,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 handlePlayFile(it)
             }
         } else {
+            EventLog.add(this, "HIBA: a felolvasó motor nem indult el")
             _state.value = _state.value.copy(
                 error = getString(R.string.err_tts_init)
             )
@@ -518,7 +535,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         when (intent?.action) {
             ACTION_PLAY_FILE -> {
                 // Azonnal előtérbe lépünk (Android-követelmény startForegroundService után)
-                startForeground(NOTIF_ID, buildNotification())
+                enterForeground()
                 if (!ttsReady) {
                     pendingStart = intent
                 } else {
@@ -554,7 +571,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 // MediaButtonReceiveren át). Ilyenkor a szolgáltatás akár
                 // frissen is indulhatott, ezért ELŐBB előtérbe lépünk:
                 // különben az Android öt másodperc után megöl minket.
-                startForeground(NOTIF_ID, buildNotification())
+                enterForeground()
                 EventLog.add(
                     this,
                     "MÉDIAGOMB érkezett",
@@ -663,6 +680,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     private fun handlePlayFile(intent: Intent) {
         val path = intent.getStringExtra(EXTRA_PATH) ?: return
+        EventLog.add(this, "Könyv megnyitása", path.substringAfterLast('/'))
         val title = intent.getStringExtra(EXTRA_TITLE) ?: File(path).name
         val author = intent.getStringExtra(EXTRA_AUTHOR) ?: ""
         val restart = intent.getBooleanExtra(EXTRA_RESTART, false)
@@ -711,6 +729,11 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             val (book, saved, error) = result
             val paras = book?.paragraphs ?: emptyList()
             if (error != null || paras.isEmpty()) {
+                EventLog.add(
+                    this@TtsService,
+                    "HIBA: nem sikerült szöveget kinyerni",
+                    error ?: "a fájlban nincs olvasható szöveg"
+                )
                 _state.value = _state.value.copy(
                     preparing = false,
                     error = error ?: getString(R.string.err_no_text)
@@ -792,17 +815,65 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     }
 
     private fun resume() {
-        if (paragraphs.isEmpty() || !ttsReady) return
-        if (!requestFocus()) return
+        // Ez a három kilépés eddig néma volt: ha bármelyik közbeszólt, a
+        // felolvasás egyszerűen nem indult el, és semmi nem árulta el, miért.
+        if (paragraphs.isEmpty()) {
+            EventLog.add(this, "Indítás elakadt", "nincs betöltött szöveg")
+            return
+        }
+        if (!ttsReady) {
+            EventLog.add(this, "Indítás elakadt", "a felolvasó motor még nem áll készen")
+            return
+        }
+        if (!requestFocus()) {
+            EventLog.add(this, "Indítás elakadt", "a rendszer nem adta meg a hangfókuszt")
+            return
+        }
+        EventLog.add(this, "Felolvasás indul", _state.value.title)
         pausedByFocusLoss = false
         registerNoisy()
         acquireWakeLock()
         playStartedAt = SystemClock.elapsedRealtime()
         _state.value = _state.value.copy(playing = true, error = null)
         updateMediaSessionState()
-        startForeground(NOTIF_ID, buildNotification())
+        enterForeground()
         speakCurrent()
     }
+
+    /**
+     * Előtérbe lépés úgy, hogy ez soha ne akaszthassa meg a felolvasást.
+     *
+     * A felolvasás NEM múlhat azon, hogy sikerül-e értesítést rajzolni. Eddig
+     * múlt: egy hibás értesítés a beszéd ELŐTT szakította meg a sort, és így az
+     * egész app némának látszott — a kocsiban, fülhallgatón és a saját
+     * képernyőjén egyszerre.
+     */
+    private fun enterForeground() {
+        try {
+            startForeground(NOTIF_ID, buildNotification())
+        } catch (e: Exception) {
+            EventLog.add(this, "HIBA az értesítésnél", e.toString())
+            try {
+                startForeground(NOTIF_ID, plainNotification())
+            } catch (e2: Exception) {
+                EventLog.add(this, "HIBA az előtérbe lépésnél", e2.toString())
+            }
+        }
+    }
+
+    /**
+     * Végszükség-értesítés: se borító, se gombok, se médiastílus.
+     *
+     * Ha a rendes értesítés összeállítása elhasal, akkor is előtérbe kell
+     * lépnünk — különben az Android öt másodperc múlva megöli a
+     * szolgáltatást, és vele a felolvasást.
+     */
+    private fun plainNotification(): android.app.Notification =
+        NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_book)
+            .setContentTitle(_state.value.title.ifEmpty { getString(R.string.app_name) })
+            .setOnlyAlertOnce(true)
+            .build()
 
     private fun pause() {
         if (!_state.value.playing) return
@@ -1214,18 +1285,21 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
     private var shownChapter = -1
 
     private fun updateNotification() {
-        // A zárolt képernyő haladásjelzője a menet állapotából él, nem az
-        // értesítésből. Ha csak az értesítést frissítenénk, a csík állna.
-        updateMediaSessionState()
-        val ch = _state.value.chapterIndex
-        if (ch != shownChapter) {
-            shownChapter = ch
-            updateMediaMetadata()
-        }
-        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        // Az egész blokk védve van. A kijelzés kiszolgálja a felolvasást, nem
+        // fordítva: ha bármi elhasal itt, az a beszédet nem érintheti.
         try {
+            // A zárolt képernyő haladásjelzője a menet állapotából él, nem az
+            // értesítésből. Ha csak az értesítést frissítenénk, a csík állna.
+            updateMediaSessionState()
+            val ch = _state.value.chapterIndex
+            if (ch != shownChapter) {
+                shownChapter = ch
+                updateMediaMetadata()
+            }
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             nm.notify(NOTIF_ID, buildNotification())
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            EventLog.add(this, "HIBA a kijelzés frissítésénél", e.toString())
         }
     }
 

@@ -9,6 +9,31 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.9.1] — 2026-09-09
+
+**Javítás: a felolvasás nem indult el sehonnan**
+
+A 4.9.0-ban a felolvasás egyáltalán nem indult el — sem a kocsiból, sem
+fülhallgatóról, sem az app saját képernyőjéről.
+
+A hiba szerkezeti volt, és az enyém. A felolvasás indítása így nézett ki:
+előbb értesítést rajzolunk, aztán megszólalunk. Ha az értesítés összeállítása
+elhasalt, a sor ott megszakadt, és **a beszédig el sem jutottunk**. Kívülről ez
+úgy néz ki, mintha a gomb nem működne — pedig a parancs megérkezett.
+
+Mostantól ez fordítva van rangsorolva: a kijelzés kiszolgálja a felolvasást,
+nem fordítva. Ha bármi elhasal az értesítésnél vagy a zárolt képernyő adatainál,
+azt feljegyezzük a naplóba, egy egyszerű értesítésre váltunk — **és a felolvasás
+akkor is elindul**.
+
+**A napló most már az indítást is követi**
+
+Eddig csak a kívülről érkező gombokat jegyezte fel. Mostantól látszik benne a
+könyv megnyitása, a felolvasás indulása, és — ami a lényeg — ha az indítás
+elakad, akkor az is, hogy **hol**: nincs betöltött szöveg, nem áll készen a
+motor, nem kaptunk hangfókuszt, nem sikerült szöveget kinyerni, vagy hiba
+történt a kijelzésnél.
+
 ### [4.9.0] — 2026-09-08
 
 **Sokkal többet mutat a zárolt képernyő**
@@ -614,6 +639,30 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.9.1] — 2026-09-09
+
+**Fix: narration would not start from anywhere**
+
+In 4.9.0 narration did not start at all — not from the car, not from a headset,
+not from the app's own screen.
+
+The fault was structural, and mine. Starting narration ran like this: draw the
+notification first, then speak. If building the notification failed, the sequence
+broke there and **we never reached the speaking**. From outside that looks like a
+dead button — even though the command had arrived.
+
+The priority is now the other way round: the display serves the narration, not
+the reverse. If anything fails in the notification or the lock screen data, we
+record it in the log, fall back to a plain notification — **and narration starts
+anyway**.
+
+**The log now follows startup too**
+
+It used to record only buttons arriving from outside. Now it shows the book being
+opened, narration starting, and — the point — when startup stalls, **where**: no
+text loaded, engine not ready, audio focus refused, no text could be extracted,
+or an error in the display.
 
 ### [4.9.0] — 2026-09-08
 
