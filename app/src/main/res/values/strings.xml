@@ -401,4 +401,10 @@
     <string name="notif_next_chapter">Next chapter</string>
     <string name="notif_chapter_of">Chapter %1$d of %2$d</string>
     <string name="notif_details">Book details</string>
+
+    <!-- Egyszerű Bluetooth mód autós fejegységekhez -->
+    <string name="set_bt_title">Bluetooth: simple mode</string>
+    <string name="set_bt_desc">Tells connected devices the bare minimum: title, author, play, pause, forward, back. No cover art, no seek bar, no extra buttons.</string>
+    <string name="set_bt_switch">Simple mode</string>
+    <string name="set_bt_hint">Turn this on if a car head unit will not start playback or behaves oddly. Headsets work either way; on the phone\'s own lock screen you lose the cover and the progress bar.</string>
 </resources>

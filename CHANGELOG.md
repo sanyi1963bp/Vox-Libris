@@ -9,6 +9,29 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.10.0] — 2026-09-16
+
+**Bluetooth: egyszerű mód**
+
+Új kapcsoló a beállításokban, autós fejegységekhez.
+
+A fejhallgatók mindent elviselnek, amit küldünk. Egy olcsóbb fejegység viszont
+elnémulhat attól, ha többet kap, mint amennyit kezelni tud: saját gombokat,
+tekerhető idővonalat, borítóképet. Ezek mind a mi ráadásaink — a szabvány nem
+követeli meg őket.
+
+Bekapcsolva csak a **kötelező alap** megy ki: cím, szerző, lejátszás, szünet,
+előre, hátra. Se borító, se fejezetfelirat, se hossz, se tekerősáv, se adatlap
+gomb. Ennyit minden AVRCP-vezérlő ismer.
+
+A kapcsoló azonnal hat, nem kell hozzá újraindítani a felolvasást.
+
+Cserébe a telefon zárolt képernyőjén is elmarad a borító és a haladásjelző —
+ezért nem ez az alapbeállítás. A fülhallgatók így is, úgy is működnek.
+
+Ez nem gyógyszer, hanem próba: ha ettől megjavul a kocsi, akkor tudjuk, hogy a
+ráadás volt a baj, és onnan lehet visszafelé haladva megkeresni, melyik.
+
 ### [4.9.1] — 2026-09-09
 
 **Javítás: a felolvasás nem indult el sehonnan**
@@ -639,6 +662,28 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.10.0] — 2026-09-16
+
+**Bluetooth: simple mode**
+
+A new switch in settings, for car head units.
+
+Headsets tolerate everything we send. A cheaper head unit can fall silent when it
+gets more than it can handle: custom buttons, a seekable timeline, cover art.
+Those are all our additions — the standard does not require them.
+
+Switched on, only the **mandatory basics** go out: title, author, play, pause,
+forward, back. No cover, no chapter label, no duration, no seek bar, no details
+button. Every AVRCP controller understands that much.
+
+The switch takes effect immediately; no need to restart narration.
+
+The cost is that the phone's own lock screen also loses the cover and the
+progress bar — which is why it is not the default. Headsets work either way.
+
+This is not a cure but a test: if it fixes the car, we know the extras were the
+problem, and we can work backwards to find which one.
 
 ### [4.9.1] — 2026-09-09
 

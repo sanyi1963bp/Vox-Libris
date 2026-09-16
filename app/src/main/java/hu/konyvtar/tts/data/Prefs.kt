@@ -150,6 +150,22 @@ object Prefs {
         sp(context).edit().putBoolean("cue_chapter", value).apply()
     }
 
+    /**
+     * Egyszerű Bluetooth mód: a médiamenet a lehető legkevesebbet mondja.
+     *
+     * Az olcsóbb autós fejegységek AVRCP-megvalósítása hiányos. Ha többet
+     * küldünk nekik, mint amennyit kezelni tudnak — saját gombok, tekerhető
+     * idővonal, borítókép —, egyes darabok egyszerűen nem válaszolnak.
+     * Ez a kapcsoló visszavesz a kötelező alapra: cím, szerző, lejátszás,
+     * szünet, előre, hátra. Semmi más.
+     */
+    fun simpleBluetooth(context: Context): Boolean =
+        sp(context).getBoolean("simple_bluetooth", false)
+
+    fun setSimpleBluetooth(context: Context, value: Boolean) {
+        sp(context).edit().putBoolean("simple_bluetooth", value).apply()
+    }
+
     /** A jelzőhangok hangereje (0..1). */
     fun cueVolume(context: Context): Float = sp(context).getFloat("cue_volume", 0.7f)
 

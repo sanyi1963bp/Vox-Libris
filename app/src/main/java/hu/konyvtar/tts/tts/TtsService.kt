@@ -96,6 +96,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         const val ACTION_SET_LANGUAGE = "hu.konyvtar.tts.SET_LANGUAGE"
         const val ACTION_SEEK = "hu.konyvtar.tts.SEEK"
         const val ACTION_PRONOUNCE_CHANGED = "hu.konyvtar.tts.PRONOUNCE_CHANGED"
+        const val ACTION_BT_MODE_CHANGED = "hu.konyvtar.tts.BT_MODE_CHANGED"
 
         const val EXTRA_PATH = "path"
         const val EXTRA_TITLE = "title"
@@ -318,15 +319,26 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     private fun buildSessionState() {
         val s = _state.value
-        val actions = PlaybackStateCompat.ACTION_PLAY or
+        val simple = Prefs.simpleBluetooth(this)
+
+        // A KÖTELEZŐ ALAP: ezt a hat parancsot minden AVRCP-vezérlő ismeri.
+        // Ez az a halmaz, amire mindig vissza lehet esni.
+        var actions = PlaybackStateCompat.ACTION_PLAY or
             PlaybackStateCompat.ACTION_PAUSE or
             PlaybackStateCompat.ACTION_PLAY_PAUSE or
             PlaybackStateCompat.ACTION_STOP or
             PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-            PlaybackStateCompat.ACTION_REWIND or
-            PlaybackStateCompat.ACTION_FAST_FORWARD or
-            PlaybackStateCompat.ACTION_SEEK_TO
+            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+
+        // A többi kényelmi ráadás. Egyszerű módban elmarad: a tekerhető
+        // idővonal az, amin a gyengébb fejegységek leggyakrabban elakadnak.
+        if (!simple) {
+            actions = actions or
+                PlaybackStateCompat.ACTION_REWIND or
+                PlaybackStateCompat.ACTION_FAST_FORWARD or
+                PlaybackStateCompat.ACTION_SEEK_TO
+        }
+
         val stateCode = when {
             s.playing -> PlaybackStateCompat.STATE_PLAYING
             s.path != null -> PlaybackStateCompat.STATE_PAUSED
@@ -334,12 +346,19 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         }
         val b = PlaybackStateCompat.Builder()
             .setActions(actions)
-            .setState(stateCode, positionMs(), s.speed)
+            // Egyszerű módban nem adunk pozíciót: ha nincs idővonal, ne is
+            // tegyünk úgy, mintha lenne.
+            .setState(
+                stateCode,
+                if (simple) PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN else positionMs(),
+                s.speed
+            )
 
         // Saját gombok a rendszer lejátszójában. A fejezetugrás azért van itt,
         // mert hangoskönyvnél ez a természetes nagy lépés — a rendszer saját
-        // „következő" gombja nálunk csak mondatot lép.
-        if (paragraphs.isNotEmpty()) {
+        // „következő" gombja nálunk csak mondatot lép. A saját gomb viszont az
+        // AVRCP-n túli bővítés, ezért egyszerű módban nem küldjük.
+        if (paragraphs.isNotEmpty() && !simple) {
             b.addCustomAction(
                 PlaybackStateCompat.CustomAction.Builder(
                     ACTION_PREV_CHAPTER,
@@ -376,10 +395,21 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     private fun buildMetadata() {
         val s = _state.value
+
+        // A KÖTELEZŐ ALAP: cím és szerző. Ennyit minden fejegység ért.
         val b = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, s.title)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, s.author)
-            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, s.author)
+
+        if (Prefs.simpleBluetooth(this)) {
+            // Se album, se fejezet, se hossz, se borító. A borítókép az, amin
+            // a gyengébb fejegységek kifutnak a pufferükből — ez a mód arról
+            // szól, hogy ilyesmi meg se történhessen.
+            mediaSession?.setMetadata(b.build())
+            return
+        }
+
+        b.putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, s.author)
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, s.title)
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, s.author)
 
@@ -600,6 +630,19 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 // rögtön hallható legyen a javítás.
                 Pronounce.invalidate()
                 if (_state.value.playing) restartCurrentUtterance()
+            }
+            ACTION_BT_MODE_CHANGED -> {
+                // A Bluetooth-mód változott: azonnal újra bemutatkozunk a
+                // kapcsolódó eszközöknek, hogy ne kelljen a felolvasást
+                // leállítani és újraindítani hozzá.
+                EventLog.add(
+                    this,
+                    "Bluetooth-mód átállítva",
+                    if (Prefs.simpleBluetooth(this)) "egyszerű" else "teljes"
+                )
+                shownChapter = -1
+                updateMediaMetadata()
+                updateNotification()
             }
             ACTION_SEEK -> {
                 val idx = intent.getIntExtra(EXTRA_INDEX, -1)
@@ -1251,16 +1294,18 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val simple = Prefs.simpleBluetooth(this)
+
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_book)
             .setContentTitle(s.title.ifEmpty { getString(R.string.app_name) })
             .setContentText(listOf(s.author, sub).filter { it.isNotEmpty() }.joinToString(" — "))
             .setSubText(
-                if (s.totalChapters > 0)
+                if (!simple && s.totalChapters > 0)
                     getString(R.string.notif_chapter_of, s.chapterIndex + 1, s.totalChapters)
                 else null
             )
-            .setLargeIcon(coverArt)
+            .setLargeIcon(if (simple) null else coverArt)
             .setContentIntent(contentPi)
             .setOngoing(s.playing)
             .setOnlyAlertOnce(true)
@@ -1271,7 +1316,13 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 servicePending(ACTION_TOGGLE, 2)
             )
             .addAction(R.drawable.ic_next, getString(R.string.notif_next), servicePending(ACTION_NEXT, 3))
-            .addAction(R.drawable.ic_info, getString(R.string.notif_details), detailsPi)
+
+        // Az adatlap gomb egyszerű módban elmarad: ötödik gombbal már van
+        // fejegység, amelyik nem boldogul a listával.
+        if (!simple) {
+            builder.addAction(R.drawable.ic_info, getString(R.string.notif_details), detailsPi)
+        }
+        builder
             .addAction(R.drawable.ic_stop, getString(R.string.notif_stop), servicePending(ACTION_STOP, 4))
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
