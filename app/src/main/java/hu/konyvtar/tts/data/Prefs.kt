@@ -151,19 +151,32 @@ object Prefs {
     }
 
     /**
-     * Egyszerű Bluetooth mód: a médiamenet a lehető legkevesebbet mondja.
+     * Mennyit mondjon a médiamenet a csatlakozó eszközöknek.
      *
      * Az olcsóbb autós fejegységek AVRCP-megvalósítása hiányos. Ha többet
      * küldünk nekik, mint amennyit kezelni tudnak — saját gombok, tekerhető
      * idővonal, borítókép —, egyes darabok egyszerűen nem válaszolnak.
-     * Ez a kapcsoló visszavesz a kötelező alapra: cím, szerző, lejátszás,
-     * szünet, előre, hátra. Semmi más.
+     *
+     * Három fokozat, mert a „minden vagy semmi" pazarlás volt: a borítókép a
+     * fő gyanúsított (az a legnagyobb átvitt darab), a fejezetfelirat és a
+     * haladásjelző viszont pár bájt. A középső fokozat ezt a kettőt
+     * szétválasztja.
      */
-    fun simpleBluetooth(context: Context): Boolean =
-        sp(context).getBoolean("simple_bluetooth", false)
+    const val BT_FULL = "teljes"
+    const val BT_NO_COVER = "nincs_borito"
+    const val BT_SIMPLE = "egyszeru"
 
-    fun setSimpleBluetooth(context: Context, value: Boolean) {
-        sp(context).edit().putBoolean("simple_bluetooth", value).apply()
+    fun btMode(context: Context): String {
+        val s = sp(context)
+        // Átállás a régi igen/nem kapcsolóról: aki bekapcsolta, az a
+        // legszűkebb fokozatot kapta, maradjon is annál.
+        val stored = s.getString("bt_mode", null)
+        if (stored != null) return stored
+        return if (s.getBoolean("simple_bluetooth", false)) BT_SIMPLE else BT_FULL
+    }
+
+    fun setBtMode(context: Context, value: String) {
+        sp(context).edit().putString("bt_mode", value).apply()
     }
 
     /** A jelzőhangok hangereje (0..1). */

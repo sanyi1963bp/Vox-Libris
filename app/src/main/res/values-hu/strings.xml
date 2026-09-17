@@ -380,6 +380,12 @@
     <!-- Egyszerű Bluetooth mód autós fejegységekhez -->
     <string name="set_bt_title">Bluetooth: egyszerű mód</string>
     <string name="set_bt_desc">A csatlakozó eszközöknek csak a legszükségesebbet mondja: cím, szerző, lejátszás, szünet, előre, hátra. Se borító, se tekerősáv, se külön gombok.</string>
-    <string name="set_bt_switch">Egyszerű mód</string>
-    <string name="set_bt_hint">Akkor kapcsold be, ha egy autós fejegység nem indítja el a felolvasást, vagy furcsán viselkedik. A fülhallgatók így is, úgy is működnek; a telefon zárolt képernyőjén viszont elmarad a borító és a haladásjelző.</string>
+
+    <string name="set_bt_full">Minden</string>
+    <string name="set_bt_full_hint">Borító, fejezet, haladásjelző, külön gombok. Fülhallgatóhoz tökéletes.</string>
+    <string name="set_bt_nocover">Borítókép nélkül</string>
+    <string name="set_bt_nocover_hint">A fejezet és a haladásjelző megmarad, csak a borítóképet nem küldjük. A borító a legnagyobb darab, amit átviszünk, és a szokásos bűnös.</string>
+    <string name="set_bt_simple">Csak a kötelező alap</string>
+    <string name="set_bt_simple_hint">Cím, szerző, lejátszás, szünet, előre, hátra. Semmi más. Ennyit minden eszköz ért.</string>
+    <string name="set_bt_note">A telefon zárolt képernyőjén a borító mindig látszik — ez csak azt szabja meg, mit küldünk a csatlakozó eszközöknek.</string>
 </resources>

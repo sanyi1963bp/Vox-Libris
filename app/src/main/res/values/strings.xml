@@ -405,6 +405,12 @@
     <!-- Egyszerű Bluetooth mód autós fejegységekhez -->
     <string name="set_bt_title">Bluetooth: simple mode</string>
     <string name="set_bt_desc">Tells connected devices the bare minimum: title, author, play, pause, forward, back. No cover art, no seek bar, no extra buttons.</string>
-    <string name="set_bt_switch">Simple mode</string>
-    <string name="set_bt_hint">Turn this on if a car head unit will not start playback or behaves oddly. Headsets work either way; on the phone\'s own lock screen you lose the cover and the progress bar.</string>
+
+    <string name="set_bt_full">Everything</string>
+    <string name="set_bt_full_hint">Cover, chapter, progress bar, extra buttons. Perfect for headsets.</string>
+    <string name="set_bt_nocover">Without cover art</string>
+    <string name="set_bt_nocover_hint">Keeps the chapter and the progress bar, but does not send the cover image. The cover is the largest thing we transmit, and the usual culprit.</string>
+    <string name="set_bt_simple">Bare minimum</string>
+    <string name="set_bt_simple_hint">Title, author, play, pause, forward, back. Nothing else. Every device understands this much.</string>
+    <string name="set_bt_note">The phone\'s own lock screen always shows the cover — this only changes what we send to connected devices.</string>
 </resources>

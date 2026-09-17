@@ -9,6 +9,29 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.10.1] — 2026-09-17
+
+**Bluetooth: három fokozat egy kapcsoló helyett**
+
+A 4.10.0 egyszerű módja bevált a kocsiban, de többet vágott le a szükségesnél:
+a fejezetfelirat és a haladásjelző pár bájt, azoktól aligha akadt el bármi.
+
+Mostantól három fokozat választható:
+
+- **Minden** — borító, fejezet, haladásjelző, külön gombok (fülhallgatóhoz)
+- **Borítókép nélkül** — marad a fejezet és a haladásjelző, csak a kép nem megy
+- **Csak a kötelező alap** — cím, szerző, és a hat alapparancs
+
+A középső az új. A borítókép a legnagyobb darab, amit átküldünk, és a
+leggyanúsabb: a metaadattal együtt utazik, és a gyengébb fejegységek ettől
+futnak ki a pufferükből.
+
+A telefon zárolt képernyőjén a borító **mindhárom fokozatban látszik** — azt az
+értesítés hordozza, nem a Bluetooth-metaadat. A beállítás csak azt szabja meg,
+mit küldünk a csatlakozó eszközöknek.
+
+Aki a 4.10.0-ban bekapcsolta az egyszerű módot, annál az marad bekapcsolva.
+
 ### [4.10.0] — 2026-09-16
 
 **Bluetooth: egyszerű mód**
@@ -662,6 +685,30 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.10.1] — 2026-09-17
+
+**Bluetooth: three levels instead of one switch**
+
+The simple mode in 4.10.0 fixed the car, but cut away more than necessary: the
+chapter label and the progress bar are a few bytes, and unlikely to break
+anything.
+
+Three levels now:
+
+- **Everything** — cover, chapter, progress bar, extra buttons (for headsets)
+- **Without cover art** — keeps chapter and progress bar, just not the image
+- **Bare minimum** — title, author, and the six basic commands
+
+The middle one is new. The cover is the largest thing we transmit and the prime
+suspect: it travels with the metadata, and weaker head units run out of buffer
+on it.
+
+The phone's own lock screen shows the cover at **all three levels** — that comes
+from the notification, not the Bluetooth metadata. The setting only governs what
+we send to connected devices.
+
+Anyone who turned on simple mode in 4.10.0 stays on it.
 
 ### [4.10.0] — 2026-09-16
 

@@ -319,7 +319,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     private fun buildSessionState() {
         val s = _state.value
-        val simple = Prefs.simpleBluetooth(this)
+        val simple = Prefs.btMode(this) == Prefs.BT_SIMPLE
 
         // A KÖTELEZŐ ALAP: ezt a hat parancsot minden AVRCP-vezérlő ismeri.
         // Ez az a halmaz, amire mindig vissza lehet esni.
@@ -401,10 +401,9 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, s.title)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, s.author)
 
-        if (Prefs.simpleBluetooth(this)) {
-            // Se album, se fejezet, se hossz, se borító. A borítókép az, amin
-            // a gyengébb fejegységek kifutnak a pufferükből — ez a mód arról
-            // szól, hogy ilyesmi meg se történhessen.
+        val mode = Prefs.btMode(this)
+        if (mode == Prefs.BT_SIMPLE) {
+            // Se album, se fejezet, se hossz, se borító.
             mediaSession?.setMetadata(b.build())
             return
         }
@@ -425,9 +424,17 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         if (paragraphs.isNotEmpty()) {
             b.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, durationMs())
         }
-        coverArt?.let {
-            b.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, it)
-            b.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, it)
+        // A borítókép a legnagyobb darab, amit átküldünk, és a fő gyanúsított
+        // az autós fejegységek elnémulásában: a metaadattal együtt utazik, és
+        // a gyengébb megvalósítások ettől futnak ki a pufferükből.
+        //
+        // A telefon zárolt képernyője ettől függetlenül megkapja: azt az
+        // értesítés nagy ikonja hordozza, nem ez.
+        if (mode == Prefs.BT_FULL) {
+            coverArt?.let {
+                b.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, it)
+                b.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, it)
+            }
         }
         mediaSession?.setMetadata(b.build())
     }
@@ -638,7 +645,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 EventLog.add(
                     this,
                     "Bluetooth-mód átállítva",
-                    if (Prefs.simpleBluetooth(this)) "egyszerű" else "teljes"
+                    Prefs.btMode(this)
                 )
                 shownChapter = -1
                 updateMediaMetadata()
@@ -1294,7 +1301,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val simple = Prefs.simpleBluetooth(this)
+        val simple = Prefs.btMode(this) == Prefs.BT_SIMPLE
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_book)
