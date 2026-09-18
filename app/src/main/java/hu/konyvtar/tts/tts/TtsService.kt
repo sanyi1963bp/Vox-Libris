@@ -20,6 +20,8 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
@@ -30,6 +32,7 @@ import hu.konyvtar.tts.R
 import hu.konyvtar.tts.data.AppDb
 import hu.konyvtar.tts.data.CoverExtractor
 import hu.konyvtar.tts.data.EventLog
+import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import hu.konyvtar.tts.data.Prefs
 import hu.konyvtar.tts.data.Pronounce
@@ -53,7 +56,7 @@ import java.util.Locale
  * bekezdésenként haladva, a pozíciót folyamatosan mentve.
  * A UI a [TtsService.state] StateFlow-t figyeli; vezérlés intent-akciókkal.
  */
-class TtsService : Service(), TextToSpeech.OnInitListener {
+class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
 
     override fun attachBaseContext(newBase: android.content.Context) {
         super.attachBaseContext(hu.konyvtar.tts.data.LocaleHelper.wrap(newBase))
@@ -218,7 +221,10 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             setCallback(object : MediaSessionCompat.Callback() {
                 override fun onPlay() {
                     EventLog.add(this@TtsService, "Menet-parancs: LEJÁTSZÁS")
-                    resume()
+                    // Hidegindulás: reggel, az éjszakai takarítás után a menet
+                    // frissen születik, betöltött könyv nélkül. Ilyenkor a
+                    // „lejátszás" azt jelenti: folytasd, ahol abbahagytam.
+                    if (paragraphs.isEmpty()) resumeLastBook() else resume()
                 }
 
                 override fun onPause() {
@@ -257,6 +263,20 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                     seekToMs(pos)
                 }
 
+                /** A fejegység listájából választott könyv. */
+                override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+                    EventLog.add(this@TtsService, "Menet-parancs: könyv a listából", mediaId ?: "?")
+                    playFromMediaId(mediaId)
+                }
+
+                /**
+                 * „Lejátszás" akkor is, ha nincs betöltött könyv — ez az autós
+                 * eset: beülünk, és a szolgáltatás frissen született.
+                 */
+                override fun onPrepare() {
+                    if (paragraphs.isEmpty()) resumeLastBook()
+                }
+
                 override fun onCustomAction(action: String?, extras: Bundle?) {
                     EventLog.add(this@TtsService, "Menet-parancs: saját gomb", action ?: "?")
                     when (action) {
@@ -267,6 +287,9 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             })
             isActive = true
         }
+        // A médiaböngészőnek ezen keresztül adjuk oda a vezérlést: enélkül a
+        // fejegység látná a listánkat, de nem tudná vezérelni a lejátszást.
+        sessionToken = mediaSession?.sessionToken
         updateMediaSessionState()
     }
 
@@ -354,26 +377,11 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
                 s.speed
             )
 
-        // Saját gombok a rendszer lejátszójában. A fejezetugrás azért van itt,
-        // mert hangoskönyvnél ez a természetes nagy lépés — a rendszer saját
-        // „következő" gombja nálunk csak mondatot lép. A saját gomb viszont az
-        // AVRCP-n túli bővítés, ezért egyszerű módban nem küldjük.
-        if (paragraphs.isNotEmpty() && !simple) {
-            b.addCustomAction(
-                PlaybackStateCompat.CustomAction.Builder(
-                    ACTION_PREV_CHAPTER,
-                    getString(R.string.notif_prev_chapter),
-                    R.drawable.ic_chapter_prev
-                ).build()
-            )
-            b.addCustomAction(
-                PlaybackStateCompat.CustomAction.Builder(
-                    ACTION_NEXT_CHAPTER,
-                    getString(R.string.notif_next_chapter),
-                    R.drawable.ic_chapter_next
-                ).build()
-            )
-        }
+        // Fejezetugró gombot NEM teszünk a rendszer lejátszójába. Az olvasóban
+        // ott vannak és nélkülözhetetlenek — de ott a szöveget is látni, ami a
+        // fejezetek közti kereséshez kell. A zárolt képernyőn tíz nap alatt
+        // egyszer sem nyomta meg senki, viszont ez a bővítés az AVRCP-n túl van,
+        // és épp ilyesmitől némulnak el a gyengébb autós fejegységek.
         mediaSession?.setPlaybackState(b.build())
     }
 
@@ -665,6 +673,29 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
 
     // ---------------------------------------------------------------- lejátszásvezérlés
 
+    /**
+     * Hova megy a hang — a naplóhoz.
+     *
+     * Enélkül a napló csak annyit mond, hogy „elindult", azt nem, hogy a
+     * kocsiban vagy a fülhallgatóval. Pedig épp az a különbség érdekes: a két
+     * eszköz másképp viselkedik, és eddig nem lehetett őket szétválasztani.
+     */
+    private fun outputName(): String = try {
+        val am = audioManager
+        val outs = am?.getDevices(AudioManager.GET_DEVICES_OUTPUTS) ?: emptyArray()
+        val bt = outs.firstOrNull {
+            it.type == android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                it.type == android.media.AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+        }
+        when {
+            bt != null -> "Bluetooth: " + bt.productName
+            outs.any { it.type == android.media.AudioDeviceInfo.TYPE_WIRED_HEADPHONES } -> "vezetékes fülhallgató"
+            else -> "telefon hangszórója"
+        }
+    } catch (e: Exception) {
+        "ismeretlen kimenet"
+    }
+
     /** Emberi nyelven, mi jött a médiagombbal — a naplóhoz. */
     private fun keyName(intent: Intent): String {
         @Suppress("DEPRECATION")
@@ -879,7 +910,7 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
             EventLog.add(this, "Indítás elakadt", "a rendszer nem adta meg a hangfókuszt")
             return
         }
-        EventLog.add(this, "Felolvasás indul", _state.value.title)
+        EventLog.add(this, "Felolvasás indul", _state.value.title + " → " + outputName())
         pausedByFocusLoss = false
         registerNoisy()
         acquireWakeLock()
@@ -1386,5 +1417,94 @@ class TtsService : Service(), TextToSpeech.OnInitListener {
         super.onDestroy()
     }
 
-    override fun onBind(intent: Intent?): IBinder? = null
+    // ---------------------------------------------------------------- médiaböngésző
+
+    /*
+     * Ettől a szakasztól lesz az app „médialejátszó" a rendszer szemében —
+     * akkor is, ha épp nem fut.
+     *
+     * Enélkül ugyanis ez történt: reggel, az éjszakai takarítás után nem volt
+     * élő médiamenetünk, és az autós fejegység olyasvalakinek küldte a
+     * lejátszás-parancsot, akiről a telefon nem is tudott. A gombnyomás nem
+     * késett és nem tévedt el: meg sem érkezett. (A naplóban ezért nem volt
+     * egyetlen „MÉDIAGOMB érkezett" sor sem tíz nap alatt.)
+     *
+     * Mostantól a rendszer bármikor bekopogtathat ide, mi pedig felsoroljuk a
+     * legutóbb hallgatott könyveket. A fejegység ebből választhat — vagy csak
+     * megnyomja a lejátszást, és a legutóbbi folytatódik.
+     */
+
+    private val MEDIA_ROOT = "vox_root"
+
+    override fun onGetRoot(
+        clientPackageName: String,
+        clientUid: Int,
+        rootHints: Bundle?
+    ): BrowserRoot {
+        EventLog.add(this, "Médiaböngésző csatlakozott", clientPackageName)
+        // Bárki csatlakozhat: nincs mit védeni, a lista a saját könyveidé, és
+        // az app amúgy sem lát ki az internetre.
+        return BrowserRoot(MEDIA_ROOT, null)
+    }
+
+    override fun onLoadChildren(
+        parentId: String,
+        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
+    ) {
+        if (parentId != MEDIA_ROOT) {
+            result.sendResult(mutableListOf())
+            return
+        }
+        // Az adatbázist nem olvassuk a fő szálon; addig a rendszer vár.
+        result.detach()
+        scope.launch {
+            val rows = withContext(Dispatchers.IO) {
+                try {
+                    AppDb.allProgress().filter { File(it.path).exists() }.take(30)
+                } catch (e: Exception) {
+                    emptyList()
+                }
+            }
+            val items = rows.mapTo(mutableListOf()) { row ->
+                val desc = MediaDescriptionCompat.Builder()
+                    .setMediaId(row.path)
+                    .setTitle(row.title.ifEmpty { row.path.substringAfterLast('/') })
+                    .setSubtitle(row.author)
+                    .build()
+                MediaBrowserCompat.MediaItem(
+                    desc,
+                    MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+                )
+            }
+            EventLog.add(this@TtsService, "Könyvlista kiadva", "${items.size} könyv")
+            result.sendResult(items)
+        }
+    }
+
+    /**
+     * A fejegység listájából választott könyv elindítása.
+     *
+     * A mediaId nálunk maga a fájl útvonala — nincs szükség külön azonosítóra,
+     * és így a mentett pozíció is magától megtalálható hozzá.
+     */
+    private fun playFromMediaId(mediaId: String?) {
+        val path = mediaId ?: return
+        scope.launch {
+            val row = withContext(Dispatchers.IO) { AppDb.progressFor(path) }
+            val f = File(path)
+            if (!f.exists()) {
+                EventLog.add(this@TtsService, "A választott könyv nem található", path)
+                return@launch
+            }
+            enterForeground()
+            val start = Intent(this@TtsService, TtsService::class.java).apply {
+                action = ACTION_PLAY_FILE
+                putExtra(EXTRA_PATH, path)
+                putExtra(EXTRA_TITLE, row?.title ?: f.name.substringBeforeLast('.'))
+                putExtra(EXTRA_AUTHOR, row?.author ?: "")
+                row?.konyvId?.let { putExtra(EXTRA_KONYV_ID, it) }
+            }
+            if (!ttsReady) pendingStart = start else handlePlayFile(start)
+        }
+    }
 }

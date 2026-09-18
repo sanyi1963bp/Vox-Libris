@@ -9,6 +9,39 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.11.0] — 2026-09-18
+
+**Az app mostantól akkor is médialejátszó, ha nem fut**
+
+Ez a reggeli rejtély megoldása: beülsz a kocsiba, és a kormánygomb nem csinál
+semmit — délután hazafelé viszont ugyanaz a gomb működik.
+
+A különbség az, hogy délutánra az app már egész nap ment. Éjszaka viszont az
+Android eltakarítja a felolvasó szolgáltatást, és reggel a fejegység olyan
+lejátszónak küldi a parancsot, amelyik nem létezik. **A gombnyomás nem késett és
+nem tévedt el: meg sem érkezett.** A naplóban ezért nem volt egyetlen
+„médiagomb érkezett" sor sem tíz nap alatt.
+
+Mostantól az app bemutatkozik a rendszernek médialejátszóként — futó alkalmazás
+nélkül is. A fejegység bármikor bekopogtathat, mi pedig felsoroljuk a legutóbb
+hallgatott könyveket: **a kocsi kijelzőjén megjelenik a listád**, és onnan
+indítható bármelyik, ott folytatva, ahol abbahagytad.
+
+A puszta lejátszás gomb is elég: ha nincs betöltött könyv, a legutóbbi indul.
+
+**A fejezetgombok elkerültek a zárolt képernyőről**
+
+Az olvasóban maradnak — ott nélkülözhetetlenek, mert a fejezetek közti
+keresgéléshez a szöveget is látni kell. A zárolt képernyőn viszont tíz nap alatt
+egyszer sem nyomta meg őket senki, miközben épp az ilyen bővítésektől némulnak el
+a gyengébb autós fejegységek.
+
+**A napló megmondja, hova megy a hang**
+
+Minden indításnál feljegyzi, hogy a telefon hangszórója, vezetékes fülhallgató
+vagy melyik Bluetooth-eszköz szól. Eddig nem lehetett szétválasztani a kocsit és
+a fülhallgatót, pedig épp az a különbség érdekes.
+
 ### [4.10.1] — 2026-09-17
 
 **Bluetooth: három fokozat egy kapcsoló helyett**
@@ -685,6 +718,38 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.11.0] — 2026-09-18
+
+**The app is now a media player even when it is not running**
+
+This solves the morning puzzle: you get in the car and the steering wheel button
+does nothing — yet the same button works on the way home in the afternoon.
+
+The difference is that by afternoon the app has been running all day. Overnight,
+Android clears the narration service away, and in the morning the head unit sends
+its command to a player that does not exist. **The button press was not late and
+not misrouted: it never arrived.** That is why there was not a single "media
+button received" line in the log across ten days.
+
+Now the app introduces itself to the system as a media player, with no running
+application needed. The head unit can knock at any time and we list the books you
+listened to most recently: **your list appears on the car's display**, and any of
+them starts from where you left off.
+
+The plain play button is enough too: with no book loaded, the last one resumes.
+
+**Chapter buttons left the lock screen**
+
+They stay in the reader — they are indispensable there, because hunting through
+chapters means seeing the text. On the lock screen nobody pressed them once in ten
+days, while extensions like these are exactly what silences weaker head units.
+
+**The log says where the sound goes**
+
+Every start now records whether it is the phone speaker, wired headphones, or
+which Bluetooth device. Until now the car and the headset could not be told
+apart, and that difference is the interesting one.
 
 ### [4.10.1] — 2026-09-17
 

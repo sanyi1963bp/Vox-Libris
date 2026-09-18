@@ -43,14 +43,23 @@
             </intent-filter>
         </activity>
 
+        <!-- exported="true" a médiaböngésző miatt: ettől lát meg minket az autós
+             fejegység akkor is, ha az app azóta el sem indult. Kifelé csak a
+             saját könyveid címét és szerzőjét adjuk, semmi mást. -->
         <service
             android:name=".tts.TtsService"
-            android:exported="false"
+            android:exported="true"
             android:foregroundServiceType="mediaPlayback">
             <!-- A fülhallgató gombjai ide futnak be, ha a rendszernek kell
                  kézbesítenie őket (pl. a szolgáltatás épp nem futott) -->
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+            <!-- Ettől leszünk „médialejátszó" a rendszer szemében. A fejegység
+                 ezen keresztül kérdezi meg, milyen könyveink vannak, és ezen
+                 keresztül indíthat el egyet — futó app nélkül is. -->
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 

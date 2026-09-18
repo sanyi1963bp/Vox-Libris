@@ -18,8 +18,8 @@ android {
         applicationId = "hu.konyvtar.tts"
         minSdk = 30
         targetSdk = 35
-        versionCode = 22
-        versionName = "4.10.1"
+        versionCode = 23
+        versionName = "4.11.0"
     }
 
     buildTypes {
