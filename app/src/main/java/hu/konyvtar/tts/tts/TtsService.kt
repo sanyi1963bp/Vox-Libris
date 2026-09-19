@@ -623,21 +623,34 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
                     keyName(intent) + "; betöltött könyv: " +
                         (if (paragraphs.isEmpty()) "nincs" else _state.value.title)
                 )
-                if (paragraphs.isEmpty()) {
+                when {
+                    paragraphs.isNotEmpty() ->
+                        MediaButtonReceiver.handleIntent(mediaSession, intent)
+
                     // Nincs betöltött könyv. Ez a tipikus autós helyzet: beülünk,
                     // a fejegység csatlakozik, és a kormányon megnyomjuk a
                     // lejátszást — de az app azóta el sem indult, így nincs mit
                     // folytatni. Ilyenkor a legutóbb hallgatott könyvet vesszük
                     // elő onnan, ahol abbahagytuk.
-                    if (isPlayButton(intent)) resumeLastBook()
-                    else {
-                        // Bármi más gomb (szünet, továbbtekerés) üres kézzel
-                        // értelmetlen — ne maradjunk előtérben a semmiért.
+                    isPlayButton(intent) -> resumeLastBook()
+
+                    // EGY GOMBNYOMÁS KÉT ÜZENET: lenyomás és felengedés. A
+                    // felengedés önmagában nem parancs — és főleg nem azt
+                    // jelenti, hogy le kell állni.
+                    //
+                    // Eddig mégis azt jelentette, és ez ölte meg a reggeleket:
+                    // a lenyomásra elindult a legutóbbi könyv betöltése, a
+                    // felengedés pedig ugyanabban a másodpercben leállította a
+                    // szolgáltatást — a betöltés közben. Utána minden további
+                    // nyomás üres kézbe érkezett.
+                    isKeyUp(intent) -> Unit
+
+                    // Bármi más gomb (szünet, továbbtekerés) üres kézzel
+                    // értelmetlen — ne maradjunk előtérben a semmiért.
+                    else -> {
                         stopForeground(STOP_FOREGROUND_REMOVE)
                         stopSelf()
                     }
-                } else {
-                    MediaButtonReceiver.handleIntent(mediaSession, intent)
                 }
             }
             ACTION_PRONOUNCE_CHANGED -> {
@@ -713,6 +726,13 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
         }
         val updown = if (key.action == KeyEvent.ACTION_DOWN) "le" else "fel"
         return "$name ($updown)"
+    }
+
+    /** A gomb felengedése — önmagában nem parancs, csak a nyomás párja. */
+    private fun isKeyUp(intent: Intent): Boolean {
+        @Suppress("DEPRECATION")
+        val key = intent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT) ?: return false
+        return key.action == KeyEvent.ACTION_UP
     }
 
     /** Lejátszás-jellegű médiagomb volt-e? A szünet/tekerés nem az. */

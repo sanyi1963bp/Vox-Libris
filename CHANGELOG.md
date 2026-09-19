@@ -9,6 +9,31 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.11.1] — 2026-09-19
+
+**A gomb felengedése többé nem állítja le a felolvasást**
+
+A napló pontosan megmutatta, mi ölte meg a reggeleket:
+
+```
+06:03:09  MÉDIAGOMB érkezett — LEJÁTSZÁS (le)
+06:03:09  Legutóbbi könyv folytatása — …
+06:03:09  Könyv megnyitása — ….mobi
+06:03:09  Szolgáltatás leáll          ← itt
+06:03:40  Indítás elakadt — nincs betöltött szöveg  (hatszor)
+```
+
+Egy gombnyomás **két üzenet**: lenyomás és felengedés. A lenyomásra elindult a
+legutóbbi könyv betöltése — a felengedést viszont „ismeretlen gomb üres kézzel"
+esetnek vettem, és leállítottam rá a szolgáltatást. **Ugyanabban a
+másodpercben, a betöltés közben.** Utána minden további gombnyomás üres kézbe
+érkezett, és hiába nyomkodtad.
+
+Mostantól a felengedés az, ami: a nyomás párja. Nem parancs.
+
+Ez a hiba a 4.7.2 óta bent volt, és pontosan azt a javítást rontotta el, amit
+akkor a kocsi kedvéért írtam.
+
 ### [4.11.0] — 2026-09-18
 
 **Az app mostantól akkor is médialejátszó, ha nem fut**
@@ -718,6 +743,30 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.11.1] — 2026-09-19
+
+**Releasing the button no longer stops narration**
+
+The log showed exactly what killed the mornings:
+
+```
+06:03:09  MEDIA BUTTON — PLAY (down)
+06:03:09  Resuming last book — …
+06:03:09  Opening book — ….mobi
+06:03:09  Service stopping          ← here
+06:03:40  Start stalled — no text loaded  (six times)
+```
+
+One button press is **two messages**: down and up. The press started loading the
+last book — but I treated the release as "unknown button with nothing loaded"
+and stopped the service on it. **In the same second, mid-load.** Every further
+press then arrived at an empty service, however hard you pressed.
+
+Now a release is what it is: the other half of a press. Not a command.
+
+This bug had been in since 4.7.2, and it broke precisely the fix I wrote back
+then for the car.
 
 ### [4.11.0] — 2026-09-18
 
