@@ -435,7 +435,18 @@ Minden szöveg MAGYARUL legyen.
 
 # -------------------------------------------------------------- a kérés
 
-def ask(key, model, prompt, schema, text=None, pdf_bytes=None, retries=4):
+class KvotaVege(Exception):
+    """
+    Elfogyott a keret — és ez NEM a könyv hibája.
+
+    Fontos, hogy külön legyen kezelve: ha a napi kvóta elfogyott, akkor a
+    lista összes maradék könyve ugyanúgy elbukna, egyenként negyedórákat
+    várakozva a semmire. Ilyenkor abba kell hagyni a futást, és a könyveket
+    érintetlenül hagyni, hogy legközelebb sorra kerüljenek.
+    """
+
+
+def ask(key, model, prompt, schema, text=None, pdf_bytes=None, retries=6):
     """
     Egy kérés a Geminihez. A 429 (kvóta) nem hiba, hanem várakozás:
     ingyenes kerettel ez a normális működés, nem kivétel.
@@ -459,6 +470,7 @@ def ask(key, model, prompt, schema, text=None, pdf_bytes=None, retries=4):
     }
     url = API % model
     wait = 20
+    kvota_volt = False
     last = ""
     for attempt in range(retries):
         try:
@@ -480,6 +492,7 @@ def ask(key, model, prompt, schema, text=None, pdf_bytes=None, retries=4):
                             delay = int(m.group(1)) + 2
             except Exception:
                 pass
+            kvota_volt = True
             print("      kvóta — várok %d másodpercet…" % delay)
             time.sleep(delay)
             wait = min(wait * 2, 300)
@@ -505,6 +518,8 @@ def ask(key, model, prompt, schema, text=None, pdf_bytes=None, retries=4):
         except Exception as e:
             last = "értelmezhetetlen válasz: %s" % e
             time.sleep(5)
+    if kvota_volt:
+        raise KvotaVege(last or "elfogyott a keret")
     raise RuntimeError(last or "nem sikerült választ kapni")
 
 
@@ -683,6 +698,17 @@ def main():
             print("      kész — %s  (~%d ezer karakter)" % (os.path.basename(out), merve / 1000))
         except KeyboardInterrupt:
             print("\n  Megszakítva. A napló megvan, folytatható.")
+            break
+        except KvotaVege:
+            # A könyvet NEM jegyezzük fel hibásnak: nem vele volt baj.
+            # És nem megyünk tovább sem — ha a keret elfogyott, a lista
+            # maradéka is ugyanígy járna, könyvenként negyedórát várakozva
+            # a semmire. Ez történt az első próbánál: nyolc könyv, tizennyolc
+            # perc, nulla eredmény.
+            print()
+            print("  Elfogyott a napi keret. A futás itt abbamarad.")
+            print("  Ez nem hiba: a feldolgozott könyvek megvannak, a többi")
+            print("  változatlanul vár. Indítsd újra, amikor a keret megújul.")
             break
         except Exception as e:
             naplo.ir(b, "hiba", str(e)[:300])
