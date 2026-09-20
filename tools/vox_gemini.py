@@ -1,0 +1,638 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Könyvadatok készítése a Gemini segítségével, a gépen.
+
+Miért itt és nem a telefonon: az olvasó alkalmazásnak nincs internet-
+engedélye, és ez szándékos. A nehéz munka ezért itt történik — a kész
+eredmény egy kis kísérőfájl, ami a könyv mellé kerül:
+
+    A király.epub
+    A király.vox.json      <- ezt készíti ez a szkript
+
+A telefonra a kettőt együtt másolod, és az alkalmazás onnantól hálózat
+nélkül is tud mindent a könyvről.
+
+Két üzemmód, mert kétféle a feladat:
+
+  katalogus  A könyv ELEJÉT küldi el (alapértelmezés: 40 000 karakter).
+             Cím, szerző, sorozat, műfaj, fülszöveg. Olcsó, tömegesen
+             futtatható — több ezer könyvhöz ez való.
+
+  dosszie    A TELJES könyvet elküldi. A fentieken túl szereplők,
+             fejezetenkénti összefoglaló és kiejtési javaslatok.
+             Drága, de csak arra a néhány könyvre kell, amit elolvasol.
+
+Példák:
+
+    python vox_gemini.py "D:\\konyvek\\A kiraly.epub"
+    python vox_gemini.py "D:\\konyvek" --mod katalogus --kesleltetes 6
+    python vox_gemini.py "D:\\konyvek" --mod katalogus --korlat 20
+
+A kulcs a local.properties-ben legyen (gemini.key=...), vagy a
+GEMINI_API_KEY környezeti változóban.
+
+A munka BÁRMIKOR megszakítható. A napló (vox_naplo.json) megjegyzi, mi
+készült el, és a következő indítás ott folytatja. Hónapokig futó
+feldolgozásnál ez nem kényelem, hanem feltétel.
+"""
+
+import argparse
+import base64
+import html
+import io
+import json
+import os
+import re
+import sys
+import time
+import zipfile
+
+try:
+    import requests
+except ImportError:
+    sys.exit("Hiányzik a 'requests' csomag:  pip install requests")
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# A Windows-konzol alapértelmezése nem bírja az ékezeteket, és ezt a
+# kimenetet hetekig fogjuk nézni. A fájlokat ez nem érinti, csak a kiírást.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
+# Szövegként feldolgozható formátumok. A PDF külön úton megy: azt maga a
+# Gemini olvassa, mert abban jobb, mint bármilyen kinyerő, amit írhatnánk.
+TEXT_EXT = {".epub", ".txt", ".text", ".htm", ".html", ".xhtml", ".rtf",
+            ".mobi", ".prc", ".azw", ".azw3"}
+PDF_EXT = {".pdf"}
+MINDEN_EXT = TEXT_EXT | PDF_EXT
+
+ALAP_MODELL = "gemini-2.5-flash"
+API = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent"
+
+# Inline küldhető PDF mérethatára. E fölött a Files API kellene; egyelőre
+# inkább kihagyjuk és megmondjuk, hogy kimaradt.
+PDF_MAX = 15 * 1024 * 1024
+
+
+# ---------------------------------------------------------------- a kulcs
+
+def read_key():
+    """A Gemini-kulcs: környezeti változóból vagy a local.properties-ből."""
+    t = os.environ.get("GEMINI_API_KEY")
+    if t and t.strip():
+        return t.strip(), "GEMINI_API_KEY"
+    path = os.path.join(ROOT, "local.properties")
+    if os.path.isfile(path):
+        with io.open(path, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if line.strip().startswith("gemini.key"):
+                    _, _, value = line.partition("=")
+                    if value.strip():
+                        return value.strip(), "local.properties"
+    return None, None
+
+
+# ------------------------------------------------------- szövegkinyerés
+
+def u16(b, off):
+    return (b[off] << 8) | b[off + 1]
+
+
+def u32(b, off):
+    return (b[off] << 24) | (b[off + 1] << 16) | (b[off + 2] << 8) | b[off + 3]
+
+
+def html_to_text(raw):
+    """A címkék elhagyása, bekezdésenként. Nincs külső függőség."""
+    raw = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", raw, flags=re.S | re.I)
+    # Lágy elválasztójel és láthatatlan karakterek. A tördelt e-könyvekben
+    # tele van velük a szöveg ("Ant­hony"), és ezek nemcsak csúnyák:
+    # a fejezetek első mondatát kellene visszakeresni velük, ami így nem
+    # sikerülne.
+    raw = raw.translate({0xAD: None, 0x200B: None, 0x200C: None,
+                         0x200D: None, 0xFEFF: None})
+    out = []
+    for block in re.split(r"</(?:p|div|h[1-6]|li|br)>", raw, flags=re.I):
+        t = re.sub(r"<[^>]+>", " ", block)
+        t = html.unescape(t)
+        t = re.sub(r"[ \t\r\f\v]+", " ", t).strip()
+        if len(t) > 1:
+            out.append(t)
+    return out
+
+
+def text_from_epub(path):
+    """Az EPUB egy zip; a fejezetek sorrendjét az OPF gerince adja meg."""
+    paras = []
+    with zipfile.ZipFile(path) as z:
+        names = [n for n in z.namelist() if re.search(r"\.(x?html?|htm)$", n, re.I)]
+        names.sort()
+        for n in names:
+            try:
+                raw = z.read(n).decode("utf-8", "replace")
+            except Exception:
+                continue
+            paras.extend(html_to_text(raw))
+    return paras
+
+
+def palmdoc_decompress(data):
+    """PalmDOC (LZ77 változat) kitömörítés — ugyanaz, ami az appban fut."""
+    out = bytearray()
+    i = 0
+    n = len(data)
+    while i < n:
+        c = data[i]
+        i += 1
+        if c == 0:
+            out.append(0)
+        elif 1 <= c <= 8:
+            out.extend(data[i:i + c])
+            i += c
+        elif c <= 0x7F:
+            out.append(c)
+        elif c <= 0xBF:
+            if i >= n:
+                break
+            pair = (c << 8) | data[i]
+            i += 1
+            distance = (pair >> 3) & 0x7FF
+            length = (pair & 0x7) + 3
+            if 1 <= distance <= len(out):
+                src = len(out) - distance
+                for _ in range(length):
+                    out.append(out[src])
+                    src += 1
+        else:
+            out.append(0x20)
+            out.append(c ^ 0x80)
+    return bytes(out)
+
+
+def _trailing_size(rec, end):
+    num = 0
+    for i in range(max(end - 4, 0), end):
+        v = rec[i]
+        if v & 0x80:
+            num = 0
+        num = (num << 7) | (v & 0x7F)
+    return num
+
+
+def text_from_mobi(path):
+    """MOBI/PRC/AZW: PalmDB konténer, tömörítetlen vagy PalmDOC szöveggel."""
+    with open(path, "rb") as f:
+        data = f.read()
+    if len(data) < 80 or data[60:68] not in (b"BOOKMOBI", b"TEXtREAd"):
+        raise ValueError("nem MOBI-szerkezetű fájl")
+
+    count = u16(data, 76)
+    if count < 2 or 78 + count * 8 > len(data):
+        raise ValueError("sérült MOBI-fejléc")
+    offs = [u32(data, 78 + i * 8) for i in range(count)]
+
+    def record(i):
+        start = offs[i]
+        end = offs[i + 1] if i + 1 < count else len(data)
+        return data[start:end] if 0 <= start < end <= len(data) else b""
+
+    r0 = record(0)
+    if len(r0) < 16:
+        raise ValueError("sérült MOBI-fejléc")
+    compression = u16(r0, 0)
+    text_len = u32(r0, 4)
+    rec_count = u16(r0, 8)
+    if u16(r0, 12) != 0:
+        raise ValueError("DRM-védett fájl")
+
+    enc, extra = "cp1252", 0
+    if len(r0) >= 24 and r0[16:20] == b"MOBI":
+        header_len = u32(r0, 20)
+        code = u32(r0, 28)
+        enc = "utf-8" if code == 65001 else ("cp1252" if code == 1252 else "utf-8")
+        if header_len >= 228 and len(r0) >= 244:
+            extra = u16(r0, 242)
+
+    if compression == 17480:
+        raise ValueError("HUFF/CDIC tömörítés — ezt nem olvassuk")
+    if compression not in (1, 2):
+        raise ValueError("ismeretlen tömörítés: %d" % compression)
+
+    buf = bytearray()
+    for i in range(1, min(rec_count, count - 1) + 1):
+        rec = record(i)
+        if not rec:
+            continue
+        end = len(rec)
+        for bit in range(15, 0, -1):
+            if (extra >> bit) & 1:
+                end -= _trailing_size(rec, end)
+                if end < 0:
+                    end = 0
+                    break
+        if extra & 1 and end > 0:
+            end -= (rec[end - 1] & 0x3) + 1
+        if end <= 0:
+            continue
+        rec = rec[:end]
+        buf.extend(palmdoc_decompress(rec) if compression == 2 else rec)
+
+    if 0 < text_len < len(buf):
+        buf = buf[:text_len]
+    if not buf:
+        raise ValueError("nincs szöveg a fájlban")
+    return html_to_text(bytes(buf).decode(enc, "replace"))
+
+
+def text_from_rtf(path):
+    """Nyers, de elég: a vezérlőszavak elhagyása."""
+    with io.open(path, "r", encoding="utf-8", errors="replace") as f:
+        raw = f.read()
+    raw = re.sub(r"\\'([0-9a-fA-F]{2})", lambda m: chr(int(m.group(1), 16)), raw)
+    raw = re.sub(r"\\par[d]?\b", "\n", raw)
+    raw = re.sub(r"\\[a-zA-Z]+-?\d* ?", " ", raw)
+    raw = raw.replace("{", " ").replace("}", " ")
+    return [p.strip() for p in raw.split("\n") if len(p.strip()) > 1]
+
+
+def load_text(path):
+    ext = os.path.splitext(path)[1].lower()
+    if ext == ".epub":
+        paras = text_from_epub(path)
+    elif ext in (".mobi", ".prc", ".azw", ".azw3"):
+        paras = text_from_mobi(path)
+    elif ext == ".rtf":
+        paras = text_from_rtf(path)
+    elif ext in (".htm", ".html", ".xhtml"):
+        with io.open(path, "r", encoding="utf-8", errors="replace") as f:
+            paras = html_to_text(f.read())
+    else:
+        with io.open(path, "r", encoding="utf-8", errors="replace") as f:
+            paras = [p.strip() for p in f.read().split("\n") if p.strip()]
+    text = "\n".join(paras)
+    if len(text) < 500:
+        raise ValueError("túl kevés szöveg jött ki (%d karakter)" % len(text))
+    return text
+
+
+# ------------------------------------------------------------- a séma
+
+def _str(desc):
+    return {"type": "STRING", "description": desc}
+
+
+KATALOGUS_MEZOK = {
+    "cim": _str("A könyv magyar címe, ahogy megjelent."),
+    "eredeti_cim": _str("Az eredeti nyelvű cím, ha a könyv fordítás. Különben üres."),
+    "szerzo": _str("A szerző teljes neve."),
+    "megjelenes": {"type": "INTEGER", "description": "Az eredeti megjelenés éve, ha kiderül."},
+    "nyelv": _str("A szöveg nyelvének kétbetűs kódja, pl. hu."),
+    "sorozat": _str("A sorozat neve, ha a könyv egy sorozat része. Különben üres."),
+    "sorozat_resz": {"type": "INTEGER", "description": "Hányadik rész a sorozatban. Ha nem sorozat, 0."},
+    "mufaj": {"type": "ARRAY", "items": {"type": "STRING"},
+              "description": "2-4 műfaji címke, pl. regény, történelmi, krimi."},
+    "rovid": _str("EGYETLEN mondat arról, miről szól a könyv. Lista alatt jelenik meg."),
+    "fulszoveg": _str("3-5 mondatos ismertető, mint a könyv hátulján. NE lője le a végét."),
+    "helyszin_kor": _str("Hol és mikor játszódik, egy mondatban. Több szál esetén mindegyik."),
+}
+
+KATALOGUS_SCHEMA = {
+    "type": "OBJECT",
+    "properties": dict(KATALOGUS_MEZOK),
+    "required": ["cim", "szerzo", "rovid", "fulszoveg"],
+}
+
+DOSSZIE_SCHEMA = {
+    "type": "OBJECT",
+    "properties": dict(KATALOGUS_MEZOK, **{
+        "szereplok": {
+            "type": "ARRAY",
+            "description": "A fontos szereplők. Mellékalakokat ne sorolj fel.",
+            "items": {
+                "type": "OBJECT",
+                "properties": {
+                    "nev": _str("A név abban az alakban, ahogy a szöveg leggyakrabban használja."),
+                    "mas_nevek": {"type": "ARRAY", "items": {"type": "STRING"},
+                                  "description": "Egyéb megnevezései: becenév, rang, titulus."},
+                    "szerep": _str("fő, mellék vagy epizód"),
+                    "leiras": _str("2-3 mondat: kicsoda, mi a szerepe a történetben."),
+                    "elso_fejezet": {"type": "INTEGER",
+                                     "description": "Hányadik fejezetben bukkan fel először."},
+                },
+                "required": ["nev", "leiras"],
+            },
+        },
+        "fejezetek": {
+            "type": "ARRAY",
+            "description": "Minden fejezethez egy bejegyzés, a könyv sorrendjében.",
+            "items": {
+                "type": "OBJECT",
+                "properties": {
+                    "sorszam": {"type": "INTEGER", "description": "A fejezet sorszáma, 1-től."},
+                    "cim": _str("A fejezet címe, ha van."),
+                    "elso_mondat": _str(
+                        "A fejezet ELSŐ mondata SZÓ SZERINT, a könyv szövegéből másolva. "
+                        "Ez köti össze az összefoglalót a fájllal, ezért pontosnak kell lennie."),
+                    "eddig": _str(
+                        "Mi történt a könyvben EDDIG A PONTIG, beleértve ezt a fejezetet. "
+                        "Ne utalj későbbi eseményekre. Aki idáig jutott, ebből értse meg, hol tart."),
+                },
+                "required": ["sorszam", "elso_mondat", "eddig"],
+            },
+        },
+        "kiejtes": {
+            "type": "ARRAY",
+            "description": ("Nevek és szavak, amiket egy magyar gépi felolvasó rosszul mondana ki. "
+                            "Csak azokat sorold fel, ahol az írás és a kiejtés tényleg eltér."),
+            "items": {
+                "type": "OBJECT",
+                "properties": {
+                    "iras": _str("Ahogy a szövegben szerepel."),
+                    "mond": _str("Magyar betűkkel, ahogy ki kell mondani."),
+                },
+                "required": ["iras", "mond"],
+            },
+        },
+    }),
+    "required": ["cim", "szerzo", "rovid", "fulszoveg", "szereplok", "fejezetek"],
+}
+
+KATALOGUS_PROMPT = """Egy könyv elejét kapod. Állapítsd meg az adatait.
+
+Amit nem tudsz biztosan, azt hagyd üresen — NE TALÁLD KI. Jobb egy üres
+mező, mint egy kitalált évszám vagy sorozatcím.
+
+A fülszöveg és a rövid összefoglaló MAGYARUL legyen, akkor is, ha a könyv
+más nyelvű. Ne lőjék le a történet végét.
+"""
+
+DOSSZIE_PROMPT = """Egy teljes könyvet kapsz. Készíts belőle kísérőadatokat
+egy hangoskönyv-olvasó alkalmazáshoz.
+
+Három dolog fontos:
+
+1. A FEJEZETENKÉNTI ÖSSZEFOGLALÓ ("eddig") azt mondja el, hol tart az
+   olvasó. Aki a 7. fejezetnél jár, a 7. bejegyzést olvassa — és abból
+   NEM derülhet ki semmi, ami később történik. Ez a legfontosabb szabály.
+
+2. Az "elso_mondat" mezőbe a fejezet első mondatát SZÓ SZERINT másold be a
+   könyvből. Ez alapján találja meg az alkalmazás, melyik fejezetről van
+   szó. Ha átfogalmazod, használhatatlan.
+
+3. A "kiejtes" listába azok a nevek és szavak kerüljenek, amiket egy
+   magyar gépi felolvasó félreolvasna — idegen nevek, régies alakok,
+   rövidítések. Csak ahol tényleg eltér az írás a kiejtéstől.
+
+Amit nem tudsz biztosan, azt hagyd üresen. Ne találj ki adatokat.
+Minden szöveg MAGYARUL legyen.
+"""
+
+
+# -------------------------------------------------------------- a kérés
+
+def ask(key, model, prompt, schema, text=None, pdf_bytes=None, retries=4):
+    """
+    Egy kérés a Geminihez. A 429 (kvóta) nem hiba, hanem várakozás:
+    ingyenes kerettel ez a normális működés, nem kivétel.
+    """
+    parts = [{"text": prompt}]
+    if pdf_bytes is not None:
+        parts.append({"inline_data": {
+            "mime_type": "application/pdf",
+            "data": base64.b64encode(pdf_bytes).decode("ascii"),
+        }})
+    if text is not None:
+        parts.append({"text": "\n\n--- A KÖNYV SZÖVEGE ---\n\n" + text})
+
+    body = {
+        "contents": [{"parts": parts}],
+        "generationConfig": {
+            "responseMimeType": "application/json",
+            "responseSchema": schema,
+            "temperature": 0.2,
+        },
+    }
+    url = API % model
+    wait = 20
+    last = ""
+    for attempt in range(retries):
+        try:
+            r = requests.post(url, params={"key": key}, json=body, timeout=900)
+        except Exception as e:
+            last = str(e)
+            time.sleep(wait)
+            wait *= 2
+            continue
+
+        if r.status_code == 429:
+            delay = wait
+            try:
+                info = r.json().get("error", {})
+                for d in info.get("details", []):
+                    if "retryDelay" in str(d):
+                        m = re.search(r"(\d+)s", json.dumps(d))
+                        if m:
+                            delay = int(m.group(1)) + 2
+            except Exception:
+                pass
+            print("      kvóta — várok %d másodpercet…" % delay)
+            time.sleep(delay)
+            wait = min(wait * 2, 300)
+            continue
+
+        if r.status_code >= 400:
+            last = "HTTP %d: %s" % (r.status_code, r.text[:300])
+            # A 400 rendszerint a kérésről szól (túl nagy, rossz séma) —
+            # azt nem oldja meg az ismétlés.
+            if r.status_code == 400:
+                break
+            time.sleep(wait)
+            wait *= 2
+            continue
+
+        try:
+            data = r.json()
+            txt = data["candidates"][0]["content"]["parts"][0]["text"]
+            return json.loads(txt)
+        except Exception as e:
+            last = "értelmezhetetlen válasz: %s" % e
+            time.sleep(5)
+    raise RuntimeError(last or "nem sikerült választ kapni")
+
+
+# --------------------------------------------------------------- napló
+
+class Naplo:
+    """
+    Mit dolgoztunk már fel. Hónapokig futó munkánál ez tartja össze az
+    egészet: bármikor megszakítható, és nem kezd újra semmit.
+    """
+
+    def __init__(self, path):
+        self.path = path
+        self.data = {}
+        if os.path.isfile(path):
+            try:
+                with io.open(path, "r", encoding="utf-8") as f:
+                    self.data = json.load(f)
+            except Exception:
+                self.data = {}
+
+    def kesz(self, book):
+        rec = self.data.get(os.path.abspath(book))
+        return bool(rec) and rec.get("allapot") == "kesz"
+
+    def ir(self, book, allapot, uzenet=""):
+        self.data[os.path.abspath(book)] = {
+            "allapot": allapot,
+            "uzenet": uzenet,
+            "ido": time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        tmp = self.path + ".tmp"
+        with io.open(tmp, "w", encoding="utf-8") as f:
+            json.dump(self.data, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, self.path)
+
+
+# ------------------------------------------------------------ a munka
+
+def sidecar_for(book):
+    return os.path.splitext(book)[0] + ".vox.json"
+
+
+def collect(target):
+    if os.path.isfile(target):
+        return [target]
+    out = []
+    for dirpath, _, files in os.walk(target):
+        for fn in sorted(files):
+            if os.path.splitext(fn)[1].lower() in MINDEN_EXT:
+                out.append(os.path.join(dirpath, fn))
+    return out
+
+
+def process(book, key, model, mode, max_chars):
+    ext = os.path.splitext(book)[1].lower()
+    schema = KATALOGUS_SCHEMA if mode == "katalogus" else DOSSZIE_SCHEMA
+    prompt = KATALOGUS_PROMPT if mode == "katalogus" else DOSSZIE_PROMPT
+
+    if ext in PDF_EXT:
+        size = os.path.getsize(book)
+        if size > PDF_MAX:
+            raise ValueError("PDF túl nagy az egyszerű küldéshez (%.1f MB)" % (size / 1024.0 / 1024))
+        with open(book, "rb") as f:
+            result = ask(key, model, prompt, schema, pdf_bytes=f.read())
+        merve = size
+    else:
+        text = load_text(book)
+        merve = len(text)
+        if max_chars and len(text) > max_chars:
+            text = text[:max_chars]
+        result = ask(key, model, prompt, schema, text=text)
+
+    result["_keszult"] = time.strftime("%Y-%m-%d")
+    result["_mod"] = mode
+    result["_modell"] = model
+    out = sidecar_for(book)
+    with io.open(out, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=1)
+    return out, merve
+
+
+def main():
+    ap = argparse.ArgumentParser(
+        description="Könyvadatok készítése Geminivel, a könyv mellé.")
+    ap.add_argument("cel", help="egy könyvfájl vagy egy mappa")
+    ap.add_argument("--mod", choices=["katalogus", "dosszie"], default="dosszie",
+                    help="katalogus = olcsó, a könyv eleje; dosszie = teljes könyv")
+    ap.add_argument("--modell", default=ALAP_MODELL)
+    ap.add_argument("--kesleltetes", type=float, default=4.0,
+                    help="szünet két könyv között, másodpercben")
+    ap.add_argument("--korlat", type=int, default=0,
+                    help="legfeljebb ennyi könyvet dolgoz fel most (0 = mind)")
+    ap.add_argument("--max-karakter", type=int, default=None,
+                    help="ennyi karaktert küld (katalógusban alap: 40000)")
+    ap.add_argument("--naplo", default=None, help="a napló fájl helye")
+    ap.add_argument("--ujra", action="store_true",
+                    help="a meglévő kísérőfájlokat is újrakészíti")
+    ap.add_argument("--proba", action="store_true",
+                    help="csak megmutatja, mit csinálna")
+    args = ap.parse_args()
+
+    key, forras = read_key()
+    if not key and not args.proba:
+        sys.exit("Nincs Gemini-kulcs. Tedd a local.properties-be:  gemini.key=...")
+
+    max_chars = args.max_karakter
+    if max_chars is None:
+        max_chars = 40000 if args.mod == "katalogus" else 0
+
+    books = collect(args.cel)
+    if not books:
+        sys.exit("Nem találtam feldolgozható könyvet itt: %s" % args.cel)
+
+    naplo_path = args.naplo or os.path.join(
+        args.cel if os.path.isdir(args.cel) else os.path.dirname(args.cel),
+        "vox_naplo.json")
+    naplo = Naplo(naplo_path)
+
+    todo = []
+    for b in books:
+        if not args.ujra and (naplo.kesz(b) or os.path.isfile(sidecar_for(b))):
+            continue
+        todo.append(b)
+
+    print("Vox Libris — könyvadatok Geminivel")
+    print("-" * 58)
+    print("  üzemmód:   %s%s" % (args.mod,
+                                 ("  (max %d karakter)" % max_chars) if max_chars else "  (teljes szöveg)"))
+    print("  modell:    %s" % args.modell)
+    if key:
+        print("  kulcs:     %s" % forras)
+    print("  napló:     %s" % naplo_path)
+    print("  találat:   %d könyv, ebből %d vár feldolgozásra" % (len(books), len(todo)))
+    if args.korlat:
+        todo = todo[:args.korlat]
+        print("  most:      %d (korlát)" % len(todo))
+    print()
+
+    if args.proba:
+        for b in todo[:20]:
+            print("   ", os.path.basename(b))
+        if len(todo) > 20:
+            print("    … és még %d" % (len(todo) - 20))
+        print("\n  PRÓBA — nem küldtünk semmit.")
+        return
+
+    kesz = hiba = 0
+    t0 = time.time()
+    for n, b in enumerate(todo, 1):
+        print("[%d/%d] %s" % (n, len(todo), os.path.basename(b)))
+        try:
+            out, merve = process(b, key, args.modell, args.mod, max_chars)
+            naplo.ir(b, "kesz")
+            kesz += 1
+            print("      kész — %s  (~%d ezer karakter)" % (os.path.basename(out), merve / 1000))
+        except KeyboardInterrupt:
+            print("\n  Megszakítva. A napló megvan, folytatható.")
+            break
+        except Exception as e:
+            naplo.ir(b, "hiba", str(e)[:300])
+            hiba += 1
+            print("      ! %s" % e)
+        if n < len(todo):
+            time.sleep(args.kesleltetes)
+
+    perc = (time.time() - t0) / 60.0
+    print()
+    print("-" * 58)
+    print("  kész: %d    hiba: %d    idő: %.1f perc" % (kesz, hiba, perc))
+    if hiba:
+        print("  A hibás könyvek a naplóban vannak, újrafuttatáskor sorra kerülnek.")
+
+
+if __name__ == "__main__":
+    main()
