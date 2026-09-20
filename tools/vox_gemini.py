@@ -327,80 +327,81 @@ def _str(desc):
 
 
 KATALOGUS_MEZOK = {
-    "cim": _str("A könyv magyar címe, ahogy megjelent."),
-    "eredeti_cim": _str("Az eredeti nyelvű cím, ha a könyv fordítás. Különben üres."),
-    "szerzo": _str("A szerző teljes neve."),
-    "megjelenes": {"type": "INTEGER", "description": "Az eredeti megjelenés éve, ha kiderül."},
-    "nyelv": _str("A szöveg nyelvének kétbetűs kódja, pl. hu."),
-    "sorozat": _str("A sorozat neve, ha a könyv egy sorozat része. Különben üres."),
-    "sorozat_resz": {"type": "INTEGER", "description": "Hányadik rész a sorozatban. Ha nem sorozat, 0."},
-    "mufaj": {"type": "ARRAY", "items": {"type": "STRING"},
-              "description": "2-4 műfaji címke, pl. regény, történelmi, krimi."},
-    "rovid": _str("EGYETLEN mondat arról, miről szól a könyv. Lista alatt jelenik meg."),
-    "fulszoveg": _str("3-5 mondatos ismertető, mint a könyv hátulján. NE lője le a végét."),
-    "helyszin_kor": _str("Hol és mikor játszódik, egy mondatban. Több szál esetén mindegyik."),
+    "title": _str("A könyv magyar címe, ahogy megjelent."),
+    "original_title": _str("Az eredeti nyelvű cím, ha a könyv fordítás. Különben üres."),
+    "author": _str("A szerző teljes neve."),
+    "published": {"type": "INTEGER", "description": "Az eredeti megjelenés éve, ha kiderül."},
+    "language": _str("A szöveg nyelvének kétbetűs kódja, pl. hu."),
+    "series": _str("A sorozat neve, ha a könyv egy sorozat része. Különben üres."),
+    "series_index": {"type": "INTEGER", "description": "Hányadik rész a sorozatban. Ha nem sorozat, 0."},
+    "genres": {"type": "ARRAY", "items": {"type": "STRING"},
+               "description": "2-4 műfaji címke, pl. regény, történelmi, krimi."},
+    "tagline": _str("EGYETLEN mondat arról, miről szól a könyv. Lista alatt jelenik meg."),
+    "blurb": _str("3-5 mondatos ismertető, mint a könyv hátulján. NE lője le a végét."),
+    "setting": _str("Hol és mikor játszódik, egy mondatban. Több szál esetén mindegyik."),
 }
 
 KATALOGUS_SCHEMA = {
     "type": "OBJECT",
     "properties": dict(KATALOGUS_MEZOK),
-    "required": ["cim", "szerzo", "rovid", "fulszoveg"],
+    "required": ["title", "author", "tagline", "blurb"],
 }
 
 DOSSZIE_SCHEMA = {
     "type": "OBJECT",
     "properties": dict(KATALOGUS_MEZOK, **{
-        "szereplok": {
+        "characters": {
             "type": "ARRAY",
             "description": "A fontos szereplők. Mellékalakokat ne sorolj fel.",
             "items": {
                 "type": "OBJECT",
                 "properties": {
-                    "nev": _str("A név abban az alakban, ahogy a szöveg leggyakrabban használja."),
-                    "mas_nevek": {"type": "ARRAY", "items": {"type": "STRING"},
-                                  "description": "Egyéb megnevezései: becenév, rang, titulus."},
-                    "szerep": _str("fő, mellék vagy epizód"),
-                    "leiras": _str("2-3 mondat: kicsoda, mi a szerepe a történetben."),
-                    "elso_fejezet": {"type": "INTEGER",
-                                     "description": "Hányadik fejezetben bukkan fel először."},
+                    "name": _str("A név abban az alakban, ahogy a szöveg leggyakrabban használja."),
+                    "aliases": {"type": "ARRAY", "items": {"type": "STRING"},
+                                "description": "Egyéb megnevezései: becenév, rang, titulus."},
+                    "role": _str("fő, mellék vagy epizód"),
+                    "description": _str("2-3 mondat: kicsoda, mi a szerepe a történetben."),
+                    "first_chapter": {"type": "INTEGER",
+                                      "description": "Hányadik fejezetben bukkan fel először."},
                 },
-                "required": ["nev", "leiras"],
+                "required": ["name", "description"],
             },
         },
-        "fejezetek": {
+        "chapters": {
             "type": "ARRAY",
             "description": "Minden fejezethez egy bejegyzés, a könyv sorrendjében.",
             "items": {
                 "type": "OBJECT",
                 "properties": {
-                    "sorszam": {"type": "INTEGER", "description": "A fejezet sorszáma, 1-től."},
-                    "cim": _str("A fejezet címe, ha van."),
-                    "elso_mondat": _str(
+                    "number": {"type": "INTEGER", "description": "A fejezet sorszáma, 1-től."},
+                    "title": _str("A fejezet címe, ha van."),
+                    "first_sentence": _str(
                         "A fejezet ELSŐ mondata SZÓ SZERINT, a könyv szövegéből másolva. "
                         "Ez köti össze az összefoglalót a fájllal, ezért pontosnak kell lennie."),
-                    "eddig": _str(
+                    "so_far": _str(
                         "Mi történt a könyvben EDDIG A PONTIG, beleértve ezt a fejezetet. "
                         "Ne utalj későbbi eseményekre. Aki idáig jutott, ebből értse meg, hol tart."),
                 },
-                "required": ["sorszam", "elso_mondat", "eddig"],
+                "required": ["number", "first_sentence", "so_far"],
             },
         },
-        "kiejtes": {
+        "pronunciation": {
             "type": "ARRAY",
             "description": ("Nevek és szavak, amiket egy magyar gépi felolvasó rosszul mondana ki. "
                             "Csak azokat sorold fel, ahol az írás és a kiejtés tényleg eltér."),
             "items": {
                 "type": "OBJECT",
                 "properties": {
-                    "iras": _str("Ahogy a szövegben szerepel."),
-                    "mond": _str("Magyar betűkkel, ahogy ki kell mondani."),
+                    "written": _str("Ahogy a szövegben szerepel."),
+                    "spoken": _str("Magyar betűkkel, ahogy ki kell mondani."),
                 },
-                "required": ["iras", "mond"],
+                "required": ["written", "spoken"],
             },
         },
     }),
-    "required": ["cim", "szerzo", "rovid", "fulszoveg", "szereplok", "fejezetek"],
+    "required": ["title", "author", "tagline", "blurb", "characters", "chapters"],
 }
+
 
 KATALOGUS_PROMPT = """Egy könyv elejét kapod. Állapítsd meg az adatait.
 
