@@ -69,12 +69,16 @@ TEXT_EXT = {".epub", ".txt", ".text", ".htm", ".html", ".xhtml", ".rtf",
 PDF_EXT = {".pdf"}
 MINDEN_EXT = TEXT_EXT | PDF_EXT
 
-ALAP_MODELL = "gemini-2.5-flash"
+ALAP_MODELL = "gemini-3.8-flash"
 API = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent"
 
 # Inline küldhető PDF mérethatára. E fölött a Files API kellene; egyelőre
 # inkább kihagyjuk és megmondjuk, hogy kimaradt.
 PDF_MAX = 15 * 1024 * 1024
+
+# Futás közben gyűjtött tokenfogyasztás. Enélkül vakon költenénk: több
+# ezer könyvnél a token az egyetlen szám, ami a számlát meghatározza.
+TOKEN = {"be": 0, "ki": 0}
 
 
 # ---------------------------------------------------------------- a kulcs
@@ -258,8 +262,49 @@ def text_from_rtf(path):
     return [p.strip() for p in raw.split("\n") if len(p.strip()) > 1]
 
 
+def text_from_pdf(path, max_pages=0):
+    """
+    A PDF szövegrétege, ha van. A könyv-PDF-ek nagy részében van, és akkor
+    ez a jó út: olcsó, és ugyanúgy kezelhető, mint bármelyik más formátum.
+    Szkennelt PDF-ben nincs szövegréteg — azt a hívónak kell észrevennie.
+    """
+    from pypdf import PdfReader
+    r = PdfReader(path)
+    pages = r.pages if not max_pages else r.pages[:max_pages]
+    out = []
+    for p in pages:
+        try:
+            t = p.extract_text() or ""
+        except Exception:
+            continue
+        t = t.translate({0xAD: None, 0x200B: None, 0xFEFF: None})
+        if t.strip():
+            out.append(t.strip())
+    return "\n".join(out)
+
+
+def pdf_first_pages(path, pages):
+    """
+    A PDF első néhány oldala külön fájlként, a memóriában.
+
+    Szkennelt könyvhöz kell: ott a Gemininek oldalanként KÉPET kell néznie,
+    és egy egész könyv így túllépi a befogadóképességét — ebbe futottunk
+    bele. A cím, a szerző és a fülszöveg viszont az első oldalakon van.
+    """
+    from pypdf import PdfReader, PdfWriter
+    r = PdfReader(path)
+    w = PdfWriter()
+    for p in r.pages[:pages]:
+        w.add_page(p)
+    buf = io.BytesIO()
+    w.write(buf)
+    return buf.getvalue()
+
+
 def load_text(path):
     ext = os.path.splitext(path)[1].lower()
+    if ext == ".pdf":
+        return text_from_pdf(path)
     if ext == ".epub":
         paras = text_from_epub(path)
     elif ext in (".mobi", ".prc", ".azw", ".azw3"):
@@ -272,10 +317,7 @@ def load_text(path):
     else:
         with io.open(path, "r", encoding="utf-8", errors="replace") as f:
             paras = [p.strip() for p in f.read().split("\n") if p.strip()]
-    text = "\n".join(paras)
-    if len(text) < 500:
-        raise ValueError("túl kevés szöveg jött ki (%d karakter)" % len(text))
-    return text
+    return "\n".join(paras)
 
 
 # ------------------------------------------------------------- a séma
@@ -456,6 +498,9 @@ def ask(key, model, prompt, schema, text=None, pdf_bytes=None, retries=4):
         try:
             data = r.json()
             txt = data["candidates"][0]["content"]["parts"][0]["text"]
+            u = data.get("usageMetadata", {})
+            TOKEN["be"] += u.get("promptTokenCount", 0)
+            TOKEN["ki"] += u.get("candidatesTokenCount", 0)
             return json.loads(txt)
         except Exception as e:
             last = "értelmezhetetlen válasz: %s" % e
@@ -514,21 +559,39 @@ def collect(target):
     return out
 
 
-def process(book, key, model, mode, max_chars):
+def process(book, key, model, mode, max_chars, min_chars):
     ext = os.path.splitext(book)[1].lower()
     schema = KATALOGUS_SCHEMA if mode == "katalogus" else DOSSZIE_SCHEMA
     prompt = KATALOGUS_PROMPT if mode == "katalogus" else DOSSZIE_PROMPT
 
     if ext in PDF_EXT:
-        size = os.path.getsize(book)
-        if size > PDF_MAX:
-            raise ValueError("PDF túl nagy az egyszerű küldéshez (%.1f MB)" % (size / 1024.0 / 1024))
-        with open(book, "rb") as f:
-            result = ask(key, model, prompt, schema, pdf_bytes=f.read())
-        merve = size
+        # Először a szövegréteget keressük. Ha van, a PDF ugyanolyan olcsó,
+        # mint bármelyik e-könyv. Ha nincs (szkennelt lapok), akkor és csak
+        # akkor küldjük képként — és abból is csak az első oldalakat, mert
+        # a Gemini oldalanként számol, és egy egész könyv nem fér bele.
+        text = text_from_pdf(book)
+        merve = len(text)
+        if merve >= min_chars:
+            if max_chars and len(text) > max_chars:
+                text = text[:max_chars]
+            result = ask(key, model, prompt, schema, text=text)
+        else:
+            oldal = 12 if mode == "katalogus" else 40
+            data = pdf_first_pages(book, oldal)
+            if len(data) > PDF_MAX:
+                raise ValueError("szkennelt PDF, az első %d oldal is túl nagy (%.1f MB)"
+                                 % (oldal, len(data) / 1024.0 / 1024))
+            result = ask(key, model, prompt, schema, pdf_bytes=data)
+            merve = os.path.getsize(book)
     else:
         text = load_text(book)
         merve = len(text)
+        # Töredékre nem kérdezünk rá. Egy háromezer karakteres mintafájlból
+        # a modell magabiztosan kiállít egy teljes könyvadatlapot — és ezt
+        # utólag senki nem venné észre több ezer könyv között. Inkább
+        # maradjon üres a hely, mint hogy kitalált adat kerüljön bele.
+        if merve < min_chars:
+            raise ValueError("csak %d karakter — töredék, nem könyv" % merve)
         if max_chars and len(text) > max_chars:
             text = text[:max_chars]
         result = ask(key, model, prompt, schema, text=text)
@@ -553,6 +616,8 @@ def main():
                     help="szünet két könyv között, másodpercben")
     ap.add_argument("--korlat", type=int, default=0,
                     help="legfeljebb ennyi könyvet dolgoz fel most (0 = mind)")
+    ap.add_argument("--min-karakter", type=int, default=20000,
+                    help="ennél rövidebb szöveget töredéknek tekint és kihagy")
     ap.add_argument("--max-karakter", type=int, default=None,
                     help="ennyi karaktert küld (katalógusban alap: 40000)")
     ap.add_argument("--naplo", default=None, help="a napló fájl helye")
@@ -612,7 +677,7 @@ def main():
     for n, b in enumerate(todo, 1):
         print("[%d/%d] %s" % (n, len(todo), os.path.basename(b)))
         try:
-            out, merve = process(b, key, args.modell, args.mod, max_chars)
+            out, merve = process(b, key, args.modell, args.mod, max_chars, args.min_karakter)
             naplo.ir(b, "kesz")
             kesz += 1
             print("      kész — %s  (~%d ezer karakter)" % (os.path.basename(out), merve / 1000))
@@ -630,6 +695,10 @@ def main():
     print()
     print("-" * 58)
     print("  kész: %d    hiba: %d    idő: %.1f perc" % (kesz, hiba, perc))
+    print("  token: %s bemenet, %s kimenet" % ("{:,}".format(TOKEN["be"]).replace(",", " "),
+                                              "{:,}".format(TOKEN["ki"]).replace(",", " ")))
+    if kesz:
+        print("  könyvenként átlag: %s token" % "{:,}".format((TOKEN["be"] + TOKEN["ki"]) // kesz).replace(",", " "))
     if hiba:
         print("  A hibás könyvek a naplóban vannak, újrafuttatáskor sorra kerülnek.")
 
