@@ -463,6 +463,18 @@ def ask(key, model, prompt, schema, text=None, pdf_bytes=None, retries=6):
 
     body = {
         "contents": [{"parts": parts}],
+        # A tartalomszűrő szépirodalomra nincs felkészítve: egy skandináv
+        # krimi, egy háborús regény vagy egy thriller simán elakad rajta
+        # (PROHIBITED_CONTENT), pedig csak fülszöveget kérünk róla. Ezek a
+        # könyvek a saját polcodon állnak, és a feladat a katalogizálásuk.
+        "safetySettings": [
+            {"category": c, "threshold": "BLOCK_NONE"} for c in (
+                "HARM_CATEGORY_HARASSMENT",
+                "HARM_CATEGORY_HATE_SPEECH",
+                "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "HARM_CATEGORY_DANGEROUS_CONTENT",
+            )
+        ],
         "generationConfig": {
             "responseMimeType": "application/json",
             "responseSchema": schema,
@@ -628,7 +640,7 @@ def process(book, key, model, mode, max_chars, min_chars):
     out = sidecar_for(book)
     with io.open(out, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=1)
-    return out, merve
+    return out, merve, result
 
 
 def main():
@@ -714,10 +726,22 @@ def main():
         n = ossz - len(sor)
         print("[%d/%d] %s" % (n, ossz, os.path.basename(b)))
         try:
-            out, merve = process(b, key, args.modell, args.mod, max_chars, args.min_karakter)
+            out, merve, adat = process(b, key, args.modell, args.mod,
+                                       max_chars, args.min_karakter)
             naplo.ir(b, "kesz")
             kesz += 1
-            print("      kész — %s  (~%d ezer karakter)" % (os.path.basename(out), merve / 1000))
+            # Ne csak fájlneveket lássunk: ami megjött, azt mutassuk is meg.
+            # Így futás közben ellenőrizhető, hogy a munka értelmes-e, nem
+            # kell hozzá utólag fájlokat nyitogatni.
+            cim = adat.get("title") or "?"
+            szerzo = adat.get("author") or ""
+            sor = adat.get("series") or ""
+            if sor:
+                cim += "  [%s %s.]" % (sor, adat.get("series_index") or "?")
+            print("      %s — %s" % (cim, szerzo))
+            tag = (adat.get("tagline") or "").strip()
+            if tag:
+                print("      %s" % tag[:150])
         except KeyboardInterrupt:
             print()
             print("  Megszakítva. A napló megvan, folytatható.")
