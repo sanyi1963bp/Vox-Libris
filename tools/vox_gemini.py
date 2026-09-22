@@ -511,7 +511,17 @@ def ask(key, model, prompt, schema, text=None, pdf_bytes=None, retries=6):
 
         try:
             data = r.json()
-            txt = data["candidates"][0]["content"]["parts"][0]["text"]
+            # Ha nincs válaszjelölt, a "KeyError: candidates" semmit nem mond.
+            # Pedig az ok rendszerint kiderül: a modell elakadt, elfogyott a
+            # kerete a válaszra, vagy a tartalomszűrő nem engedte át.
+            if not data.get("candidates"):
+                ok = (data.get("promptFeedback", {}).get("blockReason")
+                      or "a modell nem adott választ")
+                raise RuntimeError("elutasítva: %s" % ok)
+            c0 = data["candidates"][0]
+            if "content" not in c0:
+                raise RuntimeError("csonka válasz (%s)" % c0.get("finishReason", "?"))
+            txt = c0["content"]["parts"][0]["text"]
             u = data.get("usageMetadata", {})
             TOKEN["be"] += u.get("promptTokenCount", 0)
             TOKEN["ki"] += u.get("candidatesTokenCount", 0)
@@ -637,6 +647,10 @@ def main():
     ap.add_argument("--max-karakter", type=int, default=None,
                     help="ennyi karaktert küld (katalógusban alap: 40000)")
     ap.add_argument("--naplo", default=None, help="a napló fájl helye")
+    ap.add_argument("--kitart", action="store_true",
+                    help="ha elfogy a keret, megvárja a megújulását és folytatja")
+    ap.add_argument("--varakozas", type=float, default=2.0,
+                    help="kitartó módban ennyi órát vár, ha elfogyott a keret")
     ap.add_argument("--ujra", action="store_true",
                     help="a meglévő kísérőfájlokat is újrakészíti")
     ap.add_argument("--proba", action="store_true",
@@ -690,33 +704,58 @@ def main():
 
     kesz = hiba = 0
     t0 = time.time()
-    for n, b in enumerate(todo, 1):
-        print("[%d/%d] %s" % (n, len(todo), os.path.basename(b)))
+    # Munkasor, nem egyszerű ciklus: ha a keret elfogy, a félbehagyott könyv
+    # visszakerül a sor elejére, és várakozás után onnan folytatjuk.
+    sor = list(todo)
+    ossz = len(sor)
+    megszakitva = False
+    while sor:
+        b = sor.pop(0)
+        n = ossz - len(sor)
+        print("[%d/%d] %s" % (n, ossz, os.path.basename(b)))
         try:
             out, merve = process(b, key, args.modell, args.mod, max_chars, args.min_karakter)
             naplo.ir(b, "kesz")
             kesz += 1
             print("      kész — %s  (~%d ezer karakter)" % (os.path.basename(out), merve / 1000))
         except KeyboardInterrupt:
-            print("\n  Megszakítva. A napló megvan, folytatható.")
+            print()
+            print("  Megszakítva. A napló megvan, folytatható.")
+            megszakitva = True
             break
         except KvotaVege:
-            # A könyvet NEM jegyezzük fel hibásnak: nem vele volt baj.
-            # És nem megyünk tovább sem — ha a keret elfogyott, a lista
-            # maradéka is ugyanígy járna, könyvenként negyedórát várakozva
-            # a semmire. Ez történt az első próbánál: nyolc könyv, tizennyolc
-            # perc, nulla eredmény.
+            # A könyvet NEM jegyezzük fel hibásnak: nem vele volt baj, a
+            # keret fogyott el. Visszatesszük a sorba.
+            sor.insert(0, b)
+            if not args.kitart:
+                print()
+                print("  Elfogyott a napi keret. A futás itt abbamarad.")
+                print("  Ez nem hiba: a feldolgozott könyvek megvannak, a többi")
+                print("  változatlanul vár. Indítsd újra, amikor a keret megújul.")
+                print("  (A --kitart kapcsolóval magától megvárná a megújulást.)")
+                break
+            # Kitartó mód: megvárjuk, míg a keret megújul, és folytatjuk.
+            # Ettől lehet egyszer elindítani, és hetekig magára hagyni.
             print()
-            print("  Elfogyott a napi keret. A futás itt abbamarad.")
-            print("  Ez nem hiba: a feldolgozott könyvek megvannak, a többi")
-            print("  változatlanul vár. Indítsd újra, amikor a keret megújul.")
-            break
+            print("  Elfogyott a keret. Várok %g órát, aztán folytatom." % args.varakozas)
+            print("  (%d kész, %d hátra — Ctrl+C-vel bármikor megszakítható.)"
+                  % (kesz, len(sor)))
+            print()
+            try:
+                time.sleep(args.varakozas * 3600)
+            except KeyboardInterrupt:
+                print()
+                print("  Megszakítva. A napló megvan, folytatható.")
+                megszakitva = True
+                break
+            continue
         except Exception as e:
             naplo.ir(b, "hiba", str(e)[:300])
             hiba += 1
             print("      ! %s" % e)
-        if n < len(todo):
+        if sor and not megszakitva:
             time.sleep(args.kesleltetes)
+
 
     perc = (time.time() - t0) / 60.0
     print()
