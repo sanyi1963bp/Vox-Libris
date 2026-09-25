@@ -403,7 +403,26 @@ DOSSZIE_SCHEMA = {
 }
 
 
-KATALOGUS_PROMPT = """Egy könyv elejét kapod. Állapítsd meg az adatait.
+# A keretezés nem díszítés. Szépirodalomnál a tartalomszűrő simán elakad
+# egy krimin vagy egy háborús regényen, és „tiltott tartalom" címén
+# elutasítja — pedig csak fülszöveget kérünk róla. Ha előre megmondjuk,
+# hogy irodalmi mű katalogizálása a feladat, és hogy a szövegben szereplő
+# történeti vagy társadalmi kifejezéseket a saját összefüggésükben kell
+# kezelni, a modell máshogy áll hozzá.
+KERET = """Könyvtári katalogizálást és irodalomtudományi leírást végzel.
+
+A kapott szöveg egy kiadott irodalmi, történelmi vagy ismeretterjesztő mű
+részlete. A feladatod tárgyilagos adatkinyerés és ismertetés — nem
+állásfoglalás, nem értékelés, nem szemelvényezés.
+
+A művekben előforduló történeti, kulturális, vallási vagy társadalmi
+megnevezéseket kezeld a saját összefüggésükben, irodalmi tényként. Egy
+regény témája nem a regény álláspontja, és egy szereplő szóhasználata nem
+a szerzőé.
+
+"""
+
+KATALOGUS_PROMPT = KERET + """Egy könyv elejét kapod. Állapítsd meg az adatait.
 
 Amit nem tudsz biztosan, azt hagyd üresen — NE TALÁLD KI. Jobb egy üres
 mező, mint egy kitalált évszám vagy sorozatcím.
@@ -412,7 +431,7 @@ A fülszöveg és a rövid összefoglaló MAGYARUL legyen, akkor is, ha a könyv
 más nyelvű. Ne lőjék le a történet végét.
 """
 
-DOSSZIE_PROMPT = """Egy teljes könyvet kapsz. Készíts belőle kísérőadatokat
+DOSSZIE_PROMPT = KERET + """Egy teljes könyvet kapsz. Készíts belőle kísérőadatokat
 egy hangoskönyv-olvasó alkalmazáshoz.
 
 Három dolog fontos:
