@@ -100,6 +100,7 @@ fun SettingsScreen(
                 onCancel = { vm.cancelCoverScan() }
             )
 
+            AiSettingsCard()
             AppearanceCard()
             UiLanguageCard()
             NarrationLanguageCard()

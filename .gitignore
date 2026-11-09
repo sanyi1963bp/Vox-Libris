@@ -10,3 +10,6 @@ captures/
 
 # Python-gyorsitotar a tools mappaban
 __pycache__/
+
+# helyi mentések
+_*.tar.gz

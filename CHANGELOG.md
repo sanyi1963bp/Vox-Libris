@@ -9,6 +9,34 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.12.0] — 2026-11-09
+
+**Beszélgetés a könyvről egy AI-val**
+
+Az olvasó felső sávjában új gomb (✦): beszélgetést nyit az épp olvasott
+könyvről egy felhős mesterséges intelligenciával.
+
+- **Szolgáltatók:** Google Gemini (ingyenes, alapértelmezett), Anthropic Claude,
+  OpenAI ChatGPT. A „bejelentkezés" a felhasználó saját API-kulcsa; a
+  Beállításokban egy gomb elvisz a kulcsszerző oldalra. A kulcs az Android
+  Keystore-ral titkosítva tárolódik.
+- **Alapprompt:** a megszemélyesítés, a könyv adatai (katalógus, leírás), a
+  `.vox.json` ismertetője, eddigi történet-összefoglalója és szereplői, a saját
+  jegyzet, valamint az eddig olvasott szöveg vége. Minden kérdésnél frissül,
+  így az AI mindig tudja, hol tartasz.
+- **Beállítások → AI-beszélgetés:** szolgáltató, kulcs, modell (listából is
+  választható), megszólítás, megszemélyesítés (olvasótárs, irodalomtanár, a
+  szerző, egy szereplő, könyvtáros, saját), válaszhossz, mennyi szöveget lásson,
+  spoilervédelem, válaszok felolvasása, egyéb kívánságok.
+- **Spoilervédelem** (alapból be): csak a pozícióig kap szöveget és
+  összefoglalót, és a saját tudásából sem árulhat el többet.
+- Hangalapú kérdezés (a rendszer beszédfelismerőjével), a válaszok
+  felolvasása; felolvasás közben a könyv megáll.
+
+**Fontos változás:** az appnak mostantól **van internet-engedélye**. Hálózatra
+csak akkor megy, ha bekapcsoltad az AI-beszélgetést, megadtál egy kulcsot, és
+kérdezel valamit. A beszélgetés nem kerül lemezre.
+
 ### [4.11.1] — 2026-09-19
 
 **A gomb felengedése többé nem állítja le a felolvasást**

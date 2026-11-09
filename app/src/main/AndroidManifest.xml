@@ -10,6 +10,11 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
+    <!-- 4.12-től: csak az AI-beszélgetéshez. Az app magától nem küld semmit;
+         hálózatra csak akkor megy, ha a felhasználó beállított egy AI-kulcsot,
+         és kérdez valamit a könyvről. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />

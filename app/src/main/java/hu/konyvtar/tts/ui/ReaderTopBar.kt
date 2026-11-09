@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.Close
@@ -74,6 +75,8 @@ fun ReaderTopBar(
     onQueryChange: (String) -> Unit,
     onJumpMatch: (Int) -> Unit,
     onOpenSettings: () -> Unit,
+    /** Beszélgetés az AI-val a könyvről. */
+    onOpenChat: () -> Unit = {},
     onBookmarkHere: () -> Unit,
     onOpenBookmarks: () -> Unit,
     onOpenRecap: () -> Unit,
@@ -113,6 +116,15 @@ fun ReaderTopBar(
                 }
             },
             actions = {
+                // A beszélgetés gombja jól látható helyen, nem a menüben:
+                // ez az új funkció, és egy koppintással el kell érni.
+                IconButton(onClick = onOpenChat) {
+                    Icon(
+                        Icons.Filled.AutoAwesome,
+                        contentDescription = stringResource(R.string.ai_chat_open),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
                 IconButton(onClick = onToggleSearch) {
                     Icon(
                         if (search.open) Icons.Filled.Close else Icons.Filled.Search,

@@ -71,7 +71,9 @@ fun ReaderScreen(
     /** A minden nézetben jelen lévő alsó sáv adatai. */
     mainNav: MainNav,
     onBack: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    /** Beszélgetés az AI-val erről a könyvről. */
+    onOpenChat: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -298,6 +300,7 @@ fun ReaderScreen(
                 onQueryChange = { query = it },
                 onJumpMatch = { jumpMatch(it) },
                 onOpenSettings = onOpenSettings,
+                onOpenChat = onOpenChat,
                 onBookmarkHere = {
                     val idx = if (sameBook && tts.totalParas > 0) tts.paraIndex
                     else listState.firstVisibleItemIndex

@@ -56,6 +56,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import hu.konyvtar.tts.model.FileRow
 import hu.konyvtar.tts.tts.TtsService
+import hu.konyvtar.tts.ui.AiChatScreen
 import hu.konyvtar.tts.ui.ExplorerScreen
 import hu.konyvtar.tts.ui.FilePickerScreen
 import hu.konyvtar.tts.ui.LibraryScreen
@@ -302,6 +303,21 @@ fun AppRoot(startInPlayer: Boolean) {
                     title = t.title,
                     author = t.author,
                     mainNav = navFor(MainView.READER),
+                    onBack = { nav.popBackStack() },
+                    onOpenSettings = { nav.navigate("settings") },
+                    onOpenChat = { nav.navigate("ai_chat") }
+                )
+            }
+        }
+        composable("ai_chat") {
+            val t = vm.readerTarget
+            if (t == null) {
+                nav.popBackStack()
+            } else {
+                AiChatScreen(
+                    path = t.path,
+                    title = t.title,
+                    author = t.author,
                     onBack = { nav.popBackStack() },
                     onOpenSettings = { nav.navigate("settings") }
                 )
