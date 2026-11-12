@@ -6,6 +6,7 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
+import java.net.URLEncoder
 import java.net.UnknownHostException
 
 /**
@@ -69,6 +70,19 @@ object AiClient {
     private const val READ_TIMEOUT = 90_000
 
     /**
+     * A gondolkodó modellek (Gemini 2.5+, GPT-5) a kimeneti keretből a
+     * gondolkodásra is költenek. Ha a keret szűk, az egész elmegy rá, és a
+     * válasz üresen jön vissza — rövid válasznál és a kapcsolat-tesztnél
+     * pont ez történt. Ezért ennél kisebb keretet sosem kérünk; a válasz
+     * tényleges hosszát úgyis a prompt szabja meg.
+     */
+    private const val MIN_THINKING_BUDGET = 2048
+
+    /** JSON `null` esetén az Android „null" szöveget adna vissza — ez üreset. */
+    private fun JSONObject.str(name: String): String =
+        if (isNull(name)) "" else optString(name)
+
+    /**
      * Választ kér a modelltől.
      *
      * @param system az alapprompt (megszemélyesítés + a könyv adatai)
@@ -83,7 +97,8 @@ object AiClient {
         maxTokens: Int
     ): String {
         if (apiKey.isBlank()) throw AiError.NoKey()
-        val m = model.ifBlank { provider.defaultModel }
+        // Beillesztett modellnévnél gyakori a „models/" előtag és a szóköz
+        val m = model.trim().removePrefix("models/").ifBlank { provider.defaultModel }
         return when (provider) {
             AiProvider.GEMINI -> gemini(apiKey, m, system, history, maxTokens)
             AiProvider.CLAUDE -> claude(apiKey, m, system, history, maxTokens)
@@ -100,7 +115,7 @@ object AiClient {
                 var pageToken: String? = null
                 do {
                     val url = "https://generativelanguage.googleapis.com/v1beta/models?pageSize=200" +
-                        (pageToken?.let { "&pageToken=$it" } ?: "")
+                        (pageToken?.let { "&pageToken=" + URLEncoder.encode(it, "UTF-8") } ?: "")
                     val json = request("GET", url, mapOf("x-goog-api-key" to apiKey), null)
                     val arr = json.optJSONArray("models") ?: JSONArray()
                     for (i in 0 until arr.length()) {
@@ -112,7 +127,7 @@ object AiClient {
                             !name.contains("tts") && !name.contains("audio")
                         ) out.add(name)
                     }
-                    pageToken = json.optString("nextPageToken").ifBlank { null }
+                    pageToken = json.str("nextPageToken").ifBlank { null }
                 } while (pageToken != null)
                 out.sorted()
             }
@@ -159,7 +174,10 @@ object AiClient {
             put("contents", contents)
             // A gondolkodó modellek a keretből gondolkodásra is költenek,
             // ezért bőven hagyunk helyet — a válasz hosszát a prompt szabja meg.
-            put("generationConfig", JSONObject().put("maxOutputTokens", maxTokens * 4))
+            put(
+                "generationConfig",
+                JSONObject().put("maxOutputTokens", maxOf(maxTokens * 4, MIN_THINKING_BUDGET))
+            )
             // Irodalomról beszélgetünk: egy háborús regény vagy krimi miatt
             // ne hallgasson el a modell. A legsúlyosabb tartalmat a Google
             // ettől függetlenül is szűri.
@@ -170,7 +188,8 @@ object AiClient {
             )) safety.put(JSONObject().put("category", cat).put("threshold", "BLOCK_ONLY_HIGH"))
             put("safetySettings", safety)
         }
-        val url = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent"
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/" +
+            URLEncoder.encode(model, "UTF-8") + ":generateContent"
         val json = request("POST", url, mapOf("x-goog-api-key" to key), body)
 
         json.optJSONObject("promptFeedback")?.optString("blockReason")?.takeIf { it.isNotBlank() }?.let {
@@ -184,12 +203,14 @@ object AiClient {
             for (i in 0 until parts.length()) {
                 val p = parts.getJSONObject(i)
                 if (p.optBoolean("thought", false)) continue
-                text.append(p.optString("text"))
+                text.append(p.str("text"))
             }
         }
         if (text.isBlank()) {
-            val reason = cand.optString("finishReason")
-            if (reason == "SAFETY" || reason == "PROHIBITED_CONTENT" || reason == "RECITATION") {
+            val reason = cand.str("finishReason")
+            if (reason == "SAFETY" || reason == "PROHIBITED_CONTENT" || reason == "RECITATION" ||
+                reason == "BLOCKLIST" || reason == "SPII"
+            ) {
                 throw AiError.Blocked(reason)
             }
             throw AiError.Other(reason.ifBlank { "üres válasz" })
@@ -222,9 +243,9 @@ object AiClient {
         val text = StringBuilder()
         for (i in 0 until content.length()) {
             val c = content.getJSONObject(i)
-            if (c.optString("type") == "text") text.append(c.optString("text"))
+            if (c.optString("type") == "text") text.append(c.str("text"))
         }
-        if (text.isBlank()) throw AiError.Other(json.optString("stop_reason", "üres válasz"))
+        if (text.isBlank()) throw AiError.Other(json.str("stop_reason").ifBlank { "üres válasz" })
         return text.toString().trim()
     }
 
@@ -242,15 +263,21 @@ object AiClient {
             put("model", model)
             put("messages", msgs)
             // Az újabb (gondolkodó) modellek ebbe a gondolkodást is beleszámolják
-            put("max_completion_tokens", maxTokens * 4)
+            put("max_completion_tokens", maxOf(maxTokens * 4, MIN_THINKING_BUDGET))
         }
         val json = request(
             "POST", "https://api.openai.com/v1/chat/completions",
             mapOf("Authorization" to "Bearer $key"), body
         )
-        val text = json.optJSONArray("choices")?.optJSONObject(0)
-            ?.optJSONObject("message")?.optString("content").orEmpty()
-        if (text.isBlank()) throw AiError.Other("üres válasz")
+        val choice = json.optJSONArray("choices")?.optJSONObject(0)
+        val message = choice?.optJSONObject("message")
+        // Elutasításnál a „content" JSON null, a szöveg a „refusal" mezőben van
+        val text = message?.str("content").orEmpty()
+        if (text.isBlank()) {
+            if (message?.str("refusal").orEmpty().isNotBlank()) throw AiError.Blocked("refusal")
+            if (choice?.str("finish_reason") == "content_filter") throw AiError.Blocked("content_filter")
+            throw AiError.Other(choice?.str("finish_reason").orEmpty().ifBlank { "üres válasz" })
+        }
         return text.trim()
     }
 

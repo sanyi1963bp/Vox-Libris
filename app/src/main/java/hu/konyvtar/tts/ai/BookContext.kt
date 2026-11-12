@@ -119,7 +119,7 @@ object BookContext {
         sb.append("\n## The book\n")
         sb.append("Title: ").append(title).append("\n")
         if (author.isNotBlank()) sb.append("Author: ").append(author).append("\n")
-        sidecar?.optString("original_title")?.takeIf { it.isNotBlank() }?.let {
+        sidecar?.txt("original_title")?.takeIf { it.isNotBlank() }?.let {
             sb.append("Original title: ").append(it).append("\n")
         }
         (sidecar?.optInt("published", 0)?.takeIf { it > 0 }?.toString()
@@ -129,7 +129,7 @@ object BookContext {
         (catalog?.kiado ?: meta?.publisher)?.takeIf { it.isNotBlank() }?.let {
             sb.append("Publisher: ").append(it).append("\n")
         }
-        val series = sidecar?.optString("series")?.ifBlank { null } ?: catalog?.sorozat ?: meta?.series
+        val series = sidecar?.txt("series")?.ifBlank { null } ?: catalog?.sorozat ?: meta?.series
         if (!series.isNullOrBlank()) {
             val idx = sidecar?.optInt("series_index", 0)?.takeIf { it > 0 }?.toString()
                 ?: catalog?.sorozatSzama ?: meta?.seriesIndex
@@ -139,13 +139,13 @@ object BookContext {
             (0 until a.length()).map { a.optString(it) }.filter { it.isNotBlank() }.joinToString(", ")
         }?.ifBlank { null } ?: catalog?.cimkek ?: meta?.tags
         if (!genres.isNullOrBlank()) sb.append("Genres/tags: ").append(genres).append("\n")
-        sidecar?.optString("setting")?.takeIf { it.isNotBlank() }?.let {
+        sidecar?.txt("setting")?.takeIf { it.isNotBlank() }?.let {
             sb.append("Setting: ").append(it).append("\n")
         }
-        sidecar?.optString("tagline")?.takeIf { it.isNotBlank() }?.let {
+        sidecar?.txt("tagline")?.takeIf { it.isNotBlank() }?.let {
             sb.append("In one sentence: ").append(it).append("\n")
         }
-        val blurb = sidecar?.optString("blurb")?.ifBlank { null }
+        val blurb = sidecar?.txt("blurb")?.ifBlank { null }
         val desc = (catalog?.leiras ?: meta?.description)?.let { cleanHtml(it) }?.take(4000)
         if (!blurb.isNullOrBlank()) sb.append("Blurb: ").append(blurb).append("\n")
         if (!desc.isNullOrBlank()) sb.append("Publisher's description: ").append(desc).append("\n")
@@ -156,20 +156,23 @@ object BookContext {
 
         // ---------------------------------------------------------------- fejezetek
         val sideChapters = sidecar?.optJSONArray("chapters")
+        // Egyszer számoljuk ki: a keresés a könyv minden bekezdésén végigmehet
+        val sideCurrent = if (sideChapters != null && sideChapters.length() > 0)
+            currentSidecarChapter(sideChapters, paragraphs, para, appChapter) else Int.MAX_VALUE
         if (sideChapters != null && sideChapters.length() > 0) {
-            val current = currentSidecarChapter(sideChapters, paragraphs, para, appChapter)
+            val current = sideCurrent
             val story = StringBuilder()
             for (i in 0 until sideChapters.length()) {
                 val ch = sideChapters.optJSONObject(i) ?: continue
                 val n = ch.optInt("number", i + 1)
                 if (guard && n >= current) break   // a folyamatban lévő fejezet összefoglalója már előre néz
-                val soFar = ch.optString("so_far").trim()
+                val soFar = ch.txt("so_far").trim()
                 if (soFar.isEmpty()) continue
                 // A „so_far" halmozott, ezért elég a legutolsó engedélyezett —
                 // de a címeket mind felsoroljuk a tájékozódáshoz.
                 story.setLength(0)
                 story.append("Story up to the end of chapter ").append(n)
-                ch.optString("title").takeIf { it.isNotBlank() }?.let { story.append(" (\"").append(it).append("\")") }
+                ch.txt("title").takeIf { it.isNotBlank() }?.let { story.append(" (\"").append(it).append("\")") }
                 story.append(": ").append(soFar)
             }
             if (story.isNotEmpty()) {
@@ -187,17 +190,16 @@ object BookContext {
         // ---------------------------------------------------------------- szereplők
         val chars = sidecar?.optJSONArray("characters")
         if (chars != null && chars.length() > 0) {
-            val current = if (sideChapters != null && sideChapters.length() > 0)
-                currentSidecarChapter(sideChapters, paragraphs, para, appChapter) else Int.MAX_VALUE
+            val current = sideCurrent
             val lines = ArrayList<String>()
             for (i in 0 until chars.length()) {
                 val c = chars.optJSONObject(i) ?: continue
-                val n = c.optString("name").trim()
-                val d = c.optString("description").trim()
+                val n = c.txt("name").trim()
+                val d = c.txt("description").trim()
                 if (n.isEmpty()) continue
                 val first = c.optInt("first_chapter", 0)
                 if (guard && first > 0 && first > current) continue
-                val role = c.optString("role").trim()
+                val role = c.txt("role").trim()
                 val aliases = c.optJSONArray("aliases")?.let { a ->
                     (0 until a.length()).map { a.optString(it) }.filter { it.isNotBlank() }
                 }.orEmpty()
@@ -255,7 +257,7 @@ object BookContext {
                     "(This is a role-play the reader asked for.)"
             AiSettings.PERSONA_CHARACTER -> {
                 val wanted = AiSettings.characterName(context).ifBlank {
-                    sidecar?.optJSONArray("characters")?.optJSONObject(0)?.optString("name").orEmpty()
+                    sidecar?.optJSONArray("characters")?.optJSONObject(0)?.txt("name").orEmpty()
                 }.ifBlank { "the main character" }
                 "You are $wanted, a character of the book $book, talking with the reader who is " +
                     "reading your story. Speak in the first person, in your own voice and manner, " +
@@ -314,7 +316,7 @@ object BookContext {
         fun fold(i: Int) = folded.getOrPut(i) { Normalizer.foldHu(paragraphs[i]).lowercase() }
         for (i in 0 until chapters.length()) {
             val ch = chapters.optJSONObject(i) ?: continue
-            val first = Normalizer.foldHu(ch.optString("first_sentence")).lowercase().trim().take(48)
+            val first = Normalizer.foldHu(ch.txt("first_sentence")).lowercase().trim().take(48)
             if (first.length < 12) continue
             var at = -1
             for (p in searchFrom until paragraphs.size) {
@@ -346,6 +348,14 @@ object BookContext {
         val joined = parts.joinToString("\n\n")
         return if (joined.length > maxChars) joined.takeLast(maxChars) else joined
     }
+
+    /**
+     * Szöveges mező a kísérőfájlból. JSON `null` értékre az Android
+     * `optString`-je a „null" szót adná vissza, és az bekerülne a promptba
+     * („Series: null") — ez ilyenkor üreset ad.
+     */
+    private fun JSONObject.txt(name: String): String =
+        if (isNull(name)) "" else optString(name).trim()
 
     private fun cleanHtml(s: String): String =
         s.replace(Regex("<[^>]+>"), " ").replace("&nbsp;", " ").replace("&amp;", "&")

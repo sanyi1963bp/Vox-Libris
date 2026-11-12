@@ -9,6 +9,41 @@
 A formátum a [Keep a Changelog](https://keepachangelog.com/hu/1.0.0/) ajánlást
 követi, a verziószámozás a [SemVer](https://semver.org/lang/hu/) szerint megy.
 
+### [4.12.1] — 2026-11-12
+
+**Hibajavítások egy teljes kódátnézés után**
+
+*AI-beszélgetés*
+
+- **Üres válasz a gondolkodó modellektől.** A Gemini 2.5+ és a GPT-5 a
+  kimeneti keretből a gondolkodásra is költ; rövid válasznál és a „Mentés és
+  teszt" gombnál a keret elfogyhatott, és jó kulcs mellett is hiba jött.
+  Mostantól van alsó határ.
+- **Beragadó „gondolkodik" jelzés.** Ha küldés után megérintetted a listát, a
+  megszakadó görgetés a kérést is magával rántotta, és a csevegés lefagyott.
+- **A hosszú válasz nem szólalt meg.** A felolvasó motor 4000 karakternél többet
+  nem fogad el; a választ most mondathatáron darabolva kapja meg.
+- **A beillesztett kulcs elveszett**, ha teszt nélkül léptél ki a
+  Beállításokból. Most azonnal mentődik.
+- Az OpenAI elutasító válasza „null" szövegként jelent meg; a kísérőfájl üres
+  (`null`) mezői „Series: null" formában kerülhettek a promptba.
+- Válasz előtti kilépéskor a kérdés árván maradt a beszélgetésben.
+
+*Felolvasás*
+
+- **Könyvváltás közben összekeveredhetett két könyv.** Az előző könyv szövege a
+  betöltés végéig a memóriában maradt: egy közben érkező gombnyomás a régi
+  szöveget olvasta, és a pozícióját az új könyv neve alá mentette. Két gyors
+  könyvindításnál a lassabban betöltődő felülírhatta a másikat.
+- **Betöltés közbeni gombnyomás** (szünet, léptetés) leállíthatta a
+  szolgáltatást, vagy második betöltést indított.
+- **Leállítás után, csatlakozott fejegységgel** a „lejátszás" cím nélkül
+  szólalhatott meg, és a haladás nem mentődött.
+- **Félkész gyorsítótár.** Ha az olvasó és a felolvasó egyszerre bontotta ki
+  ugyanazt a könyvet, az egyik csonka szöveget olvashatott be.
+- **Az értesítésre koppintva** a háttérben futó app nem ugrott az olvasóra —
+  csak friss indításkor.
+
 ### [4.12.0] — 2026-11-09
 
 **Beszélgetés a könyvről egy AI-val**
@@ -771,6 +806,23 @@ Első nyilvános kiadás.
 
 This project adheres to [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and [Semantic Versioning](https://semver.org/).
+
+### [4.12.1] — 2026-11-12
+
+**Bug fixes after a full code review**
+
+- AI chat: thinking models (Gemini 2.5+, GPT-5) could return empty answers on
+  short budgets, so even the key test failed with a valid key; the "thinking"
+  indicator could get stuck forever if you touched the list after sending; long
+  answers were not read aloud (4000-character engine limit); a pasted key was
+  lost unless you pressed the test button; OpenAI refusals and `null` sidecar
+  fields showed up as the word "null".
+- Narration: switching books could mix up two books (old text read and saved
+  under the new book's name; a slower load overwriting a newer one); a media
+  button during loading could stop the service; after Stop with a connected
+  head unit, Play could speak without title and without saving progress; a
+  half-written text cache could be read as a truncated book; tapping the
+  notification did not open the reader when the app was already running.
 
 ### [4.11.1] — 2026-09-19
 

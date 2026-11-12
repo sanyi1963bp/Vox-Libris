@@ -73,7 +73,15 @@ object AiSettings {
     fun setApiKey(c: Context, p: AiProvider, key: String) {
         val k = key.trim()
         val e = sp(c).edit()
-        if (k.isEmpty()) e.remove("key_${p.id}") else e.putString("key_${p.id}", encrypt(k))
+        if (k.isEmpty()) {
+            e.remove("key_${p.id}")
+        } else {
+            // A Keystore ritkán, de elhasalhat (sérült kulcstár, gyártói hiba).
+            // Emiatt nem omolhat össze a Beállítások képernyő: a kulcs ilyenkor
+            // nem mentődik el, a teszt pedig jelzi, hogy nincs megadva.
+            val enc = try { encrypt(k) } catch (_: Exception) { null }
+            if (enc == null) e.remove("key_${p.id}") else e.putString("key_${p.id}", enc)
+        }
         e.apply()
     }
 

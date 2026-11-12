@@ -76,9 +76,18 @@ class MainActivity : ComponentActivity() {
         super.attachBaseContext(hu.konyvtar.tts.data.LocaleHelper.wrap(newBase))
     }
 
-    private var openPlayerOnStart = false
-
     companion object {
+        /**
+         * Az értesítésre koppintás kérése: nyíljon meg a most szóló könyv
+         * olvasója.
+         *
+         * Ugyanazért folyam, amiért az adatlap-kérés: az activity
+         * `singleTask`, így a koppintás többnyire egy már futó példányba
+         * érkezik (`onNewIntent`). Eddig csak az `onCreate` figyelt rá, ezért
+         * a háttérből visszahozott app nem ugrott az olvasóra.
+         */
+        val openPlayerRequest = MutableStateFlow(false)
+
         /**
          * A zárolt képernyő „adatlap" gombja ide teszi le a könyv útvonalát.
          *
@@ -94,13 +103,22 @@ class MainActivity : ComponentActivity() {
         intent?.getStringExtra("show_details")?.let { detailsRequest.value = it }
     }
 
+    /** …és azt, hogy az értesítésről jöttünk-e, az olvasót kérve. */
+    private fun handleOpenPlayerExtra(intent: Intent?) {
+        if (intent?.getBooleanExtra("open_player", false) == true) openPlayerRequest.value = true
+    }
+
     private val notifPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        openPlayerOnStart = intent?.getBooleanExtra("open_player", false) == true
-        handleDetailsExtra(intent)
+        // Csak friss indításkor: újraépítésnél (pl. nyelvváltás) a régi szándék
+        // még megvan, és nem akarunk miatta újra az olvasóra ugrani.
+        if (savedInstanceState == null) {
+            handleOpenPlayerExtra(intent)
+            handleDetailsExtra(intent)
+        }
         ThemeState.load(this)
 
         // Értesítési engedély (Android 13+), hogy a felolvasó vezérlősáv látsszon
@@ -117,7 +135,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppRoot(startInPlayer = openPlayerOnStart)
+                    AppRoot()
                 }
             }
         }
@@ -126,12 +144,13 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        handleOpenPlayerExtra(intent)
         handleDetailsExtra(intent)
     }
 }
 
 @Composable
-fun AppRoot(startInPlayer: Boolean) {
+fun AppRoot() {
     var hasAllFiles by remember { mutableStateOf(Environment.isExternalStorageManager()) }
 
     // Visszatéréskor (a beállításokból) frissítjük az engedély állapotát
@@ -233,9 +252,13 @@ fun AppRoot(startInPlayer: Boolean) {
         goToPage(0)
     }
 
-    // Értesítésre koppintva egyből a most szóló könyv olvasója nyílik
-    if (startInPlayer) {
-        LaunchedEffect(Unit) { openReader() }
+    // Értesítésre koppintva egyből a most szóló könyv olvasója nyílik —
+    // akkor is, ha az app már futott a háttérben.
+    val openPlayerReq by MainActivity.openPlayerRequest.collectAsState()
+    LaunchedEffect(openPlayerReq) {
+        if (!openPlayerReq) return@LaunchedEffect
+        MainActivity.openPlayerRequest.value = false
+        openReader()
     }
 
     NavHost(
@@ -296,7 +319,8 @@ fun AppRoot(startInPlayer: Boolean) {
         composable("reader") {
             val t = vm.readerTarget
             if (t == null) {
-                nav.popBackStack()
+                // Nem a kirajzolás közben lépünk vissza: az többször is lefuthat
+                LaunchedEffect(Unit) { nav.popBackStack() }
             } else {
                 ReaderScreen(
                     path = t.path,
@@ -312,7 +336,7 @@ fun AppRoot(startInPlayer: Boolean) {
         composable("ai_chat") {
             val t = vm.readerTarget
             if (t == null) {
-                nav.popBackStack()
+                LaunchedEffect(Unit) { nav.popBackStack() }
             } else {
                 AiChatScreen(
                     path = t.path,

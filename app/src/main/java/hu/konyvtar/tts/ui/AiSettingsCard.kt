@@ -176,7 +176,9 @@ fun AiSettingsCard() {
         }
         OutlinedTextField(
             value = keyText,
-            onValueChange = { keyText = it.trim(); testResult = null },
+            // Rögtön mentjük: aki beilleszti a kulcsot, és teszt nélkül lép
+            // ki a Beállításokból, annak eddig elveszett.
+            onValueChange = { keyText = it.trim(); testResult = null; saveKey() },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             placeholder = { Text(stringResource(R.string.ai_key_hint)) },

@@ -94,6 +94,32 @@ private object ChatStore {
 private const val HISTORY_LIMIT = 24
 
 /**
+ * A felolvasó motor egyszerre legfeljebb 4000 karaktert fogad el; a hosszabb
+ * szöveget szó nélkül eldobja. Egy részletes válasz ennél hosszabb lehet,
+ * ezért mondathatáron darabokra vágjuk, és sorban adjuk át.
+ */
+private fun speechChunks(text: String, max: Int = 3500): List<String> {
+    val out = ArrayList<String>()
+    var rest = text.trim()
+    while (rest.length > max) {
+        var cut = -1
+        for (mark in listOf(". ", "! ", "? ", "… ", "\n")) {
+            val i = rest.lastIndexOf(mark, max)
+            if (i >= 0 && i + mark.length > cut) cut = i + mark.length
+        }
+        if (cut < max / 4) {
+            val sp = rest.lastIndexOf(' ', max)
+            cut = if (sp > max / 4) sp else max
+        }
+        val piece = rest.substring(0, cut).trim()
+        if (piece.isNotEmpty()) out.add(piece)
+        rest = rest.substring(cut).trim()
+    }
+    if (rest.isNotEmpty()) out.add(rest)
+    return out
+}
+
+/**
  * Beszélgetés az AI-val az aktuális könyvről.
  *
  * Minden kérdésnél frissen állítjuk össze az alappromptot, hogy ha közben
@@ -135,7 +161,10 @@ fun AiChatScreen(
                 engine?.setSpeechRate(Prefs.speed(context))
                 engine?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) {}
-                    override fun onDone(utteranceId: String?) { speakingIdx = -1 }
+                    // Egy válasz több darabból állhat: csak az utolsó zárja le
+                    override fun onDone(utteranceId: String?) {
+                        if (utteranceId?.endsWith("_last") == true) speakingIdx = -1
+                    }
                     @Deprecated("Deprecated in Java")
                     override fun onError(utteranceId: String?) { speakingIdx = -1 }
                 })
@@ -154,8 +183,14 @@ fun AiChatScreen(
         val s = TtsService.state.value
         if (s.playing) TtsService.send(context, TtsService.ACTION_TOGGLE)
         engine.stop()
-        engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, "ai_$idx")
-        speakingIdx = idx
+        val parts = speechChunks(text)
+        var ok = parts.isNotEmpty()
+        parts.forEachIndexed { i, part ->
+            val id = if (i == parts.size - 1) "ai_${idx}_last" else "ai_${idx}_$i"
+            val mode = if (i == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+            if (engine.speak(part, mode, null, id) != TextToSpeech.SUCCESS) ok = false
+        }
+        speakingIdx = if (ok) idx else -1
     }
 
     fun stopSpeaking() {
@@ -188,44 +223,59 @@ fun AiChatScreen(
         val paras = book ?: return
         input = ""
         error = null
-        messages.add(ChatMessage(true, q))
+        val question = ChatMessage(true, q)
+        messages.add(question)
         busy = true
+        // A görgetés külön fut: ha közben megérinted a listát, az animáció
+        // megszakad — és ha a kéréssel egy szálon lenne, azt is magával
+        // rántaná, a „gondolkodik" jelzés pedig örökre ott maradna.
+        scope.launch { listState.animateScrollToItem(messages.size) }
         scope.launch {
-            listState.animateScrollToItem(messages.size)
-            val result = withContext(Dispatchers.IO) {
-                try {
-                    val (pp, pc) = position(paras.paragraphs)
-                    val snap = BookContext.build(
-                        context, path, title, author, paras.paragraphs, paras.chapters, pp, pc
-                    )
-                    seen = snap.summaryLines
-                    val provider = AiSettings.provider(context)
-                    Result.success(
-                        AiClient.chat(
-                            provider = provider,
-                            apiKey = AiSettings.apiKey(context, provider),
-                            model = AiSettings.model(context, provider),
-                            system = snap.systemPrompt,
-                            history = messages.toList().takeLast(HISTORY_LIMIT)
-                                .dropWhile { !it.fromUser },   // az első üzenet a felhasználóé legyen
-                            maxTokens = AiSettings.maxTokens(context)
+            var answered = false
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    try {
+                        val (pp, pc) = position(paras.paragraphs)
+                        val snap = BookContext.build(
+                            context, path, title, author, paras.paragraphs, paras.chapters, pp, pc
                         )
-                    )
-                } catch (e: Exception) {
-                    Result.failure<String>(e)
+                        seen = snap.summaryLines
+                        val provider = AiSettings.provider(context)
+                        Result.success(
+                            AiClient.chat(
+                                provider = provider,
+                                apiKey = AiSettings.apiKey(context, provider),
+                                model = AiSettings.model(context, provider),
+                                system = snap.systemPrompt,
+                                history = messages.toList().takeLast(HISTORY_LIMIT)
+                                    .dropWhile { !it.fromUser },   // az első üzenet a felhasználóé legyen
+                                maxTokens = AiSettings.maxTokens(context)
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Result.failure<String>(e)
+                    }
+                }
+                answered = true
+                busy = false
+                result.onSuccess { answer ->
+                    messages.add(ChatMessage(false, answer))
+                    if (speakOn) speak(messages.size - 1, answer)
+                }.onFailure { e ->
+                    // A sikertelen kérdést visszaadjuk a beviteli mezőbe, hogy ne kelljen újragépelni
+                    if (messages.lastOrNull()?.fromUser == true) messages.removeAt(messages.size - 1)
+                    input = q
+                    error = aiErrorText(context, e)
+                }
+                scope.launch { listState.animateScrollToItem(messages.size) }
+            } finally {
+                // Válasz előtt kiléptél a képernyőről: a megválaszolatlan
+                // kérdés ne maradjon árván a beszélgetésben.
+                if (!answered) {
+                    busy = false
+                    if (messages.lastOrNull() === question) messages.removeAt(messages.size - 1)
                 }
             }
-            busy = false
-            result.onSuccess { answer ->
-                messages.add(ChatMessage(false, answer))
-                if (speakOn) speak(messages.size - 1, answer)
-            }.onFailure { e ->
-                // A sikertelen kérdést visszaadjuk a beviteli mezőbe, hogy ne kelljen újragépelni
-                if (messages.lastOrNull()?.fromUser == true) messages.removeAt(messages.size - 1)
-                input = q
-                error = aiErrorText(context, e)
-            }
-            listState.animateScrollToItem((messages.size).coerceAtLeast(0))
         }
     }
 
@@ -285,7 +335,9 @@ fun AiChatScreen(
                             stringResource(R.string.ai_speak)
                         )
                     }
-                    if (messages.isNotEmpty()) {
+                    // Válaszra várva nem törlünk: a megérkező válasz kérdés
+                    // nélkül maradna az üres beszélgetésben.
+                    if (messages.isNotEmpty() && !busy) {
                         IconButton(onClick = { stopSpeaking(); messages.clear(); error = null }) {
                             Icon(Icons.Filled.DeleteSweep, stringResource(R.string.ai_new_chat))
                         }

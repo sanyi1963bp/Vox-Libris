@@ -86,7 +86,19 @@ object TextExtractor {
         val ext = file.name.substringAfterLast('.', "").lowercase()
         if (!isSupported(ext)) throw ExtractException(unsupportedRes(ext), ext)
 
+        // Ugyanazt a könyvet egyszerre többen is kérhetik (az olvasó képernyő,
+        // a felolvasó szolgáltatás, az AI-beszélgetés). Könyvenként egy zár:
+        // a második hívó megvárja az elsőt, és már a kész gyorsítótárból
+        // olvas — nem bontja ki újra a fájlt, és nem lát félig megírt
+        // gyorsítótárat (abból csonka könyv lett volna, más bekezdésszámmal).
         val key = cacheKey(file)
+        val lock = locks.getOrPut(key) { Any() }
+        return synchronized(lock) { bookLocked(context, file, ext, key) }
+    }
+
+    private val locks = java.util.concurrent.ConcurrentHashMap<String, Any>()
+
+    private fun bookLocked(context: Context, file: File, ext: String, key: String): ExtractedBook {
         val cacheFile = File(cacheDir(context), "$key.txt")
         val chFile = File(cacheDir(context), "$key.ch")
 
@@ -142,8 +154,16 @@ object TextExtractor {
         }
 
         try {
-            cacheFile.writeText(clean.joinToString(SEPARATOR), Charsets.UTF_8)
+            // Előbb a fejezetek, aztán a szöveg — a szövegfájl megléte jelenti,
+            // hogy a gyorsítótár kész. A szöveg ideiglenes néven íródik, és
+            // átnevezéssel kerül a helyére, hogy félkész fájl sose látsszon.
             chFile.writeText(chapters.joinToString(","), Charsets.UTF_8)
+            val tmp = File(cacheFile.parentFile, cacheFile.name + ".tmp")
+            tmp.writeText(clean.joinToString(SEPARATOR), Charsets.UTF_8)
+            if (!tmp.renameTo(cacheFile)) {
+                cacheFile.writeText(clean.joinToString(SEPARATOR), Charsets.UTF_8)
+                tmp.delete()
+            }
         } catch (_: Exception) {
             // ha a cache írása nem megy, attól a felolvasás még működik
         }

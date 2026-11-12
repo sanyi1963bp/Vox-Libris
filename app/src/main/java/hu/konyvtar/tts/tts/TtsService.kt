@@ -42,6 +42,7 @@ import hu.konyvtar.tts.reader.Sentences
 import hu.konyvtar.tts.reader.TextExtractor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -178,6 +179,9 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
     private var playStartedAt: Long = 0
     private var utteranceCounter = 0
 
+    /** Az épp futó könyvbetöltés — új betöltés indulásakor a régit eldobjuk. */
+    private var loadJob: Job? = null
+
     private var wakeLock: PowerManager.WakeLock? = null
     private var audioManager: AudioManager? = null
     private var focusRequest: AudioFocusRequest? = null
@@ -224,7 +228,12 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
                     // Hidegindulás: reggel, az éjszakai takarítás után a menet
                     // frissen születik, betöltött könyv nélkül. Ilyenkor a
                     // „lejátszás" azt jelenti: folytasd, ahol abbahagytam.
-                    if (paragraphs.isEmpty()) resumeLastBook() else resume()
+                    // Ha épp töltődik egy könyv, az magától elindul — nem
+                    // kezdünk mellé még egy betöltést.
+                    when {
+                        paragraphs.isNotEmpty() -> resume()
+                        !_state.value.preparing -> resumeLastBook()
+                    }
                 }
 
                 override fun onPause() {
@@ -274,7 +283,7 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
                  * eset: beülünk, és a szolgáltatás frissen született.
                  */
                 override fun onPrepare() {
-                    if (paragraphs.isEmpty()) resumeLastBook()
+                    if (paragraphs.isEmpty() && !_state.value.preparing) resumeLastBook()
                 }
 
                 override fun onCustomAction(action: String?, extras: Bundle?) {
@@ -632,6 +641,11 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
                     // lejátszást — de az app azóta el sem indult, így nincs mit
                     // folytatni. Ilyenkor a legutóbb hallgatott könyvet vesszük
                     // elő onnan, ahol abbahagytuk.
+                    // Épp töltődik egy könyv (a betöltés végén magától elindul).
+                    // Ilyenkor semmilyen gomb nem állíthatja le a szolgáltatást,
+                    // és nem indíthat mellé másik betöltést.
+                    _state.value.preparing -> Unit
+
                     isPlayButton(intent) -> resumeLastBook()
 
                     // EGY GOMBNYOMÁS KÉT ÜZENET: lenyomás és felengedés. A
@@ -801,9 +815,19 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
             return
         }
 
+        // Ugyanez a könyv már töltődik (pl. két gyors gombnyomás): megvárjuk.
+        if (_state.value.path == path && _state.value.preparing && !restart && startIndex < 0) {
+            return
+        }
+
         stopSpeaking()
         accumulateListened()
         saveProgress()
+        // Az előző könyv szövegét azonnal elengedjük. Eddig a betöltés végéig
+        // a memóriában maradt, miközben az állapot már az új könyvet mutatta:
+        // egy közben érkező gombnyomás a régi szöveget olvasta volna fel, és
+        // a régi pozíciót az ÚJ könyv neve alá mentette volna.
+        clearBook()
 
         _state.value = PlayerState(
             path = path,
@@ -815,7 +839,7 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
         )
         updateNotification()
 
-        scope.launch {
+        loadJob = scope.launch {
             val result = withContext(Dispatchers.IO) {
                 try {
                     val book = TextExtractor.book(this@TtsService, File(path))
@@ -827,9 +851,14 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
                     Triple(null, null, getString(R.string.err_extract_generic, e.message ?: "?"))
                 }
             }
+            // Közben másik könyvet kértek, vagy leállítottak minket: ez a
+            // betöltés már senkinek nem kell.
+            if (_state.value.path != path) return@launch
             val (book, saved, error) = result
             val paras = book?.paragraphs ?: emptyList()
             if (error != null || paras.isEmpty()) {
+                // Ha egy szóló könyvről váltottunk ide, az ébrentartás még él
+                releaseWakeLock()
                 EventLog.add(
                     this@TtsService,
                     "HIBA: nem sikerült szöveget kinyerni",
@@ -871,6 +900,23 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
             _state.value.path?.let { loadCoverArt(it) }
             resume()
         }
+    }
+
+    /**
+     * A betöltött könyv elengedése (és a folyamatban lévő betöltés eldobása).
+     * Utána `paragraphs.isEmpty()` — erre figyel minden vezérlés, amikor azt
+     * kérdezi, van-e mit folytatni.
+     */
+    private fun clearBook() {
+        loadJob?.cancel()
+        loadJob = null
+        paragraphs = emptyList()
+        chapters = emptyList()
+        chapterSet = HashSet()
+        sentences = emptyList()
+        sentIndex = 0
+        cumulativeChars = LongArray(0)
+        totalChars = 1
     }
 
     /** Bekezdéslista -> mondat-egységek. */
@@ -999,7 +1045,13 @@ class TtsService : MediaBrowserServiceCompat(), TextToSpeech.OnInitListener {
         accumulateListened()
         saveProgress()
         // Teljes leállítás után nincs betöltött könyv: a képernyők
-        // indítás/szünet gombja is eltűnik, hogy ne lehessen hiába nyomni
+        // indítás/szünet gombja is eltűnik, hogy ne lehessen hiába nyomni.
+        //
+        // A szöveget is elengedjük. Ha egy fejegység médiaböngészőként
+        // csatlakozva tart minket, a stopSelf() nem állítja le a szolgáltatást;
+        // a memóriában maradt szöveggel a következő „lejátszás" cím és útvonal
+        // nélkül szólalt volna meg, és a haladás nem mentődött volna.
+        clearBook()
         _state.value = PlayerState()
         releaseWakeLock()
         abandonFocus()
