@@ -13,3 +13,5 @@ __pycache__/
 
 # helyi mentések
 _*.tar.gz
+_feltoltes/
+kiadas.bat
